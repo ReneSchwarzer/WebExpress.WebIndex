@@ -1,0 +1,57 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+		<OutputType>Library</OutputType>
+		<Title>WebExpress.WebIndex</Title>
+		<Version>0.0.1.0</Version>
+		<AssemblyVersion>0.0.1.0</AssemblyVersion>
+		<TargetFramework>net7.0</TargetFramework>
+		<RuntimeIdentifiers>any</RuntimeIdentifiers>
+		<RepositoryUrl>https://github.com/ReneSchwarzer/WebExpress.WebIndex</RepositoryUrl>
+		<Authors>Rene_Schwarzer@hotmail.de</Authors>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<Company>Rene_Schwarzer@hotmail.de</Company>
+		<EnableDynamicLoading>true</EnableDynamicLoading>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<Description>Provide a reverse index for the WebExpress web server.</Description>
+		<PackageVersion>0.0.1-alpha</PackageVersion>
+		<PackageProjectUrl>https://github.com/ReneSchwarzer/WebExpress</PackageProjectUrl>
+		<PackageIcon>icon.png</PackageIcon>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<RepositoryType>git</RepositoryType>
+		<PackageTags>webexpress</PackageTags>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<IsPackable>true</IsPackable>
+	</PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Assets\**" />
+    <Compile Remove="WebAttribute\**" />
+    <EmbeddedResource Remove="Assets\**" />
+    <EmbeddedResource Remove="WebAttribute\**" />
+    <None Remove="Assets\**" />
+    <None Remove="WebAttribute\**" />
+  </ItemGroup>
+
+	<ItemGroup>
+		<None Remove="Internationalization\de" />
+		<None Remove="Internationalization\en" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="Internationalization\de" />
+		<EmbeddedResource Include="Internationalization\en" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="..\..\icon.png" Link="icon.png">
+	    <PackagePath>\</PackagePath>
+	    <Pack>True</Pack>
+	  </None>
+	  <None Include="..\..\README.md" Link="README.md">
+	    <PackagePath>\</PackagePath>
+	    <Pack>True</Pack>
+	  </None>
+	</ItemGroup>
+
+</Project>
