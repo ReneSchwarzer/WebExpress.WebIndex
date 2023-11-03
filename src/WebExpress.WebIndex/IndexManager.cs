@@ -4,7 +4,7 @@ using WebExpress.WebIndex.Wql;
 
 namespace WebExpress.WebIndex
 {
-    public sealed class IndexManager
+    public class IndexManager
     {
         /// <summary>
         /// Returns an enumeration of the existing index documents.
