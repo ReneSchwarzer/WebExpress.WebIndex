@@ -11,8 +11,10 @@ language (e.g. C#). Some advantages of WebExpress are:
 - It is flexible and can be customized to meet your specific requirements.
 
 # WebExpress.WebIndex
-The project provides a reverse index to enable a quick and efficient search for data. The index can be filtered using the 
-wql (webexpress query language).
+WebExpress.WebIndex is part of the WebExpress family. The project provides a reverse index 
+to enable a quick and efficient search for data. The index can be filtered using the 
+wql (webexpress query language). Even though the reverse index is part of the WebExpress 
+family, it can also be used in other projects (outside of WebExpress).
 
 # Establish 
 see [development guide](https://github.com/ReneSchwarzer/WebExpress.Doc/blob/main/doc/development_guide.md)
