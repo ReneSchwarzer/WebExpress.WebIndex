@@ -1,20 +1,16 @@
 ﻿using System.Diagnostics;
-using System.Reflection;
 using WebExpress.WebIndex;
+using WebExpress.WebIndex.Test;
 
 namespace WebExpress.Test.Index
 {
     public class UnitTestIndexFixture
     {
-        public IndexManager IndexManager { get; private set; }
+        public IndexManager IndexManager { get; } = new IndexManagerTest();
 
         public UnitTestIndexFixture()
         {
-            var ctor = typeof(IndexManager)
-                .GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic)
-                .FirstOrDefault(c => !c.GetParameters().Any());
 
-            IndexManager = (IndexManager)ctor.Invoke(Array.Empty<object>());
         }
 
         public virtual void Dispose()

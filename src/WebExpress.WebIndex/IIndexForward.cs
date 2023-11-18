@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace WebExpress.WebIndex
 {
-    public interface IIndexForward<T> where T : IIndexItem
+    public interface IIndexForward<T> : IDisposable where T : IIndexItem
     {
         /// <summary>
         /// Returns all items.

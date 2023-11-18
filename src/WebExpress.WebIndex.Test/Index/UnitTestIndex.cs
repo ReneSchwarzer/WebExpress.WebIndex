@@ -21,7 +21,8 @@ namespace WebExpress.Test.Index
             Fixture.IndexManager.Register<UnitTestIndexTestDocumentA>();
             Fixture.IndexManager.Register<UnitTestIndexTestDocumentB>();
 
-            Assert.True(Fixture.IndexManager.Documents.Count == 2);
+            Assert.NotNull(Fixture.IndexManager.GetIndexDocument<UnitTestIndexTestDocumentA>());
+            Assert.NotNull(Fixture.IndexManager.GetIndexDocument<UnitTestIndexTestDocumentB>());
         }
 
         [Fact]
@@ -99,7 +100,8 @@ namespace WebExpress.Test.Index
         public void ReIndexTestDataSeriesC()
         {
             var stopWatch = new Stopwatch();
-            var file = File.CreateText("C:\\Users\\rene_\\OneDrive\\myindex-test.csv");
+            var file = File.CreateText(Path.Combine(Environment.CurrentDirectory, "myindex-test.csv"));
+            var indexDict = Path.Combine(Environment.CurrentDirectory, "index");
 
             var itemCount = Enumerable.Range(1, 1).Select(x => x * 1000);
             var wordCount = new int[] { 1000 };
@@ -122,6 +124,12 @@ namespace WebExpress.Test.Index
                     {
                         foreach (var l in wordLength)
                         {
+                            // remove the index files if exists
+                            if (Directory.Exists(indexDict))
+                            {
+                                Directory.Delete(indexDict, true);
+                            }
+
                             var testData = UnitTestIndexTestDocumentC.GenerateTestData(i, w, v, l);
 
                             Fixture.IndexManager.Register<UnitTestIndexTestDocumentC>((uint)i, IndexType.Storage);

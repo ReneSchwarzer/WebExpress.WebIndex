@@ -4,17 +4,17 @@ using WebExpress.WebIndex.Wql;
 
 namespace WebExpress.WebIndex
 {
-    public sealed class IndexManager
+    public abstract class IndexManager
     {
         /// <summary>
         /// Returns an enumeration of the existing index documents.
         /// </summary>
-        public Dictionary<Type, IIndexDocument> Documents { get; } = new Dictionary<Type, IIndexDocument>();
+        private Dictionary<Type, IIndexDocument> Documents { get; } = new Dictionary<Type, IIndexDocument>();
 
         /// <summary>
         /// Constructor
         /// </summary>
-        internal IndexManager()
+        public IndexManager()
         {
         }
 
@@ -81,6 +81,8 @@ namespace WebExpress.WebIndex
             {
                 IIndexDocument value;
                 Documents.Remove(typeof(T), out value);
+
+                value.Dispose();
             }
         }
 

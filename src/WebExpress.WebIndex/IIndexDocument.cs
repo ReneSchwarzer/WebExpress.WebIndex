@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 
 namespace WebExpress.WebIndex
 {
-    public interface IIndexDocument
+    public interface IIndexDocument : IDisposable
     {
     }
 

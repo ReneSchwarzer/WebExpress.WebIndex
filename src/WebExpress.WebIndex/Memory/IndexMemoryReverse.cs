@@ -193,5 +193,13 @@ namespace WebExpress.WebIndex.Memory
             var f = (Func<X, TReturn>)System.Delegate.CreateDelegate(typeof(Func<X, TReturn>), methodInfo);
             return t => (object)f(t);
         }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, 
+        /// or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+        }
     }
 }

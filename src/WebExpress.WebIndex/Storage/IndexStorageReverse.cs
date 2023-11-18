@@ -57,9 +57,6 @@ namespace WebExpress.WebIndex.Storage
             Property = property;
             FileName = Path.Combine(Environment.CurrentDirectory, "index", $"{typeof(T).Name}.{property.Name}.wri");
 
-            // todo delelte this bevor commit
-            if (File.Exists(FileName)) { File.Delete(FileName); }
-
             var exists = File.Exists(FileName);
             IndexFile = new IndexStorageFile(FileName);
             Header = new IndexStorageSegmentHeader(new IndexStorageContext(this));
@@ -128,6 +125,15 @@ namespace WebExpress.WebIndex.Storage
         public IEnumerable<int> Collect(object term)
         {
             return Enumerable.Empty<int>();
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, 
+        /// or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            IndexFile.Dispose();
         }
     }
 }

@@ -138,5 +138,22 @@ namespace WebExpress.WebIndex
         {
             return ContainsKey(property) ? this[property] : null;
         }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, 
+        /// or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            ForwardIndex.Dispose();
+
+            foreach (var property in typeof(T).GetProperties())
+            {
+                if (GetReverseIndex(property) is IIndexReverse<T> reverseIndex)
+                {
+                    reverseIndex.Dispose();
+                }
+            }
+        }
     }
 }

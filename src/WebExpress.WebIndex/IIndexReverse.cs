@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace WebExpress.WebIndex
 {
-    public interface IIndexReverse<T> where T : IIndexItem
+    public interface IIndexReverse<T> : IDisposable where T : IIndexItem
     {
         /// <summary>
         /// Adds a item to the index.
