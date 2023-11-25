@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using WebExpress.WebIndex.Term;
+using WebExpress.WebIndex.Term.Converter;
 
 namespace WebExpress.WebIndex.Storage
 {
@@ -93,8 +95,8 @@ namespace WebExpress.WebIndex.Storage
         public void Add(T item)
         {
             var value = Property?.GetValue(item)?.ToString();
-            var tokens = IndexTermTokenizer.Tokenize(value);
-            var terms = IndexTermNormalizer.Normalize(tokens);
+            var tokens = IndexAnalyzer.Analyze(value);
+            var terms = IndexTermConverterNormalizerExtensions.Normalize(tokens);
 
             foreach (var term in terms)
             {

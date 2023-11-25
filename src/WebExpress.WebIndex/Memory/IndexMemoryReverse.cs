@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using WebExpress.WebIndex.Term;
 
 namespace WebExpress.WebIndex.Memory
 {
@@ -50,7 +51,7 @@ namespace WebExpress.WebIndex.Memory
 
             if (value is string str)
             {
-                var terms = IndexTermTokenizer.Tokenize(str);
+                var terms = IndexAnalyzer.Analyze(str);
 
                 foreach (var term in terms)
                 {
@@ -102,7 +103,7 @@ namespace WebExpress.WebIndex.Memory
         public IEnumerable<int> Collect(object term)
         {
             var offset = 1;
-            var terms = IndexTermTokenizer.Tokenize(term?.ToString());
+            var terms = IndexAnalyzer.Analyze(term?.ToString());
 
             // processing the first token
             var items = GetIndexItems(terms.FirstOrDefault());

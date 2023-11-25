@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using WebExpress.WebIndex;
+using WebExpress.WebIndex.Term;
 using Xunit.Abstractions;
 
 namespace WebExpress.Test.Index
@@ -164,10 +165,10 @@ namespace WebExpress.Test.Index
         }
 
         [Fact]
-        public void Tokenize()
+        public void Analyze()
         {
             var input = "abc def, ghi jkl mno-p.";
-            var tokens = IndexTermTokenizer.Tokenize(input);
+            var tokens = IndexAnalyzer.Analyze(input);
 
             Assert.True(tokens.Count() == 5);
             Assert.True(tokens.First().Position == 0);
@@ -183,11 +184,37 @@ namespace WebExpress.Test.Index
         }
 
         [Fact]
+        public void AnalyzeEn1()
+        {
+            var input = Fixture.GetRessource("JourneyThroughTheUniverse.en");
+            var tokens = IndexAnalyzer.Analyze(input);
+
+            Assert.True(tokens.Count() == 545);
+        }
+
+        [Fact]
+        public void AnalyzeEn2()
+        {
+            var input = Fixture.GetRessource("InterstellarConversations.en");
+            var tokens = IndexAnalyzer.Analyze(input);
+
+            Assert.True(tokens.Count() == 281);
+        }
+
+        [Fact]
+        public void AnalyzeDe()
+        {
+            var input = Fixture.GetRessource("BotanischeBindungenMicrosReiseZuVerdantia.de");
+            var tokens = IndexAnalyzer.Analyze(input);
+
+            Assert.True(tokens.Count() == 810);
+        }
+
+        [Fact]
         public void Normalize()
         {
             var input = "abc def, ghi jkl mno-p. äöüéíú";
-            var tokens = IndexTermTokenizer.Tokenize(input);
-            var terms = IndexTermNormalizer.Normalize(tokens);
+            var terms = IndexAnalyzer.Analyze(input);
 
             Assert.True(terms.Count() == 6);
             Assert.True(terms.First().Position == 0);

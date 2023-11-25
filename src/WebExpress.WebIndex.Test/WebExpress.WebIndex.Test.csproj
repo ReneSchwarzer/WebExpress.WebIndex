@@ -8,6 +8,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Data\BotanischeBindungenMicrosReiseZuVerdantia.de" />
+    <None Remove="Data\InterstellarConversations.en" />
+    <None Remove="Data\JourneyThroughTheUniverse.en" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Data\InterstellarConversations.en" />
+    <EmbeddedResource Include="Data\BotanischeBindungenMicrosReiseZuVerdantia.de" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Data\JourneyThroughTheUniverse.en" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <PackageReference Include="xunit" Version="2.6.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3">

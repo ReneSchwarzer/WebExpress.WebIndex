@@ -2,21 +2,24 @@
 using System.Linq;
 using System.Text;
 
-namespace WebExpress.WebIndex
+namespace WebExpress.WebIndex.Term
 {
-    public static class IndexTermTokenizer
+    /// <summary>
+    /// A whitespace tokinizer for breaking down a document into terms.
+    /// </summary>
+    public class IndexTermTokenizer
     {
         /// <summary>
         /// Enumeration of separators.
         /// </summary>
-        private static char[] delimiters = new char[] { ' ', '?', '!', ':', '<', '>', '=', '%', '(', ')' };
+        private static readonly char[] delimiters = [' ', '?', '!', ':', '<', '>', '=', '%', '(', ')'];
 
         /// <summary>
         /// Tokenize an input string into an enumeration of terms.
         /// </summary>
         /// <param name="input">The input string.</param>
         /// <returns>An enumeration of terms.</returns>
-        public static IEnumerable<IndexTermToken> Tokenize(string input)
+        public IEnumerable<IndexTermToken> Tokenize(string input)
         {
             var currentToken = new StringBuilder();
             var position = (uint)0;
@@ -35,7 +38,7 @@ namespace WebExpress.WebIndex
                         yield return new IndexTermToken()
                         {
                             Position = position,
-                            Value = IndexTermNormalizer.Normalize(currentToken.ToString())
+                            Value = currentToken.ToString()
                         };
                     }
 
@@ -53,7 +56,7 @@ namespace WebExpress.WebIndex
                 yield return new IndexTermToken()
                 {
                     Position = position,
-                    Value = IndexTermNormalizer.Normalize(currentToken.ToString())
+                    Value = currentToken.ToString()
                 };
             }
         }
