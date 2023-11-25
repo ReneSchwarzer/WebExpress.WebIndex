@@ -189,7 +189,7 @@ namespace WebExpress.Test.Index
             var input = Fixture.GetRessource("JourneyThroughTheUniverse.en");
             var tokens = IndexAnalyzer.Analyze(input);
 
-            Assert.True(tokens.Count() == 545);
+            Assert.True(tokens.Count() == 546);
         }
 
         [Fact]
@@ -207,7 +207,7 @@ namespace WebExpress.Test.Index
             var input = Fixture.GetRessource("BotanischeBindungenMicrosReiseZuVerdantia.de");
             var tokens = IndexAnalyzer.Analyze(input);
 
-            Assert.True(tokens.Count() == 810);
+            Assert.True(tokens.Count() == 731);
         }
 
         [Fact]

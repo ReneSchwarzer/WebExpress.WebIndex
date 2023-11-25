@@ -1,12 +1,12 @@
-﻿Ground Station: “Robot, this is Ground Station. What’s your status?”
+﻿Ground Station: “Micro, this is Ground Station. What’s your status?”
 
-Robot: “Ground Station, this is Robot. All systems are operational. I am ready for the next phase of the mission.”
+Robot: “Ground Station, this is Micro. All systems are operational. I am ready for the next phase of the mission.”
 
-Ground Station: “Excellent, Robot. Are you ready to launch the rocket?”
+Ground Station: “Excellent, Micro. Are you ready to launch the rocket?”
 
 Robot: “Yes, Ground Station. I am ready for launch.”
 
-Ground Station: “Good, Robot. Ignite the engines in 3… 2… 1… Launch!”
+Ground Station: “Good, Micro. Ignite the engines in 3… 2… 1… Launch!”
 
 Robot: “Engines ignited. The rocket has launched. On the way to Omnicron.”
 
@@ -16,22 +16,22 @@ Robot: “Understood, Ground Station. I will send regular updates.”
 
 (After some time)
 
-Robot: “Ground Station, this is Robot. I’m reporting a malfunction in the navigation system. I’m trying to fix the problem.”
+Robot: “Ground Station, this is Micro. I’m reporting a malfunction in the navigation system. I’m trying to fix the problem.”
 
-Ground Station: “Understood, Robot. Please keep us updated on the status of the repair.”
+Ground Station: “Understood, Micro. Please keep us updated on the status of the repair.”
 
-Robot: “Ground Station, this is Robot. The repair of the navigation system was successful. I’m continuing the mission.”
+Robot: “Ground Station, this is Micro. The repair of the navigation system was successful. I’m continuing the mission.”
 
-Ground Station: “Excellent, Robot. Keep us updated. Ground Station out.”
-
-(After some time)
-
-Robot: “Ground Station, this is Robot. I have the current values of the spaceship. The speed is 20,000 kilometers per hour, the fuel level is at 75%, and all other systems are operational.”
-
-Ground Station: “Understood, Robot. Keep us updated. Ground Station out.”
+Ground Station: “Excellent, Micro. Keep us updated. Ground Station out.”
 
 (After some time)
 
-Robot: “Ground Station, this is Robot. Here are some additional nautical parameters of the spaceship. The current position of the spaceship is 15,000 kilometers from Omnicron. The course angle is 30 degrees. The current roll, yaw, and pitch rate is 0.01 degrees per second. The external temperature is -270 degrees Celsius. All systems are still operational.”
+Robot: “Ground Station, this is Micro. I have the current values of the spaceship. The speed is 20,000 kilometers per hour, the fuel level is at 75%, and all other systems are operational.”
 
-Ground Station: “Understood, Robot. Keep us updated. Ground Station out.”
+Ground Station: “Understood, Micro. Keep us updated. Ground Station out.”
+
+(After some time)
+
+Robot: “Ground Station, this is Micro. Here are some additional nautical parameters of the spaceship. The current position of the spaceship is 15,000 kilometers from Omnicron. The course angle is 30 degrees. The current roll, yaw, and pitch rate is 0.01 degrees per second. The external temperature is -270 degrees Celsius. All systems are still operational.”
+
+Ground Station: “Understood, Micro. Keep us updated. Ground Station out.”
