@@ -29,6 +29,7 @@ namespace WebExpress.WebIndex.Term
                 .LowerCase()
                 .Normalize()
                 .Synonym()
+                .Empty(culture)
                 .StopWord(culture);
         }
     }

@@ -59,7 +59,7 @@ namespace WebExpress.WebIndex
                 stream.CopyTo(file);
             }
 
-            IndexTermFilterStopWordExtensions.Initialization(context);
+            IndexTermFilterStopWord.Initialization(context);
         }
 
         /// <summary>

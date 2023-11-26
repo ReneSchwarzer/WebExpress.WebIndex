@@ -7,7 +7,7 @@ namespace WebExpress.WebIndex.Term.Filter
     /// <summary>
     /// Removes stop words
     /// </summary>
-    public static class IndexTermFilterStopWordExtensions
+    public static class IndexTermFilterStopWord
     {
         /// <summary>
         /// Returns a list of the stop words that are used for filtering.

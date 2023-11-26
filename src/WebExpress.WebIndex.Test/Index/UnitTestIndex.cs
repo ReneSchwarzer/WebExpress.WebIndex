@@ -199,7 +199,7 @@ namespace WebExpress.Test.Index
             var input = Fixture.GetRessource("InterstellarConversations.en");
             var tokens = IndexAnalyzer.Analyze(input, CultureInfo.GetCultureInfo("en"));
 
-            Assert.True(tokens.Count() == 158); // of 281
+            Assert.True(tokens.Count() == 157); // of 281
         }
 
         [Fact]
