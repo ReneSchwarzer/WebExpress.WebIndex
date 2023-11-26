@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using WebExpress.WebIndex.Term.Converter;
 using WebExpress.WebIndex.Term.Filter;
 using WebExpress.WebIndex.Wql;
 
@@ -59,6 +60,11 @@ namespace WebExpress.WebIndex
                 stream.CopyTo(file);
             }
 
+            IndexTermConverterLowerCase.Initialization(context);
+            IndexTermConverterMisspelled.Initialization(context);
+            IndexTermConverterNormalizer.Initialization(context);
+            IndexTermConverterSynonym.Initialization(context);
+            IndexTermFilterEmpty.Initialization(context);
             IndexTermFilterStopWord.Initialization(context);
         }
 

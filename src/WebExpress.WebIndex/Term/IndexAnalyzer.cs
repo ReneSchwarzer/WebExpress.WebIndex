@@ -26,9 +26,10 @@ namespace WebExpress.WebIndex.Term
             return Tokenizer
                 .Tokenize(input)
                 .Trim(culture)
-                .LowerCase()
-                .Normalize()
-                .Synonym()
+                .LowerCase(culture)
+                .Normalize(culture)
+                .Misspelled(culture)
+                .Synonym(culture)
                 .Empty(culture)
                 .StopWord(culture);
         }

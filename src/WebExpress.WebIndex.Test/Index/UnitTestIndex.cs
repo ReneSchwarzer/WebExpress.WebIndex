@@ -208,7 +208,7 @@ namespace WebExpress.Test.Index
             var input = Fixture.GetRessource("BotanischeBindungenMicrosReiseZuVerdantia.de");
             var tokens = IndexAnalyzer.Analyze(input, CultureInfo.GetCultureInfo("de"));
 
-            Assert.True(tokens.Count() == 361); // of 731
+            Assert.True(tokens.Count() == 362); // of 731
         }
     }
 }

@@ -10,11 +10,20 @@ namespace WebExpress.WebIndex.Term.Converter
     public static class IndexTermConverterNormalizer
     {
         /// <summary>
+        /// Initialization
+        /// </summary>
+        /// <param name="context">The reference to the context.</param>
+        public static void Initialization(IIndexContext context)
+        {
+        }
+
+        /// <summary>
         /// Converts specific elements on the term enumeration.
         /// </summary>
         /// <param name="input">The terms.</param>
+        /// <param name="culture">The culture.</param>
         /// <returns>The normalized form of the terms.</returns>
-        public static IEnumerable<IndexTermToken> Normalize(this IEnumerable<IndexTermToken> input)
+        public static IEnumerable<IndexTermToken> Normalize(this IEnumerable<IndexTermToken> input, CultureInfo culture)
         {
             foreach (var token in input)
             {
