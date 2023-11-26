@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System.Globalization;
 using WebExpress.WebIndex.Wql;
 
 namespace WebExpress.Test.Index.Wql
@@ -9,7 +9,7 @@ namespace WebExpress.Test.Index.Wql
 
         public UnitTestIndexWqlFixture()
         {
-            IndexManager.Register<UnitTestIndexTestDocumentA>();
+            IndexManager.Register<UnitTestIndexTestDocumentA>(CultureInfo.GetCultureInfo("en"));
             IndexManager.ReIndex(TestData);
         }
 

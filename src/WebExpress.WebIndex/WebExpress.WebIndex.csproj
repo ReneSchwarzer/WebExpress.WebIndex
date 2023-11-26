@@ -34,11 +34,19 @@
   </ItemGroup>
 
 	<ItemGroup>
+		<None Remove="Asstes\MisspelledWords.de" />
+		<None Remove="Asstes\MisspelledWords.en" />
+		<None Remove="Asstes\StopWords.de" />
+		<None Remove="Asstes\StopWords.en" />
 		<None Remove="Internationalization\de" />
 		<None Remove="Internationalization\en" />
 	</ItemGroup>
 
 	<ItemGroup>
+		<EmbeddedResource Include="Asstes\MisspelledWords.en" />
+		<EmbeddedResource Include="Asstes\MisspelledWords.de" />
+		<EmbeddedResource Include="Asstes\StopWords.de" />
+		<EmbeddedResource Include="Asstes\StopWords.en" />
 		<EmbeddedResource Include="Internationalization\de" />
 		<EmbeddedResource Include="Internationalization\en" />
 	</ItemGroup>

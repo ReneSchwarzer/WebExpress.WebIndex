@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using WebExpress.WebIndex.Term.Converter;
 using WebExpress.WebIndex.Term.Filter;
 
@@ -18,15 +19,16 @@ namespace WebExpress.WebIndex.Term
         /// Analyze the input.
         /// </summary>
         /// <param name="input">The input.</param>
+        /// <param name="culture">The culture.</param>
         /// <returns>The terms.</returns>
-        public static IEnumerable<IndexTermToken> Analyze(string input)
+        public static IEnumerable<IndexTermToken> Analyze(string input, CultureInfo culture)
         {
             return Tokenizer
                 .Tokenize(input)
-                .StopWord()
                 .LowerCase()
                 .Normalize()
-                .Synonym();
+                .Synonym()
+                .StopWord(culture);
         }
     }
 }

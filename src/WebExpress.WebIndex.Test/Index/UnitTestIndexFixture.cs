@@ -11,7 +11,7 @@ namespace WebExpress.Test.Index
 
         public UnitTestIndexFixture()
         {
-
+            IndexManager.Initialization(new IndexContext());
         }
 
         public virtual void Dispose()
@@ -40,9 +40,7 @@ namespace WebExpress.Test.Index
                 return "";
             }
 
-            using var stream = typeof(UnitTestIndexFixture)
-                .Assembly.GetManifestResourceStream(resource);
-
+            using var stream = assembly.GetManifestResourceStream(resource);
             using var memoryStream = new MemoryStream();
             stream.CopyTo(memoryStream);
 

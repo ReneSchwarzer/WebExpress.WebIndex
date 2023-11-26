@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Globalization;
 using WebExpress.WebIndex;
 using WebExpress.WebIndex.Term;
 using Xunit.Abstractions;
@@ -19,8 +20,8 @@ namespace WebExpress.Test.Index
         [Fact]
         public void Register()
         {
-            Fixture.IndexManager.Register<UnitTestIndexTestDocumentA>();
-            Fixture.IndexManager.Register<UnitTestIndexTestDocumentB>();
+            Fixture.IndexManager.Register<UnitTestIndexTestDocumentA>(CultureInfo.GetCultureInfo("en"));
+            Fixture.IndexManager.Register<UnitTestIndexTestDocumentB>(CultureInfo.GetCultureInfo("en"));
 
             Assert.NotNull(Fixture.IndexManager.GetIndexDocument<UnitTestIndexTestDocumentA>());
             Assert.NotNull(Fixture.IndexManager.GetIndexDocument<UnitTestIndexTestDocumentB>());
@@ -33,7 +34,7 @@ namespace WebExpress.Test.Index
 
             var testData = UnitTestIndexTestDocumentA.GenerateTestData();
 
-            Fixture.IndexManager.Register<UnitTestIndexTestDocumentA>();
+            Fixture.IndexManager.Register<UnitTestIndexTestDocumentA>(CultureInfo.GetCultureInfo("en"));
             Fixture.IndexManager.ReIndex(testData);
 
             Fixture.GetUsedMemory();
@@ -46,7 +47,7 @@ namespace WebExpress.Test.Index
 
             var testData = UnitTestIndexTestDocumentB.GenerateTestData();
 
-            Fixture.IndexManager.Register<UnitTestIndexTestDocumentB>();
+            Fixture.IndexManager.Register<UnitTestIndexTestDocumentB>(CultureInfo.GetCultureInfo("en"));
             Fixture.IndexManager.ReIndex(testData);
 
             Fixture.GetUsedMemory();
@@ -65,7 +66,7 @@ namespace WebExpress.Test.Index
 
             Output.WriteLine($"ReIndex {itemCount.ToString("#,##0")} items, {vocabulary.ToString("#,##0")} vocabulary and {wordLength.ToString("#,##0")} word length");
 
-            Fixture.IndexManager.Register<UnitTestIndexTestDocumentC>();
+            Fixture.IndexManager.Register<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo("en"));
 
             // preparing for a measurement
             var begin = Fixture.GetUsedMemory();
@@ -133,7 +134,7 @@ namespace WebExpress.Test.Index
 
                             var testData = UnitTestIndexTestDocumentC.GenerateTestData(i, w, v, l);
 
-                            Fixture.IndexManager.Register<UnitTestIndexTestDocumentC>((uint)i, IndexType.Storage);
+                            Fixture.IndexManager.Register<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo("en"), (uint)i, IndexType.Storage);
 
                             // preparing for a measurement
                             stopWatch.Start();
@@ -168,7 +169,7 @@ namespace WebExpress.Test.Index
         public void Analyze()
         {
             var input = "abc def, ghi jkl mno-p.";
-            var tokens = IndexAnalyzer.Analyze(input);
+            var tokens = IndexAnalyzer.Analyze(input, CultureInfo.GetCultureInfo("en"));
 
             Assert.True(tokens.Count() == 5);
             Assert.True(tokens.First().Position == 0);
@@ -187,34 +188,34 @@ namespace WebExpress.Test.Index
         public void AnalyzeEn1()
         {
             var input = Fixture.GetRessource("JourneyThroughTheUniverse.en");
-            var tokens = IndexAnalyzer.Analyze(input);
+            var tokens = IndexAnalyzer.Analyze(input, CultureInfo.GetCultureInfo("en"));
 
-            Assert.True(tokens.Count() == 546);
+            Assert.True(tokens.Count() == 233); // of 546
         }
 
         [Fact]
         public void AnalyzeEn2()
         {
             var input = Fixture.GetRessource("InterstellarConversations.en");
-            var tokens = IndexAnalyzer.Analyze(input);
+            var tokens = IndexAnalyzer.Analyze(input, CultureInfo.GetCultureInfo("en"));
 
-            Assert.True(tokens.Count() == 281);
+            Assert.True(tokens.Count() == 171); // of 281
         }
 
         [Fact]
         public void AnalyzeDe()
         {
             var input = Fixture.GetRessource("BotanischeBindungenMicrosReiseZuVerdantia.de");
-            var tokens = IndexAnalyzer.Analyze(input);
+            var tokens = IndexAnalyzer.Analyze(input, CultureInfo.GetCultureInfo("de"));
 
-            Assert.True(tokens.Count() == 731);
+            Assert.True(tokens.Count() == 401); // of 731
         }
 
         [Fact]
         public void Normalize()
         {
             var input = "abc def, ghi jkl mno-p. äöüéíú";
-            var terms = IndexAnalyzer.Analyze(input);
+            var terms = IndexAnalyzer.Analyze(input, CultureInfo.GetCultureInfo("en"));
 
             Assert.True(terms.Count() == 6);
             Assert.True(terms.First().Position == 0);
