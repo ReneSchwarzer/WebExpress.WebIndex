@@ -5,7 +5,7 @@ namespace WebExpress.WebIndex.Term.Converter
     /// <summary>
     /// Conversion of synonyms.
     /// </summary>
-    public static class IndexTermConverterSynonymExtensions
+    public static class IndexTermConverterSynonym
     {
         /// <summary>
         /// Converts specific elements on the term enumeration.

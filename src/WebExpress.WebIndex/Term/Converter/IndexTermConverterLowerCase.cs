@@ -5,7 +5,7 @@ namespace WebExpress.WebIndex.Term.Converter
     /// <summary>
     /// Conversion to lowercase.
     /// </summary>
-    public static class IndexTermConverterLowerCaseExtensions
+    public static class IndexTermConverterLowerCase
     {
         /// <summary>
         /// Converts specific elements on the term enumeration in lower case.

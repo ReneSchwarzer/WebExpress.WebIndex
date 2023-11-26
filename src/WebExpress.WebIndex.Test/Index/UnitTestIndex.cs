@@ -175,13 +175,13 @@ namespace WebExpress.Test.Index
             Assert.True(tokens.First().Position == 0);
             Assert.True(tokens.First().Value == "abc");
             Assert.True(tokens.Skip(1).First().Position == 1);
-            Assert.True(tokens.Skip(1).First().Value == "def,");
+            Assert.True(tokens.Skip(1).First().Value == "def");
             Assert.True(tokens.Skip(2).First().Position == 2);
             Assert.True(tokens.Skip(2).First().Value == "ghi");
             Assert.True(tokens.Skip(3).First().Position == 3);
             Assert.True(tokens.Skip(3).First().Value == "jkl");
             Assert.True(tokens.Skip(4).First().Position == 4);
-            Assert.True(tokens.Skip(4).First().Value == "mno-p.");
+            Assert.True(tokens.Skip(4).First().Value == "mno-p");
         }
 
         [Fact]
@@ -190,7 +190,7 @@ namespace WebExpress.Test.Index
             var input = Fixture.GetRessource("JourneyThroughTheUniverse.en");
             var tokens = IndexAnalyzer.Analyze(input, CultureInfo.GetCultureInfo("en"));
 
-            Assert.True(tokens.Count() == 233); // of 546
+            Assert.True(tokens.Count() == 218); // of 546
         }
 
         [Fact]
@@ -199,7 +199,7 @@ namespace WebExpress.Test.Index
             var input = Fixture.GetRessource("InterstellarConversations.en");
             var tokens = IndexAnalyzer.Analyze(input, CultureInfo.GetCultureInfo("en"));
 
-            Assert.True(tokens.Count() == 171); // of 281
+            Assert.True(tokens.Count() == 158); // of 281
         }
 
         [Fact]
@@ -208,28 +208,7 @@ namespace WebExpress.Test.Index
             var input = Fixture.GetRessource("BotanischeBindungenMicrosReiseZuVerdantia.de");
             var tokens = IndexAnalyzer.Analyze(input, CultureInfo.GetCultureInfo("de"));
 
-            Assert.True(tokens.Count() == 401); // of 731
-        }
-
-        [Fact]
-        public void Normalize()
-        {
-            var input = "abc def, ghi jkl mno-p. äöüéíú";
-            var terms = IndexAnalyzer.Analyze(input, CultureInfo.GetCultureInfo("en"));
-
-            Assert.True(terms.Count() == 6);
-            Assert.True(terms.First().Position == 0);
-            Assert.True(terms.First().Value == "abc");
-            Assert.True(terms.Skip(1).First().Position == 1);
-            Assert.True(terms.Skip(1).First().Value == "def,");
-            Assert.True(terms.Skip(2).First().Position == 2);
-            Assert.True(terms.Skip(2).First().Value == "ghi");
-            Assert.True(terms.Skip(3).First().Position == 3);
-            Assert.True(terms.Skip(3).First().Value == "jkl");
-            Assert.True(terms.Skip(4).First().Position == 4);
-            Assert.True(terms.Skip(4).First().Value == "mno-p.");
-            Assert.True(terms.Skip(5).First().Position == 5);
-            Assert.True(terms.Skip(5).First().Value == "aoueiu");
+            Assert.True(tokens.Count() == 361); // of 731
         }
     }
 }

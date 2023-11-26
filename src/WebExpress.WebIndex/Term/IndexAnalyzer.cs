@@ -25,6 +25,7 @@ namespace WebExpress.WebIndex.Term
         {
             return Tokenizer
                 .Tokenize(input)
+                .Trim(culture)
                 .LowerCase()
                 .Normalize()
                 .Synonym()

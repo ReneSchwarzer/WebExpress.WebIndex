@@ -110,7 +110,7 @@ namespace WebExpress.WebIndex.Storage
         {
             var value = Property?.GetValue(item)?.ToString();
             var tokens = IndexAnalyzer.Analyze(value, Culture);
-            var terms = IndexTermConverterNormalizerExtensions.Normalize(tokens);
+            var terms = IndexTermConverterNormalizer.Normalize(tokens);
 
             foreach (var term in terms)
             {

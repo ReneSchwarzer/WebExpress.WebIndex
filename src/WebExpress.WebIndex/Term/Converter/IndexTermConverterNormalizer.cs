@@ -7,7 +7,7 @@ namespace WebExpress.WebIndex.Term.Converter
     /// <summary>
     /// Normalizes terms.
     /// </summary>
-    public static class IndexTermConverterNormalizerExtensions
+    public static class IndexTermConverterNormalizer
     {
         /// <summary>
         /// Converts specific elements on the term enumeration.
