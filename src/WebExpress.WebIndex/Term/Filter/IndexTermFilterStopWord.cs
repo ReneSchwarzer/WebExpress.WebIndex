@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 
 namespace WebExpress.WebIndex.Term.Filter
 {
@@ -35,7 +36,7 @@ namespace WebExpress.WebIndex.Term.Filter
         /// <param name="culture">The culture.</param>
         private static void FillStopWordDictionary(IIndexContext context, CultureInfo culture)
         {
-            var fileContent = File.ReadAllText
+            var fileContent = File.ReadAllLines
             (
                 Path.Combine(context.IndexDirectory,
                 $"stopwords.{culture.TwoLetterISOLanguageName}")
@@ -46,7 +47,7 @@ namespace WebExpress.WebIndex.Term.Filter
                 StopWordDictionary.Add(culture, new HashSet<string>());
             }
 
-            foreach (var word in fileContent.Split(',', System.StringSplitOptions.RemoveEmptyEntries | System.StringSplitOptions.TrimEntries))
+            foreach (var word in fileContent.Select(x => x.Trim()).Where(x => !x.StartsWith('#')))
             {
                 if (!StopWordDictionary[culture].Contains(word))
                 {

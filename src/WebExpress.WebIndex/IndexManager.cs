@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using WebExpress.WebIndex.Term.Converter;
 using WebExpress.WebIndex.Term.Filter;
 using WebExpress.WebIndex.Wql;
@@ -14,7 +15,7 @@ namespace WebExpress.WebIndex
         /// <summary>
         /// Returns an enumeration of the existing index documents.
         /// </summary>
-        private Dictionary<Type, IIndexDocument> Documents { get; } = new Dictionary<Type, IIndexDocument>();
+        private Dictionary<Type, IIndexDocument> Documents { get; } = [];
 
         /// <summary>
         /// Returns or sets the index context.
@@ -36,7 +37,7 @@ namespace WebExpress.WebIndex
         public void Initialization(IIndexContext context)
         {
             var assembly = typeof(IndexManager).Assembly;
-            string[] fileNames = ["StopWords.en", "StopWords.de", "MisspelledWords.en", "MisspelledWords.de"];
+            string[] fileNames = ["IrregularWords.en", "IrregularWords.de", "MisspelledWords.en", "MisspelledWords.de", "RegularWords.en", "RegularWords.de", "StopWords.en", "StopWords.de"];
 
             Context = context;
 
@@ -55,14 +56,27 @@ namespace WebExpress.WebIndex
                     continue;
                 }
 
-                using var file = File.Open(path, FileMode.OpenOrCreate);
-                using var stream = assembly.GetManifestResourceStream(resource);
-                stream.CopyTo(file);
+                try
+                {
+
+                    if (!File.Exists(path))
+                    {
+                        using var sw = new StreamWriter(path, false, Encoding.UTF8);
+                        using var contentStream = assembly.GetManifestResourceStream(resource);
+                        using var sr = new StreamReader(contentStream, Encoding.UTF8);
+
+                        sw.Write(sr.ReadToEnd());
+                    }
+                }
+                catch (IOException ex)
+                {
+                }
             }
 
             IndexTermConverterLowerCase.Initialization(context);
             IndexTermConverterMisspelled.Initialization(context);
             IndexTermConverterNormalizer.Initialization(context);
+            IndexTermConverterSingular.Initialization(context);
             IndexTermConverterSynonym.Initialization(context);
             IndexTermFilterEmpty.Initialization(context);
             IndexTermFilterStopWord.Initialization(context);

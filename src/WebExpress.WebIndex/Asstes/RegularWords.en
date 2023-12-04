@@ -1,0 +1,4 @@
+﻿# Regular words. The left side contains a regular expression, the right side the replacement.
+(?i)ies$=y			# puppies -> puppy
+(?i)(ses|xes)$=ss	# buses -> bus | boxes -> box
+(?i)s$=			    # cats -> cat

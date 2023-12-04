@@ -11,7 +11,10 @@ namespace WebExpress.Test.Index
 
         public UnitTestIndexFixture()
         {
-            IndexManager.Initialization(new IndexContext());
+            lock (IndexManager)
+            {
+                IndexManager.Initialization(new IndexContext());
+            }
         }
 
         public virtual void Dispose()

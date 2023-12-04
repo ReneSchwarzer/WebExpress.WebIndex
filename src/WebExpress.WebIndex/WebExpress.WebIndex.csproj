@@ -34,8 +34,12 @@
   </ItemGroup>
 
 	<ItemGroup>
+		<None Remove="Asstes\IrregularWords.de" />
+		<None Remove="Asstes\IrregularWords.en" />
 		<None Remove="Asstes\MisspelledWords.de" />
 		<None Remove="Asstes\MisspelledWords.en" />
+		<None Remove="Asstes\RegularWords.de" />
+		<None Remove="Asstes\RegularWords.en" />
 		<None Remove="Asstes\StopWords.de" />
 		<None Remove="Asstes\StopWords.en" />
 		<None Remove="Internationalization\de" />
@@ -43,8 +47,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<EmbeddedResource Include="Asstes\IrregularWords.en" />
+		<EmbeddedResource Include="Asstes\RegularWords.en" />
+		<EmbeddedResource Include="Asstes\RegularWords.de" />
 		<EmbeddedResource Include="Asstes\MisspelledWords.en" />
 		<EmbeddedResource Include="Asstes\MisspelledWords.de" />
+		<EmbeddedResource Include="Asstes\IrregularWords.de" />
 		<EmbeddedResource Include="Asstes\StopWords.de" />
 		<EmbeddedResource Include="Asstes\StopWords.en" />
 		<EmbeddedResource Include="Internationalization\de" />

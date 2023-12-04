@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 
 namespace WebExpress.WebIndex.Term.Converter
 {
@@ -48,11 +49,11 @@ namespace WebExpress.WebIndex.Term.Converter
 
             var dict = MisspelledWordDictionary[culture];
 
-            foreach (var line in fileContent)
+            foreach (var line in fileContent.Select(x => x.Trim()).Where(x => !x.StartsWith('#')))
             {
                 var split = line.Split('=', System.StringSplitOptions.RemoveEmptyEntries | System.StringSplitOptions.TrimEntries);
                 var key = split[0]?.ToLower();
-                var value = split[1]?.ToLower();
+                var value = split[1]?.ToLower()?.Split('#')[0]?.TrimEnd();
 
                 if (!string.IsNullOrWhiteSpace(key) && !dict.ContainsKey(key))
                 {
