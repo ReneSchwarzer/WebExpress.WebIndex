@@ -1,6 +1,4 @@
-﻿using WebExpress.Test.Index;
-
-namespace WebExpress.WebIndex.Test.Index
+﻿namespace WebExpress.WebIndex.Test.Index
 {
     /// <summary>
     /// This class has no code. It only serves as a placeholder for the collection definition.

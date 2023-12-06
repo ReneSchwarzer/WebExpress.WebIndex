@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace WebExpress.Test.Index
+namespace WebExpress.WebIndex.Test.Index
 {
     public class UnitTestIndexTestDocumentC : UnitTestIndexTestDocument
     {

@@ -3,7 +3,7 @@ using System.Text;
 using WebExpress.WebIndex;
 using WebExpress.WebIndex.Test;
 
-namespace WebExpress.Test.Index
+namespace WebExpress.WebIndex.Test.Index
 {
     public class UnitTestIndexFixture
     {

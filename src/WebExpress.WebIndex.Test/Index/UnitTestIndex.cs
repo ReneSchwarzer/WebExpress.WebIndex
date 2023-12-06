@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Globalization;
-using WebExpress.Test.Index;
 using Xunit.Abstractions;
 
 namespace WebExpress.WebIndex.Test.Index

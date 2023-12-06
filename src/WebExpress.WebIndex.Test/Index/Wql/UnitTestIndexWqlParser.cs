@@ -1,8 +1,9 @@
 ﻿using System.Linq;
+using WebExpress.WebIndex.Test.Index.Wql;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace WebExpress.Test.Index.Wql
+namespace WebExpress.WebIndex.Test.Index.Index
 {
     public class UnitTestIndexWqlParser : IClassFixture<UnitTestIndexWqlFixture>
     {

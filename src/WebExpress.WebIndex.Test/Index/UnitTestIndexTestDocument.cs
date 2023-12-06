@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using WebExpress.WebIndex;
 
-namespace WebExpress.Test.Index
+namespace WebExpress.WebIndex.Test.Index
 {
     public abstract class UnitTestIndexTestDocument : IIndexItem
     {

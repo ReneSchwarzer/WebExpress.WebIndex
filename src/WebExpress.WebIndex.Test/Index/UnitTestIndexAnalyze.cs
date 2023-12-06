@@ -2,7 +2,7 @@
 using WebExpress.WebIndex.Term;
 using Xunit.Abstractions;
 
-namespace WebExpress.Test.Index
+namespace WebExpress.WebIndex.Test.Index
 {
     [Collection("UnitTestIndexCollectionFixture")]
     public class UnitTestIndexAnalyze
