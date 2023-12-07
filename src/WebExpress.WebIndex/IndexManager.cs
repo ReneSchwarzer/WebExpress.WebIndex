@@ -48,7 +48,7 @@ namespace WebExpress.WebIndex
                 var path = Path.Combine(Context.IndexDirectory, fileName.ToLower());
                 var resources = assembly.GetManifestResourceNames();
                 var resource = resources
-                    .Where(x => x.EndsWith(fileName, StringComparison.OrdinalIgnoreCase))
+                    .Where(x => x.EndsWith($".{fileName}", StringComparison.OrdinalIgnoreCase))
                     .FirstOrDefault();
 
                 if (resource == null)

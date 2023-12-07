@@ -1,4 +1,6 @@
 ﻿using System.Globalization;
+using System.IO;
+using System.Linq;
 using WebExpress.WebIndex.Term;
 using WebExpress.WebIndex.Term.Converter;
 using Xunit.Abstractions;
@@ -20,6 +22,43 @@ namespace WebExpress.WebIndex.Test.Index
 
             IndexTermConverterLowerCase.Initialization(context);
             IndexTermConverterSingular.Initialization(context);
+        }
+        [Fact]
+        public void PluralToSingularEn()
+        {
+            var culture = CultureInfo.GetCultureInfo("en");
+
+            (string, string)[] words = 
+            [
+                // regular nouns (ies, ses  xes, s)
+                ("babies", "baby"), 
+                ("cities", "city"),
+                ("countries", "country"),
+                ("families", "family"),
+                ("parties", "party"),
+                ("pennies", "penny"),
+                ("studies", "study"),
+                ("stories", "story"),
+                // irregular nouns
+                ("axes", "axis"),
+                ("indices", "index"),
+                ("selves", "self"),
+                ("vortexes", "vortex")
+            ];
+
+
+            var pluralWords = words.Select(x => x.Item1);
+            var singularWords = words.Select(x => x.Item2);
+
+            var tokenizer = new IndexTermTokenizer();
+
+            var res = tokenizer
+                .Tokenize(string.Join(" ", pluralWords))
+                .Singular(culture)
+                .Select(x => x.Value)
+                .ToList();
+
+            Assert.True(res.Intersect(singularWords).Count() == res.Count());
         }
 
         [Fact]
