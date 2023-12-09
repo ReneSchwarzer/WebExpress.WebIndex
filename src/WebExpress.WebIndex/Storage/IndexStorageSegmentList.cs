@@ -238,5 +238,14 @@ namespace WebExpress.WebIndex.Storage
         {
             return GetEnumerator();
         }
+
+        /// <summary>
+        /// Converts the current object to a string.
+        /// </summary>
+        /// <returns>A string that represents the current object.</returns>
+        public override string ToString()
+        {
+            return Count.ToString();
+        }
     }
 }

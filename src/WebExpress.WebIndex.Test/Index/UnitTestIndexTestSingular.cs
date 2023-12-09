@@ -1,6 +1,4 @@
 ﻿using System.Globalization;
-using System.IO;
-using System.Linq;
 using WebExpress.WebIndex.Term;
 using WebExpress.WebIndex.Term.Converter;
 using Xunit.Abstractions;
@@ -28,10 +26,10 @@ namespace WebExpress.WebIndex.Test.Index
         {
             var culture = CultureInfo.GetCultureInfo("en");
 
-            (string, string)[] words = 
+            (string, string)[] words =
             [
                 // regular nouns (ies, ses  xes, s)
-                ("babies", "baby"), 
+                ("babies", "baby"),
                 ("cities", "city"),
                 ("countries", "country"),
                 ("families", "family"),

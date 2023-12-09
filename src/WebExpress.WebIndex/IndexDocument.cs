@@ -68,7 +68,7 @@ namespace WebExpress.WebIndex
                     }
                 default:
                     {
-                        ForwardIndex = new IndexMemoryForward<T>();
+                        ForwardIndex = new IndexStorageForward<T>(Context, Culture, Capacity);
 
                         break;
                     }

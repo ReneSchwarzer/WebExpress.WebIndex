@@ -40,6 +40,21 @@ namespace WebExpress.WebIndex.Storage
         }
 
         /// <summary>
+        /// Returns or sets the address of the first term in a bucket in the hash map.
+        /// </summary>
+        /// <param name="term">The id.</param>
+        /// <returns>The address in the bucket at the index.</returns>
+        public IndexStorageSegmentList<T> this[int id]
+        {
+            get
+            {
+                var index = (uint)id % BucketCount;
+                return Buckets[index];
+            }
+            set { Buckets[id.GetHashCode() % BucketCount] = value; }
+        }
+
+        /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="context">The reference to the context of the index.</param>

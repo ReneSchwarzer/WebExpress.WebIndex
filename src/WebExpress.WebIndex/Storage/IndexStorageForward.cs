@@ -1,23 +1,19 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
-using System.Reflection;
-using WebExpress.WebIndex.Term;
+using System.Text;
+using System.Text.Json;
 
 namespace WebExpress.WebIndex.Storage
 {
     /// <summary>
-    /// Implementation of the web reverse index, which stores the key-value pairs on disk.
+    /// Implementation of the web forward index, which stores the key-value pairs on disk.
     /// </summary>
     /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
-    public class IndexStorageReverse<T> : IIndexReverse<T>, IIndexStorage where T : IIndexItem
+    public class IndexStorageForward<T> : IIndexForward<T>, IIndexStorage where T : IIndexItem
     {
-        /// <summary>
-        /// The property that makes up the index.
-        /// </summary>
-        private PropertyInfo Property { get; set; }
-
         /// <summary>
         /// Returns the file name for the reverse index.
         /// </summary>
@@ -36,7 +32,7 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Returns or sets the hash map.
         /// </summary>
-        public IndexStorageSegmentHashMap<IndexStorageSegmentTerm> HashMap { get; private set; }
+        public IndexStorageSegmentHashMap<IndexStorageSegmentItem> HashMap { get; private set; }
 
         /// <summary>
         /// Returns or sets the memory manager.
@@ -59,25 +55,28 @@ namespace WebExpress.WebIndex.Storage
         public CultureInfo Culture { get; private set; }
 
         /// <summary>
+        /// Returns all items.
+        /// </summary>
+        public IEnumerable<T> All => null;
+
+        /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="context">The index context.</param>
-        /// <param name="property">The property that makes up the index.</param>
         /// <param name="culture">The culture.</param>
         /// <param name="capacity">The predicted capacity (number of items to store) of the reverse index.</param>
-        public IndexStorageReverse(IIndexContext context, PropertyInfo property, CultureInfo culture, uint capacity)
+        public IndexStorageForward(IIndexContext context, CultureInfo culture, uint capacity)
         {
             Context = context;
-            Property = property;
             Culture = culture;
-            FileName = Path.Combine(Context.IndexDirectory, $"{typeof(T).Name}.{property.Name}.wri");
+            FileName = Path.Combine(Context.IndexDirectory, $"{typeof(T).Name}.wfi");
 
             var exists = File.Exists(FileName);
             IndexFile = new IndexStorageFile(FileName);
-            Header = new IndexStorageSegmentHeader(new IndexStorageContext(this)) { Identifier = "wri" };
+            Header = new IndexStorageSegmentHeader(new IndexStorageContext(this)) { Identifier = "wfi" };
             Allocator = new IndexStorageSegmentAllocator(new IndexStorageContext(this));
             Statistic = new IndexStorageSegmentStatistic(new IndexStorageContext(this));
-            HashMap = new IndexStorageSegmentHashMap<IndexStorageSegmentTerm>(new IndexStorageContext(this), capacity);
+            HashMap = new IndexStorageSegmentHashMap<IndexStorageSegmentItem>(new IndexStorageContext(this), capacity);
 
             Allocator.Alloc(Statistic);
             Allocator.Alloc(HashMap);
@@ -101,44 +100,49 @@ namespace WebExpress.WebIndex.Storage
         }
 
         /// <summary>
-        /// Adds a item to the field.
+        /// Adds an item.
         /// </summary>
-        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
-        /// <param name="item">The data to be added to the index.</param>
+        /// <param name="item">The item.</param>
         public void Add(T item)
         {
-            var value = Property?.GetValue(item)?.ToString();
-            var terms = IndexAnalyzer.Analyze(value, Culture);
-
-            foreach (var term in terms)
+            var json = JsonSerializer.Serialize(item);
+            var bytes = CompressString(json);
+            var segment = new IndexStorageSegmentItem(new IndexStorageContext(this))
             {
-                HashMap[term.Value]
-                    .Add(new IndexStorageSegmentTerm(new IndexStorageContext(this)) { Term = term.Value, Fequency = 1 })
-                    .Postings[item.Id]
-                    .Add(new IndexStorageSegmentPosting(new IndexStorageContext(this)) { DocumentID = item.Id })
-                    .Positions
-                    .Add(new IndexStorageSegmentPosition(new IndexStorageContext(this)) { Position = term.Position });
-            }
+                Id = item.Id,
+                Data = bytes
+            };
+
+            HashMap[item.Id].Add(segment);
         }
 
         /// <summary>
-        /// The data to be removed from the field.
+        /// Remove an item.
         /// </summary>
-        /// <typeparam name="T">The data type. This must have the IIndexData interface.</typeparam>
-        /// <param name="item">The data to be removed from the field.</param>
+        /// <param name="item">The item.</param>
         public void Remove(T item)
         {
 
         }
 
         /// <summary>
-        /// Return all items for a given term.
+        /// Returns the item.
         /// </summary>
-        /// <param name="term">The term.</param>
-        /// <returns>An enumeration of the data ids.</returns>
-        public IEnumerable<int> Collect(object term)
+        /// <param name="id">The id of the item.</param>
+        /// <returns>The item.</returns>
+        public T GetItem(int id)
         {
-            return Enumerable.Empty<int>();
+            var bytes = HashMap[id].SkipWhile(x => x.Id != id).FirstOrDefault()?.Data;
+
+            if (bytes == null)
+            {
+                return default;
+            }
+
+            var json = DecompressString(bytes);
+            var item = JsonSerializer.Deserialize<T>(json);
+
+            return item;
         }
 
         /// <summary>
@@ -149,5 +153,38 @@ namespace WebExpress.WebIndex.Storage
         {
             IndexFile.Dispose();
         }
+
+        /// <summary>
+        /// Compresses a string using GZipStream.
+        /// </summary>
+        /// <param name="input">The string to be compressed.</param>
+        /// <returns>A byte array containing the compressed string.</returns>
+        private static byte[] CompressString(string input)
+        {
+            using var stream = new MemoryStream();
+            using var gzip = new GZipStream(stream, CompressionMode.Compress);
+            var bytes = Encoding.UTF8.GetBytes(input);
+
+            gzip.Write(bytes, 0, bytes.Length);
+            gzip.Close();
+
+            return stream.ToArray();
+        }
+
+        /// <summary>
+        /// Decompresses a byte array into a string using GZipStream.
+        /// </summary>
+        /// <param name="compressed">The byte array to be decompressed.</param>
+        /// <returns>A string that represents the decompressed byte array.</returns>
+        private static string DecompressString(byte[] compressed)
+        {
+            using var stream = new MemoryStream(compressed);
+            using var zip = new GZipStream(stream, CompressionMode.Decompress);
+            using var reader = new StreamReader(zip);
+
+            return reader.ReadToEnd();
+        }
     }
+
+
 }
