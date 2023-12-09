@@ -1,11 +1,26 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Data\BotanischeBindungenMicrosReiseZuVerdantia.de" />
+    <None Remove="Data\InterstellarConversations.en" />
+    <None Remove="Data\JourneyThroughTheUniverse.en" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Data\InterstellarConversations.en" />
+    <EmbeddedResource Include="Data\BotanischeBindungenMicrosReiseZuVerdantia.de" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Data\JourneyThroughTheUniverse.en" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />

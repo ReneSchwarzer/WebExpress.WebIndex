@@ -1,8 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using WebExpress.WebIndex.Term;
 
 namespace WebExpress.WebIndex.Storage
 {
@@ -48,18 +49,32 @@ namespace WebExpress.WebIndex.Storage
         public IndexStorageSegmentStatistic Statistic { get; private set; }
 
         /// <summary>
+        /// Returns the index context.
+        /// </summary>
+        public IIndexContext Context { get; private set; }
+
+        /// <summary>
+        /// Returns the culture.
+        /// </summary>
+        public CultureInfo Culture { get; private set; }
+
+        /// <summary>
         /// Constructor
         /// </summary>
+        /// <param name="context">The index context.</param>
         /// <param name="property">The property that makes up the index.</param>
+        /// <param name="culture">The culture.</param>
         /// <param name="capacity">The predicted capacity (number of items to store) of the reverse index.</param>
-        public IndexStorageReverse(PropertyInfo property, uint capacity)
+        public IndexStorageReverse(IIndexContext context, PropertyInfo property, CultureInfo culture, uint capacity)
         {
+            Context = context;
             Property = property;
-            FileName = Path.Combine(Environment.CurrentDirectory, "index", $"{typeof(T).Name}.{property.Name}.wri");
+            Culture = culture;
+            FileName = Path.Combine(Context.IndexDirectory, $"{typeof(T).Name}.{property.Name}.wri");
 
             var exists = File.Exists(FileName);
             IndexFile = new IndexStorageFile(FileName);
-            Header = new IndexStorageSegmentHeader(new IndexStorageContext(this));
+            Header = new IndexStorageSegmentHeader(new IndexStorageContext(this)) { Identifier = "wri" };
             Allocator = new IndexStorageSegmentAllocator(new IndexStorageContext(this));
             Statistic = new IndexStorageSegmentStatistic(new IndexStorageContext(this));
             HashMap = new IndexStorageSegmentHashMap<IndexStorageSegmentTerm>(new IndexStorageContext(this), capacity);
@@ -93,8 +108,7 @@ namespace WebExpress.WebIndex.Storage
         public void Add(T item)
         {
             var value = Property?.GetValue(item)?.ToString();
-            var tokens = IndexTermTokenizer.Tokenize(value);
-            var terms = IndexTermNormalizer.Normalize(tokens);
+            var terms = IndexAnalyzer.Analyze(value, Culture);
 
             foreach (var term in terms)
             {

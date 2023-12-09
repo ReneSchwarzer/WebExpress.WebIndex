@@ -2,16 +2,28 @@
 using System.Globalization;
 using System.Text;
 
-namespace WebExpress.WebIndex
+namespace WebExpress.WebIndex.Term.Converter
 {
-    public static class IndexTermNormalizer
+    /// <summary>
+    /// Normalizes terms.
+    /// </summary>
+    public static class IndexTermConverterNormalizer
     {
         /// <summary>
-        /// Converts an input string into a standardized form.
+        /// Initialization
         /// </summary>
-        /// <param name="input">The input string.</param>
-        /// <returns>The normalized form of the input string.</returns>
-        public static IEnumerable<IndexTermToken> Normalize(IEnumerable<IndexTermToken> input)
+        /// <param name="context">The reference to the context.</param>
+        public static void Initialization(IIndexContext context)
+        {
+        }
+
+        /// <summary>
+        /// Converts specific elements on the term enumeration.
+        /// </summary>
+        /// <param name="input">The terms.</param>
+        /// <param name="culture">The culture.</param>
+        /// <returns>The normalized form of the terms.</returns>
+        public static IEnumerable<IndexTermToken> Normalize(this IEnumerable<IndexTermToken> input, CultureInfo culture)
         {
             foreach (var token in input)
             {
@@ -25,7 +37,7 @@ namespace WebExpress.WebIndex
         /// </summary>
         /// <param name="input">The input string.</param>
         /// <returns>The normalized form of the input string.</returns>
-        public static string Normalize(string input)
+        private static string Normalize(string input)
         {
             var normalized = input.Normalize(NormalizationForm.FormKD);
             var stringBuilder = new StringBuilder();
@@ -38,7 +50,7 @@ namespace WebExpress.WebIndex
                 }
             }
 
-            return stringBuilder.ToString().ToLowerInvariant();
+            return stringBuilder.ToString();
         }
     }
 }

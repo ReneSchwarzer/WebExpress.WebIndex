@@ -15,6 +15,16 @@ namespace WebExpress.WebIndex.Memory
         public IEnumerable<T> All => Values;
 
         /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="context">The index context.</param>
+        /// <param name="capacity">The predicted capacity (number of items to store) of the reverse index.</param>
+        public IndexMemoryForward(IIndexContext context, uint capacity)
+            : base((int)capacity)
+        {
+        }
+
+        /// <summary>
         /// Adds an item.
         /// </summary>
         /// <param name="item">The item.</param>

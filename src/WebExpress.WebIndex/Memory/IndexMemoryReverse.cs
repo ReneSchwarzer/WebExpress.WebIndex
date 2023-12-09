@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using WebExpress.WebIndex.Term;
 
 namespace WebExpress.WebIndex.Memory
 {
@@ -28,14 +30,28 @@ namespace WebExpress.WebIndex.Memory
         private PropertyInfo Property { get; set; }
 
         /// <summary>
+        /// Returns the index context.
+        /// </summary>
+        public IIndexContext Context { get; private set; }
+
+        /// <summary>
+        /// Returns the culture.
+        /// </summary>
+        public CultureInfo Culture { get; private set; }
+
+        /// <summary>
         /// Constructor
         /// </summary>
+        /// <param name="context">The index context.</param>
         /// <param name="property">The property that makes up the index.</param>
+        /// <param name="culture">The culture.</param>
         /// <param name="capacity">The predicted capacity (number of items to store) of the reverse index.</param>
-        public IndexMemoryReverse(PropertyInfo property, uint capacity)
+        public IndexMemoryReverse(IIndexContext context, PropertyInfo property, CultureInfo culture, uint capacity)
             : base((int)capacity)
         {
+            Context = context;
             Property = property;
+            Culture = culture;
             GetValueDelegate = CreateDelegate(property);
         }
 
@@ -50,7 +66,7 @@ namespace WebExpress.WebIndex.Memory
 
             if (value is string str)
             {
-                var terms = IndexTermTokenizer.Tokenize(str);
+                var terms = IndexAnalyzer.Analyze(str, Culture);
 
                 foreach (var term in terms)
                 {
@@ -102,7 +118,7 @@ namespace WebExpress.WebIndex.Memory
         public IEnumerable<int> Collect(object term)
         {
             var offset = 1;
-            var terms = IndexTermTokenizer.Tokenize(term?.ToString());
+            var terms = IndexAnalyzer.Analyze(term?.ToString(), Culture);
 
             // processing the first token
             var items = GetIndexItems(terms.FirstOrDefault());

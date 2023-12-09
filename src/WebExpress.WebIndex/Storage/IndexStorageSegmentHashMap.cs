@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace WebExpress.WebIndex.Storage
 {
@@ -25,6 +27,11 @@ namespace WebExpress.WebIndex.Storage
         public override uint Size => sizeof(uint) + (IndexStorageSegmentList<T>.SegmentSize * BucketCount);
 
         /// <summary>
+        /// Returns all items.
+        /// </summary>
+        public IEnumerable<T> All => Buckets.SelectMany(x => x);
+
+        /// <summary>
         /// Returns or sets the address of the first term in a bucket in the hash map.
         /// </summary>
         /// <param name="term">The term.</param>
@@ -37,6 +44,21 @@ namespace WebExpress.WebIndex.Storage
                 return Buckets[index];
             }
             set { Buckets[term.GetHashCode() % BucketCount] = value; }
+        }
+
+        /// <summary>
+        /// Returns or sets the address of the first term in a bucket in the hash map.
+        /// </summary>
+        /// <param name="term">The id.</param>
+        /// <returns>The address in the bucket at the index.</returns>
+        public IndexStorageSegmentList<T> this[int id]
+        {
+            get
+            {
+                var index = (uint)id % BucketCount;
+                return Buckets[index];
+            }
+            set { Buckets[id.GetHashCode() % BucketCount] = value; }
         }
 
         /// <summary>

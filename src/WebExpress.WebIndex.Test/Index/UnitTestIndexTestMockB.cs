@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace WebExpress.Test.Index
+namespace WebExpress.WebIndex.Test.Index
 {
-    public class UnitTestIndexTestDocumentB : UnitTestIndexTestDocument
+    public class UnitTestIndexTestMockB : UnitTestIndexTestDocument
     {
         public string Name { get; set; }
         public string Summary { get; set; }
@@ -12,14 +12,14 @@ namespace WebExpress.Test.Index
         public double Price { get; set; }
         public bool New { get; set; }
 
-        public static List<UnitTestIndexTestDocumentB> GenerateTestData()
+        public static List<UnitTestIndexTestMockB> GenerateTestData()
         {
-            var testDataList = new List<UnitTestIndexTestDocumentB>();
+            var testDataList = new List<UnitTestIndexTestMockB>();
 
             // Add more test data here
             for (int i = 0; i < 10000; i++)
             {
-                testDataList.Add(new UnitTestIndexTestDocumentB
+                testDataList.Add(new UnitTestIndexTestMockB
                 {
                     Id = i,
                     Name = $"Name_{i}",

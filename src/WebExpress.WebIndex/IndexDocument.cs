@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using WebExpress.WebIndex.Memory;
@@ -29,31 +30,45 @@ namespace WebExpress.WebIndex
         public IEnumerable<string> Fields => Keys.Select(x => x.Name);
 
         /// <summary>
+        /// Returns the index context.
+        /// </summary>
+        public IIndexContext Context { get; private set; }
+
+        /// <summary>
         /// Returns the predicted capacity (number of items to store) of the index.
         /// </summary>
         public uint Capacity { get; private set; }
 
         /// <summary>
+        /// Returns the culture.
+        /// </summary>
+        public CultureInfo Culture { get; private set; }
+
+        /// <summary>
         /// Constructor
         /// </summary>
+        /// <param name="context">The index context.</param>
         /// <param name="indexType">The index type.</param>
+        /// <param name="culture">The culture.</param>
         /// <param name="capacity">The predicted capacity (number of items to store) of the index.</param>
-        public IndexDocument(IndexType indexType, uint capacity)
+        public IndexDocument(IIndexContext context, IndexType indexType, CultureInfo culture, uint capacity)
         {
+            Context = context;
             IndexType = indexType;
+            Culture = culture;
             Capacity = capacity;
 
             switch (IndexType)
             {
                 case IndexType.Memory:
                     {
-                        ForwardIndex = new IndexMemoryForward<T>();
+                        ForwardIndex = new IndexMemoryForward<T>(Context, Capacity);
 
                         break;
                     }
                 default:
                     {
-                        ForwardIndex = new IndexMemoryForward<T>();
+                        ForwardIndex = new IndexStorageForward<T>(Context, Capacity);
 
                         break;
                     }
@@ -78,7 +93,7 @@ namespace WebExpress.WebIndex
                     {
                         if (!ContainsKey(property))
                         {
-                            Add(property, new IndexMemoryReverse<T>(property, Capacity));
+                            Add(property, new IndexMemoryReverse<T>(Context, property, Culture, Capacity));
                         }
 
                         break;
@@ -87,7 +102,7 @@ namespace WebExpress.WebIndex
                     {
                         if (!ContainsKey(property))
                         {
-                            Add(property, new IndexStorageReverse<T>(property, Capacity));
+                            Add(property, new IndexStorageReverse<T>(Context, property, Culture, Capacity));
                         }
 
                         break;

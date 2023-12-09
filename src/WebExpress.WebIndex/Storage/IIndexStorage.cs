@@ -21,11 +21,6 @@
         IndexStorageSegmentHeader Header { get; }
 
         /// <summary>
-        /// Returns or sets the hash map.
-        /// </summary>
-        IndexStorageSegmentHashMap<IndexStorageSegmentTerm> HashMap { get; }
-
-        /// <summary>
         /// Returns or sets the memory manager.
         /// </summary>
         IndexStorageSegmentAllocator Allocator { get; }

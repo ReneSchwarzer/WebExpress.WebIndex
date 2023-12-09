@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace WebExpress.Test.Index
+﻿namespace WebExpress.WebIndex.Test.Index
 {
-    public class UnitTestIndexTestDocumentA : UnitTestIndexTestDocument
+    public class UnitTestIndexTestMockA : UnitTestIndexTestDocument
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
@@ -13,12 +10,12 @@ namespace WebExpress.Test.Index
         public string Salutation { get; set; }
         public string Address { get; set; }
 
-        public static List<UnitTestIndexTestDocumentA> GenerateTestData()
+        public static List<UnitTestIndexTestMockA> GenerateTestData()
         {
             int id = 0;
-            var testDataList = new List<UnitTestIndexTestDocumentA>
+            var testDataList = new List<UnitTestIndexTestMockA>
             {
-                new UnitTestIndexTestDocumentA
+                new UnitTestIndexTestMockA
                 {
                     Id = id++,
                     FirstName = "Emma",
@@ -29,7 +26,7 @@ namespace WebExpress.Test.Index
                     Salutation = "Ms.",
                     Address = "123 Main St."
                 },
-                new UnitTestIndexTestDocumentA
+                new UnitTestIndexTestMockA
                 {
                     Id = id++,
                     FirstName = "Liam",
@@ -40,7 +37,7 @@ namespace WebExpress.Test.Index
                     Salutation = "Mr.",
                     Address = "456 Elm St."
                 },
-                new UnitTestIndexTestDocumentA
+                new UnitTestIndexTestMockA
                 {
                     Id = id++,
                     FirstName = "Olivia",
@@ -51,7 +48,7 @@ namespace WebExpress.Test.Index
                     Salutation = "Ms.",
                     Address = "923 Main St."
                 },
-                new UnitTestIndexTestDocumentA
+                new UnitTestIndexTestMockA
                 {
                     Id = id++,
                     FirstName = "Noah",
@@ -62,7 +59,7 @@ namespace WebExpress.Test.Index
                     Salutation = "Mr.",
                     Address = "756 Elm St."
                 },
-                new UnitTestIndexTestDocumentA
+                new UnitTestIndexTestMockA
                 {
                     Id = id++,
                     FirstName = "Isabella",
@@ -73,7 +70,7 @@ namespace WebExpress.Test.Index
                     Salutation = "Ms.",
                     Address = "154 Main St."
                 },
-                new UnitTestIndexTestDocumentA
+                new UnitTestIndexTestMockA
                 {
                     Id = id++,
                     FirstName = "Sophia",
@@ -84,7 +81,7 @@ namespace WebExpress.Test.Index
                     Salutation = "Ms.",
                     Address = "456 Elm St."
                 },
-                new UnitTestIndexTestDocumentA
+                new UnitTestIndexTestMockA
                 {
                     Id = id++,
                     FirstName = "Xantia",
@@ -95,7 +92,7 @@ namespace WebExpress.Test.Index
                     Salutation = "Mr.",
                     Address = "14 Maple Ave."
                 },
-                new UnitTestIndexTestDocumentA
+                new UnitTestIndexTestMockA
                 {
                     Id = id++,
                     FirstName = "Ava",
@@ -106,7 +103,7 @@ namespace WebExpress.Test.Index
                     Salutation = "Ms.",
                     Address = "154 Oak Ave."
                 },
-                new UnitTestIndexTestDocumentA
+                new UnitTestIndexTestMockA
                 {
                     Id = id++,
                     FirstName = "James",
@@ -117,7 +114,7 @@ namespace WebExpress.Test.Index
                     Salutation = "Mr.",
                     Address = "536 Pine St."
                 },
-                new UnitTestIndexTestDocumentA
+                new UnitTestIndexTestMockA
                 {
                     Id = id++,
                     FirstName = "Noah",
@@ -128,7 +125,7 @@ namespace WebExpress.Test.Index
                     Salutation = "Mr.",
                     Address = "756 Elm St."
                 },
-                new UnitTestIndexTestDocumentA
+                new UnitTestIndexTestMockA
                 {
                     Id = id++,
                     FirstName = "Isabella",
@@ -144,7 +141,7 @@ namespace WebExpress.Test.Index
             // Add more test data here
             for (int i = 0; i < 1000; i++)
             {
-                testDataList.Add(new UnitTestIndexTestDocumentA
+                testDataList.Add(new UnitTestIndexTestMockA
                 {
                     Id = id++,
                     FirstName = $"FirstName{i}",
@@ -158,6 +155,11 @@ namespace WebExpress.Test.Index
             }
 
             return testDataList;
+        }
+
+        public override string ToString()
+        {
+            return $"{Id} - {FirstName} {LastName}";
         }
     }
 }

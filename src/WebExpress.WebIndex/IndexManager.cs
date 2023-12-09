@@ -1,5 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Text;
+using WebExpress.WebIndex.Term.Converter;
+using WebExpress.WebIndex.Term.Filter;
 using WebExpress.WebIndex.Wql;
 
 namespace WebExpress.WebIndex
@@ -9,26 +15,85 @@ namespace WebExpress.WebIndex
         /// <summary>
         /// Returns an enumeration of the existing index documents.
         /// </summary>
-        private Dictionary<Type, IIndexDocument> Documents { get; } = new Dictionary<Type, IIndexDocument>();
+        private Dictionary<Type, IIndexDocument> Documents { get; } = [];
+
+        /// <summary>
+        /// Returns or sets the index context.
+        /// </summary>
+        public IIndexContext Context { get; private set; }
 
         /// <summary>
         /// Constructor
         /// </summary>
         public IndexManager()
         {
+
+        }
+
+        /// <summary>
+        /// Initialization
+        /// </summary>
+        /// <param name="context">The reference to the context.</param>
+        public void Initialization(IIndexContext context)
+        {
+            var assembly = typeof(IndexManager).Assembly;
+            string[] fileNames = ["IrregularWords.en", "IrregularWords.de", "MisspelledWords.en", "MisspelledWords.de", "RegularWords.en", "RegularWords.de", "StopWords.en", "StopWords.de"];
+
+            Context = context;
+
+            Directory.CreateDirectory(Context.IndexDirectory);
+
+            foreach (var fileName in fileNames)
+            {
+                var path = Path.Combine(Context.IndexDirectory, fileName.ToLower());
+                var resources = assembly.GetManifestResourceNames();
+                var resource = resources
+                    .Where(x => x.EndsWith($".{fileName}", StringComparison.OrdinalIgnoreCase))
+                    .FirstOrDefault();
+
+                if (resource == null)
+                {
+                    continue;
+                }
+
+                try
+                {
+
+                    if (!File.Exists(path))
+                    {
+                        using var sw = new StreamWriter(path, false, Encoding.UTF8);
+                        using var contentStream = assembly.GetManifestResourceStream(resource);
+                        using var sr = new StreamReader(contentStream, Encoding.UTF8);
+
+                        sw.Write(sr.ReadToEnd());
+                    }
+                }
+                catch (IOException ex)
+                {
+                }
+            }
+
+            IndexTermConverterLowerCase.Initialization(context);
+            IndexTermConverterMisspelled.Initialization(context);
+            IndexTermConverterNormalizer.Initialization(context);
+            IndexTermConverterSingular.Initialization(context);
+            IndexTermConverterSynonym.Initialization(context);
+            IndexTermFilterEmpty.Initialization(context);
+            IndexTermFilterStopWord.Initialization(context);
         }
 
         /// <summary>
         /// Registers a data type in the index.
         /// </summary>
         /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
+        /// <param name="culture">The culture.</param>
         /// <param name="capacity">The predicted capacity (number of items to store) of the index.</param>
         /// <param name="type">The index type.</param>
-        public void Register<T>(uint capacity = ushort.MaxValue, IndexType type = IndexType.Memory) where T : IIndexItem
+        public void Register<T>(CultureInfo culture, uint capacity = ushort.MaxValue, IndexType type = IndexType.Memory) where T : IIndexItem
         {
             if (!Documents.ContainsKey(typeof(T)))
             {
-                Documents.Add(typeof(T), new IndexDocument<T>(type, capacity));
+                Documents.Add(typeof(T), new IndexDocument<T>(Context, type, culture, capacity));
             }
         }
 
@@ -39,8 +104,6 @@ namespace WebExpress.WebIndex
         /// <param name="items">The data to be added to the index.</param>
         public void ReIndex<T>(IEnumerable<T> items) where T : IIndexItem
         {
-            Register<T>();
-
             foreach (var item in items)
             {
                 Add(item);
@@ -79,8 +142,7 @@ namespace WebExpress.WebIndex
         {
             if (GetIndexDocument<T>() != null)
             {
-                IIndexDocument value;
-                Documents.Remove(typeof(T), out value);
+                Documents.Remove(typeof(T), out IIndexDocument value);
 
                 value.Dispose();
             }

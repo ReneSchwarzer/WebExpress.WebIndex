@@ -1,0 +1,5 @@
+﻿# Reguläre Wörter. Die linke Seite enthält einen regulären Ausdruck, die rechte Seite die Ersetzung.
+(?i)en$=  # Frauen -> Frau
+(?i)er$=  # Kinder -> Kind
+(?i)e$=   # Tische -> Tich
+(?i)s$=   # Autos -> Auto

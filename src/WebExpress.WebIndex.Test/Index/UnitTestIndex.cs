@@ -1,10 +1,11 @@
 ﻿using System.Diagnostics;
-using WebExpress.WebIndex;
+using System.Globalization;
 using Xunit.Abstractions;
 
-namespace WebExpress.Test.Index
+namespace WebExpress.WebIndex.Test.Index
 {
-    public class UnitTestIndex : IClassFixture<UnitTestIndexFixture>
+    [Collection("UnitTestIndexCollectionFixture")]
+    public class UnitTestIndex
     {
         public ITestOutputHelper Output { get; private set; }
         protected UnitTestIndexFixture Fixture { get; set; }
@@ -18,11 +19,11 @@ namespace WebExpress.Test.Index
         [Fact]
         public void Register()
         {
-            Fixture.IndexManager.Register<UnitTestIndexTestDocumentA>();
-            Fixture.IndexManager.Register<UnitTestIndexTestDocumentB>();
+            Fixture.IndexManager.Register<UnitTestIndexTestMockA>(CultureInfo.GetCultureInfo("en"));
+            Fixture.IndexManager.Register<UnitTestIndexTestMockB>(CultureInfo.GetCultureInfo("en"));
 
-            Assert.NotNull(Fixture.IndexManager.GetIndexDocument<UnitTestIndexTestDocumentA>());
-            Assert.NotNull(Fixture.IndexManager.GetIndexDocument<UnitTestIndexTestDocumentB>());
+            Assert.NotNull(Fixture.IndexManager.GetIndexDocument<UnitTestIndexTestMockA>());
+            Assert.NotNull(Fixture.IndexManager.GetIndexDocument<UnitTestIndexTestMockB>());
         }
 
         [Fact]
@@ -30,9 +31,9 @@ namespace WebExpress.Test.Index
         {
             Fixture.GetUsedMemory();
 
-            var testData = UnitTestIndexTestDocumentA.GenerateTestData();
+            var testData = UnitTestIndexTestMockA.GenerateTestData();
 
-            Fixture.IndexManager.Register<UnitTestIndexTestDocumentA>();
+            Fixture.IndexManager.Register<UnitTestIndexTestMockA>(CultureInfo.GetCultureInfo("en"));
             Fixture.IndexManager.ReIndex(testData);
 
             Fixture.GetUsedMemory();
@@ -43,9 +44,9 @@ namespace WebExpress.Test.Index
         {
             Fixture.GetUsedMemory();
 
-            var testData = UnitTestIndexTestDocumentB.GenerateTestData();
+            var testData = UnitTestIndexTestMockB.GenerateTestData();
 
-            Fixture.IndexManager.Register<UnitTestIndexTestDocumentB>();
+            Fixture.IndexManager.Register<UnitTestIndexTestMockB>(CultureInfo.GetCultureInfo("en"));
             Fixture.IndexManager.ReIndex(testData);
 
             Fixture.GetUsedMemory();
@@ -60,11 +61,11 @@ namespace WebExpress.Test.Index
             var vocabulary = 40000;
             var wordLength = 10;
 
-            var testData = UnitTestIndexTestDocumentC.GenerateTestData(itemCount, wordCount, vocabulary, wordLength).ToList();
+            var testData = UnitTestIndexTestMockC.GenerateTestData(itemCount, wordCount, vocabulary, wordLength).ToList();
 
             Output.WriteLine($"ReIndex {itemCount.ToString("#,##0")} items, {vocabulary.ToString("#,##0")} vocabulary and {wordLength.ToString("#,##0")} word length");
 
-            Fixture.IndexManager.Register<UnitTestIndexTestDocumentC>();
+            Fixture.IndexManager.Register<UnitTestIndexTestMockC>(CultureInfo.GetCultureInfo("en"));
 
             // preparing for a measurement
             var begin = Fixture.GetUsedMemory();
@@ -81,7 +82,7 @@ namespace WebExpress.Test.Index
             // preparing for a measurement
             begin = Fixture.GetUsedMemory();
             stopWatch.Start();
-            Fixture.IndexManager.ExecuteWql<UnitTestIndexTestDocumentC>("Text ~ 'abcdaaaaaa'");
+            Fixture.IndexManager.ExecuteWql<UnitTestIndexTestMockC>("Text ~ 'abcdaaaaaa'");
 
             // stop measurement
             stopWatch.Stop();
@@ -90,10 +91,10 @@ namespace WebExpress.Test.Index
             var usedCollect = (end - begin) / 1024 / 1024; // in MB
 
             Output.WriteLine($"ReIndex take: {elapsedReindex}");
-            Output.WriteLine("ReIndex ram used: " + (Convert.ToDouble(usedReindex)).ToString("0.##") + " MB");
+            Output.WriteLine("ReIndex ram used: " + Convert.ToDouble(usedReindex).ToString("0.##") + " MB");
 
             Output.WriteLine($"Collect take: {elapsedCollect}");
-            Output.WriteLine("Collect ram used: " + (Convert.ToDouble(usedCollect)).ToString("0.##") + " MB");
+            Output.WriteLine("Collect ram used: " + Convert.ToDouble(usedCollect).ToString("0.##") + " MB");
         }
 
         [Fact]
@@ -130,9 +131,9 @@ namespace WebExpress.Test.Index
                                 Directory.Delete(indexDict, true);
                             }
 
-                            var testData = UnitTestIndexTestDocumentC.GenerateTestData(i, w, v, l);
+                            var testData = UnitTestIndexTestMockC.GenerateTestData(i, w, v, l);
 
-                            Fixture.IndexManager.Register<UnitTestIndexTestDocumentC>((uint)i, IndexType.Storage);
+                            Fixture.IndexManager.Register<UnitTestIndexTestMockC>(CultureInfo.GetCultureInfo("en"), (uint)i, IndexType.Storage);
 
                             // preparing for a measurement
                             stopWatch.Start();
@@ -146,62 +147,21 @@ namespace WebExpress.Test.Index
 
                             var stat = Fixture
                                 .IndexManager
-                                .GetIndexDocument<UnitTestIndexTestDocumentC>()
-                                .GetReverseIndex(typeof(UnitTestIndexTestDocumentC).GetProperty("Text"));
+                                .GetIndexDocument<UnitTestIndexTestMockC>()
+                                .GetReverseIndex(typeof(UnitTestIndexTestMockC).GetProperty("Text"));
 
                             var output = $"{i};{w};{v};{l};{elapsedReindex.ToString(@"hh\:mm\:ss")};{stat}";
 
                             Output.WriteLine(output);
                             file.WriteLine(output);
 
-                            Fixture.IndexManager.Remove<UnitTestIndexTestDocumentC>();
+                            Fixture.IndexManager.Remove<UnitTestIndexTestMockC>();
 
                             file.Flush();
                         }
                     }
                 }
             }
-        }
-
-        [Fact]
-        public void Tokenize()
-        {
-            var input = "abc def, ghi jkl mno-p.";
-            var tokens = IndexTermTokenizer.Tokenize(input);
-
-            Assert.True(tokens.Count() == 5);
-            Assert.True(tokens.First().Position == 0);
-            Assert.True(tokens.First().Value == "abc");
-            Assert.True(tokens.Skip(1).First().Position == 1);
-            Assert.True(tokens.Skip(1).First().Value == "def,");
-            Assert.True(tokens.Skip(2).First().Position == 2);
-            Assert.True(tokens.Skip(2).First().Value == "ghi");
-            Assert.True(tokens.Skip(3).First().Position == 3);
-            Assert.True(tokens.Skip(3).First().Value == "jkl");
-            Assert.True(tokens.Skip(4).First().Position == 4);
-            Assert.True(tokens.Skip(4).First().Value == "mno-p.");
-        }
-
-        [Fact]
-        public void Normalize()
-        {
-            var input = "abc def, ghi jkl mno-p. äöüéíú";
-            var tokens = IndexTermTokenizer.Tokenize(input);
-            var terms = IndexTermNormalizer.Normalize(tokens);
-
-            Assert.True(terms.Count() == 6);
-            Assert.True(terms.First().Position == 0);
-            Assert.True(terms.First().Value == "abc");
-            Assert.True(terms.Skip(1).First().Position == 1);
-            Assert.True(terms.Skip(1).First().Value == "def,");
-            Assert.True(terms.Skip(2).First().Position == 2);
-            Assert.True(terms.Skip(2).First().Value == "ghi");
-            Assert.True(terms.Skip(3).First().Position == 3);
-            Assert.True(terms.Skip(3).First().Value == "jkl");
-            Assert.True(terms.Skip(4).First().Position == 4);
-            Assert.True(terms.Skip(4).First().Value == "mno-p.");
-            Assert.True(terms.Skip(5).First().Position == 5);
-            Assert.True(terms.Skip(5).First().Value == "aoueiu");
         }
     }
 }
