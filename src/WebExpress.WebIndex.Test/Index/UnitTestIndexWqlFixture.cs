@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using WebExpress.WebIndex.Wql;
 
-namespace WebExpress.WebIndex.Test.Index.Wql
+namespace WebExpress.WebIndex.Test.Index
 {
     public class UnitTestIndexWqlFixture : UnitTestIndexFixture
     {
