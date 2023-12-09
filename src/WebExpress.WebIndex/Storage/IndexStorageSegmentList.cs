@@ -204,7 +204,25 @@ namespace WebExpress.WebIndex.Storage
         /// found in the list.</returns>
         public bool Remove(T item)
         {
-            throw new System.NotImplementedException();
+            var predecessor = GetPredecessor(item, out uint count);
+
+            if (predecessor == null)
+            {
+                HeadAddr = item.SuccessorAddr;
+
+                Context.IndexFile.Write(this);
+                Context.IndexFile.Write(item);
+            }
+            else
+            {
+                predecessor.SuccessorAddr = item.SuccessorAddr;
+                Context.IndexFile.Write(predecessor);
+                Context.Allocator.Free(item);
+
+                item.SuccessorAddr = 0;
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -246,6 +264,41 @@ namespace WebExpress.WebIndex.Storage
         public override string ToString()
         {
             return Count.ToString();
+        }
+
+        /// <summary>
+        /// Returns the predecessor.
+        /// </summary>
+        /// <param name="item">The segment whose predecessor is to be determined.</param>
+        /// <param name="index">The index.</param>
+        /// <returns>The predecessor or null if there is no predecessor.</returns>
+        private T GetPredecessor(T item, out uint index)
+        {
+            var last = default(T);
+            index = 0U;
+
+            foreach (var i in this)
+            {
+                var compare = i.CompareTo(item);
+
+                if (compare > 0 && SortDirection == ListSortDirection.Ascending)
+                {
+                    break;
+                }
+                else if (compare < 0 && SortDirection == ListSortDirection.Descending)
+                {
+                    break;
+                }
+                else if (compare == 0)
+                {
+                    return last;
+                }
+
+                last = i;
+                index++;
+            }
+
+            return last;
         }
     }
 }

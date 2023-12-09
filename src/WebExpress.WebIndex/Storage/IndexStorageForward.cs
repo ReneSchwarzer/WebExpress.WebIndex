@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -50,11 +49,6 @@ namespace WebExpress.WebIndex.Storage
         public IIndexContext Context { get; private set; }
 
         /// <summary>
-        /// Returns the culture.
-        /// </summary>
-        public CultureInfo Culture { get; private set; }
-
-        /// <summary>
         /// Returns all items.
         /// </summary>
         public IEnumerable<T> All => HashMap.All.Select(x => GetItem(x));
@@ -63,12 +57,10 @@ namespace WebExpress.WebIndex.Storage
         /// Constructor
         /// </summary>
         /// <param name="context">The index context.</param>
-        /// <param name="culture">The culture.</param>
         /// <param name="capacity">The predicted capacity (number of items to store) of the reverse index.</param>
-        public IndexStorageForward(IIndexContext context, CultureInfo culture, uint capacity)
+        public IndexStorageForward(IIndexContext context, uint capacity)
         {
             Context = context;
-            Culture = culture;
             FileName = Path.Combine(Context.IndexDirectory, $"{typeof(T).Name}.wfi");
 
             var exists = File.Exists(FileName);
@@ -122,7 +114,10 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="item">The item.</param>
         public void Remove(T item)
         {
+            var list = HashMap[item.Id];
+            var segmnt = list.SkipWhile(x => x.Id != item.Id).FirstOrDefault();
 
+            HashMap[item.Id].Remove(segmnt);
         }
 
         /// <summary>

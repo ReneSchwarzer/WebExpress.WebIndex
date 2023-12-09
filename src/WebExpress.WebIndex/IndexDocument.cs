@@ -62,13 +62,13 @@ namespace WebExpress.WebIndex
             {
                 case IndexType.Memory:
                     {
-                        ForwardIndex = new IndexMemoryForward<T>();
+                        ForwardIndex = new IndexMemoryForward<T>(Context, Capacity);
 
                         break;
                     }
                 default:
                     {
-                        ForwardIndex = new IndexStorageForward<T>(Context, Culture, Capacity);
+                        ForwardIndex = new IndexStorageForward<T>(Context, Capacity);
 
                         break;
                     }
