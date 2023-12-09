@@ -19,11 +19,11 @@ namespace WebExpress.WebIndex.Test.Index
         [Fact]
         public void Register()
         {
-            Fixture.IndexManager.Register<UnitTestIndexTestDocumentA>(CultureInfo.GetCultureInfo("en"));
-            Fixture.IndexManager.Register<UnitTestIndexTestDocumentB>(CultureInfo.GetCultureInfo("en"));
+            Fixture.IndexManager.Register<UnitTestIndexTestMockA>(CultureInfo.GetCultureInfo("en"));
+            Fixture.IndexManager.Register<UnitTestIndexTestMockB>(CultureInfo.GetCultureInfo("en"));
 
-            Assert.NotNull(Fixture.IndexManager.GetIndexDocument<UnitTestIndexTestDocumentA>());
-            Assert.NotNull(Fixture.IndexManager.GetIndexDocument<UnitTestIndexTestDocumentB>());
+            Assert.NotNull(Fixture.IndexManager.GetIndexDocument<UnitTestIndexTestMockA>());
+            Assert.NotNull(Fixture.IndexManager.GetIndexDocument<UnitTestIndexTestMockB>());
         }
 
         [Fact]
@@ -31,9 +31,9 @@ namespace WebExpress.WebIndex.Test.Index
         {
             Fixture.GetUsedMemory();
 
-            var testData = UnitTestIndexTestDocumentA.GenerateTestData();
+            var testData = UnitTestIndexTestMockA.GenerateTestData();
 
-            Fixture.IndexManager.Register<UnitTestIndexTestDocumentA>(CultureInfo.GetCultureInfo("en"));
+            Fixture.IndexManager.Register<UnitTestIndexTestMockA>(CultureInfo.GetCultureInfo("en"));
             Fixture.IndexManager.ReIndex(testData);
 
             Fixture.GetUsedMemory();
@@ -44,9 +44,9 @@ namespace WebExpress.WebIndex.Test.Index
         {
             Fixture.GetUsedMemory();
 
-            var testData = UnitTestIndexTestDocumentB.GenerateTestData();
+            var testData = UnitTestIndexTestMockB.GenerateTestData();
 
-            Fixture.IndexManager.Register<UnitTestIndexTestDocumentB>(CultureInfo.GetCultureInfo("en"));
+            Fixture.IndexManager.Register<UnitTestIndexTestMockB>(CultureInfo.GetCultureInfo("en"));
             Fixture.IndexManager.ReIndex(testData);
 
             Fixture.GetUsedMemory();
@@ -61,11 +61,11 @@ namespace WebExpress.WebIndex.Test.Index
             var vocabulary = 40000;
             var wordLength = 10;
 
-            var testData = UnitTestIndexTestDocumentC.GenerateTestData(itemCount, wordCount, vocabulary, wordLength).ToList();
+            var testData = UnitTestIndexTestMockC.GenerateTestData(itemCount, wordCount, vocabulary, wordLength).ToList();
 
             Output.WriteLine($"ReIndex {itemCount.ToString("#,##0")} items, {vocabulary.ToString("#,##0")} vocabulary and {wordLength.ToString("#,##0")} word length");
 
-            Fixture.IndexManager.Register<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo("en"));
+            Fixture.IndexManager.Register<UnitTestIndexTestMockC>(CultureInfo.GetCultureInfo("en"));
 
             // preparing for a measurement
             var begin = Fixture.GetUsedMemory();
@@ -82,7 +82,7 @@ namespace WebExpress.WebIndex.Test.Index
             // preparing for a measurement
             begin = Fixture.GetUsedMemory();
             stopWatch.Start();
-            Fixture.IndexManager.ExecuteWql<UnitTestIndexTestDocumentC>("Text ~ 'abcdaaaaaa'");
+            Fixture.IndexManager.ExecuteWql<UnitTestIndexTestMockC>("Text ~ 'abcdaaaaaa'");
 
             // stop measurement
             stopWatch.Stop();
@@ -131,9 +131,9 @@ namespace WebExpress.WebIndex.Test.Index
                                 Directory.Delete(indexDict, true);
                             }
 
-                            var testData = UnitTestIndexTestDocumentC.GenerateTestData(i, w, v, l);
+                            var testData = UnitTestIndexTestMockC.GenerateTestData(i, w, v, l);
 
-                            Fixture.IndexManager.Register<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo("en"), (uint)i, IndexType.Storage);
+                            Fixture.IndexManager.Register<UnitTestIndexTestMockC>(CultureInfo.GetCultureInfo("en"), (uint)i, IndexType.Storage);
 
                             // preparing for a measurement
                             stopWatch.Start();
@@ -147,15 +147,15 @@ namespace WebExpress.WebIndex.Test.Index
 
                             var stat = Fixture
                                 .IndexManager
-                                .GetIndexDocument<UnitTestIndexTestDocumentC>()
-                                .GetReverseIndex(typeof(UnitTestIndexTestDocumentC).GetProperty("Text"));
+                                .GetIndexDocument<UnitTestIndexTestMockC>()
+                                .GetReverseIndex(typeof(UnitTestIndexTestMockC).GetProperty("Text"));
 
                             var output = $"{i};{w};{v};{l};{elapsedReindex.ToString(@"hh\:mm\:ss")};{stat}";
 
                             Output.WriteLine(output);
                             file.WriteLine(output);
 
-                            Fixture.IndexManager.Remove<UnitTestIndexTestDocumentC>();
+                            Fixture.IndexManager.Remove<UnitTestIndexTestMockC>();
 
                             file.Flush();
                         }

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace WebExpress.WebIndex.Storage
 {
@@ -23,6 +25,11 @@ namespace WebExpress.WebIndex.Storage
         /// Returns the amount of space required on the storage device.
         /// </summary>
         public override uint Size => sizeof(uint) + (IndexStorageSegmentList<T>.SegmentSize * BucketCount);
+
+        /// <summary>
+        /// Returns all items.
+        /// </summary>
+        public IEnumerable<T> All => Buckets.SelectMany(x => x);
 
         /// <summary>
         /// Returns or sets the address of the first term in a bucket in the hash map.

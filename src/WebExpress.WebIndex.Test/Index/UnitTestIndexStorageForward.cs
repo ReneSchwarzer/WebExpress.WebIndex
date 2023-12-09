@@ -17,14 +17,51 @@ namespace WebExpress.WebIndex.Test.Index
         }
 
         [Fact]
+        public void Create()
+        {
+            var context = new IndexContext();
+            context.IndexDirectory = Path.Combine(context.IndexDirectory, Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
+
+            var data = UnitTestIndexTestMockA.GenerateTestData();
+            var forwardIndex = new IndexStorageForward<UnitTestIndexTestMockA>(context, new CultureInfo("en"), (uint)data.Count);
+
+            forwardIndex.Dispose();
+
+            Directory.Delete(context.IndexDirectory, true);
+        }
+
+        [Fact]
+        public void Open()
+        {
+            var context = new IndexContext();
+            context.IndexDirectory = Path.Combine(context.IndexDirectory, Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
+
+            var data = UnitTestIndexTestMockA.GenerateTestData();
+            var forwardIndex = new IndexStorageForward<UnitTestIndexTestMockA>(context, new CultureInfo("en"), (uint)data.Count);
+
+            foreach (var item in data)
+            {
+                forwardIndex.Add(item);
+            }
+
+            forwardIndex.Dispose();
+
+            forwardIndex = new IndexStorageForward<UnitTestIndexTestMockA>(context, new CultureInfo("en"), (uint)data.Count);
+
+            forwardIndex.Dispose();
+
+            Directory.Delete(context.IndexDirectory, true);
+        }
+
+        [Fact]
         public void Add()
         {
             var context = new IndexContext();
             context.IndexDirectory = Path.Combine(context.IndexDirectory, Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
 
-            var data = UnitTestIndexTestDocumentA.GenerateTestData();
+            var data = UnitTestIndexTestMockA.GenerateTestData();
             var randomItem = data[new Random().Next() % data.Count];
-            var forwardIndex = new IndexStorageForward<UnitTestIndexTestDocumentA>(context, new CultureInfo("en"), (uint)data.Count);
+            var forwardIndex = new IndexStorageForward<UnitTestIndexTestMockA>(context, new CultureInfo("en"), (uint)data.Count);
 
             foreach (var item in data)
             {
@@ -39,5 +76,30 @@ namespace WebExpress.WebIndex.Test.Index
 
             Directory.Delete(context.IndexDirectory, true);
         }
+
+        [Fact]
+        public void All()
+        {
+            var context = new IndexContext();
+            context.IndexDirectory = Path.Combine(context.IndexDirectory, Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
+
+            var data = UnitTestIndexTestMockA.GenerateTestData();
+            var forwardIndex = new IndexStorageForward<UnitTestIndexTestMockA>(context, new CultureInfo("en"), (uint)data.Count);
+
+            foreach (var item in data)
+            {
+                forwardIndex.Add(item);
+            }
+
+            var all = forwardIndex.All;
+
+            Assert.True(all.Select(x => x.Id).SequenceEqual(data.Select(x => x.Id)));
+
+            forwardIndex.Dispose();
+
+            Directory.Delete(context.IndexDirectory, true);
+        }
+
+
     }
 }

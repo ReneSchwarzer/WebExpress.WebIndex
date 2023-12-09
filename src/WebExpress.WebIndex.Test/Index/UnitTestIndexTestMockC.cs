@@ -1,17 +1,15 @@
-﻿using System.Collections.Generic;
-
-namespace WebExpress.WebIndex.Test.Index
+﻿namespace WebExpress.WebIndex.Test.Index
 {
-    public class UnitTestIndexTestDocumentC : UnitTestIndexTestDocument
+    public class UnitTestIndexTestMockC : UnitTestIndexTestDocument
     {
         public string Text { get; set; }
 
-        public static IEnumerable<UnitTestIndexTestDocumentC> GenerateTestData(int itemCount, int wordCount, int vocabulary, int wordLength)
+        public static IEnumerable<UnitTestIndexTestMockC> GenerateTestData(int itemCount, int wordCount, int vocabulary, int wordLength)
         {
             // Add more test data here
             for (int i = 0; i < itemCount; i++)
             {
-                yield return new UnitTestIndexTestDocumentC
+                yield return new UnitTestIndexTestMockC
                 {
                     Id = i,
                     Text = GenerateWords(wordCount, vocabulary, wordLength),

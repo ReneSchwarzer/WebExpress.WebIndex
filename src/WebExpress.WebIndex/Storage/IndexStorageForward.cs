@@ -57,7 +57,7 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Returns all items.
         /// </summary>
-        public IEnumerable<T> All => null;
+        public IEnumerable<T> All => HashMap.All.Select(x => GetItem(x));
 
         /// <summary>
         /// Constructor
@@ -132,7 +132,17 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>The item.</returns>
         public T GetItem(int id)
         {
-            var bytes = HashMap[id].SkipWhile(x => x.Id != id).FirstOrDefault()?.Data;
+            return GetItem(HashMap[id].SkipWhile(x => x.Id != id).FirstOrDefault());
+        }
+
+        /// <summary>
+        /// Returns the item.
+        /// </summary>
+        /// <param name="id">The segment of the item.</param>
+        /// <returns>The item.</returns>
+        private T GetItem(IndexStorageSegmentItem segment)
+        {
+            var bytes = segment?.Data;
 
             if (bytes == null)
             {
