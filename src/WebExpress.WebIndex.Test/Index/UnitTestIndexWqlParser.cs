@@ -2,17 +2,11 @@
 
 namespace WebExpress.WebIndex.Test.Index
 {
-    public class UnitTestIndexWqlParser : IClassFixture<UnitTestIndexWqlFixture>
+    public class UnitTestIndexWqlParser(UnitTestIndexWqlFixture fixture, ITestOutputHelper output) : IClassFixture<UnitTestIndexWqlFixture>
     {
-        public ITestOutputHelper Output { get; private set; }
+        public ITestOutputHelper Output { get; private set; } = output;
 
-        protected UnitTestIndexWqlFixture Fixture { get; set; }
-
-        public UnitTestIndexWqlParser(UnitTestIndexWqlFixture fixture, ITestOutputHelper output)
-        {
-            Fixture = fixture;
-            Output = output;
-        }
+        protected UnitTestIndexWqlFixture Fixture { get; set; } = fixture;
 
         [Fact]
         public void TestParseEmptyFromQueryable()
@@ -352,13 +346,14 @@ namespace WebExpress.WebIndex.Test.Index
         [Fact]
         public void TestParseComplex()
         {
-            var wql = Fixture.ExecuteWql("Salutation = 'Mr.' and id > 2 or description in ('lorem', 'ipsum', 'aenean') order by id desc, description take 10 skip 1");
+            var wql = Fixture.ExecuteWql("Salutation = 'Mr.' and FirstName = 'Noah' or description in ('lorem', 'ipsum', 'aenean') order by lastname desc, description take 10 skip 1");
             var res = wql?.Apply();
 
-            Assert.Equal("(Salutation = 'Mr.' and (Id > 2 or Description in ('lorem', 'ipsum', 'aenean'))) order by Id desc, Description asc take 10 skip 1", wql.ToString());
+            Assert.Equal("(Salutation = 'Mr.' and (FirstName = 'Noah' or Description in ('lorem', 'ipsum', 'aenean'))) order by LastName desc, Description asc take 10 skip 1", wql.ToString());
             Assert.NotNull(wql.Filter);
             Assert.NotNull(wql.Order);
             Assert.NotNull(wql.Partitioning);
+            Assert.Equal(1, res.Count());
         }
     }
 }

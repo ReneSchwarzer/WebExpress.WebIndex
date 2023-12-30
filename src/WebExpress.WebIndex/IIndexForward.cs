@@ -18,6 +18,11 @@ namespace WebExpress.WebIndex
         void Add(T item);
 
         /// <summary>
+        /// Removed all data from the index.
+        /// </summary>
+        void Clear();
+
+        /// <summary>
         /// The data to be removed from the index.
         /// </summary>
         /// <typeparam name="T">The data type. This must have the IIndexData interface.</typeparam>
@@ -29,6 +34,6 @@ namespace WebExpress.WebIndex
         /// </summary>
         /// <param name="id">The id of the item.</param>
         /// <returns>The item.</returns>
-        T GetItem(int id);
+        T GetItem(Guid id);
     }
 }

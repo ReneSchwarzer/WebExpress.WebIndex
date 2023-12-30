@@ -1,24 +1,66 @@
 ﻿using System.Text;
-using WebExpress.WebIndex;
+using WebExpress.WebIndex.WebAttribute;
 
 namespace WebExpress.WebIndex.Test.Index
 {
     public abstract class UnitTestIndexTestDocument : IIndexItem
     {
-        private static readonly string[] Words = new string[]
-        {
-            "lorem", "ipsum", "dolor", "sit", "amet", "consectetur", "adipiscing", "elit",
-            "sed", "do", "eiusmod", "tempor", "incididunt", "ut", "labore", "et",
-            "dolore", "magna", "aliqua", "phasellus", "fermentum", "malesuada", "phasellus",
-            "netus", "dictum", "aenean", "placerat", "egestas", "amet", "ornare", "taciti",
-            "semper", "tristique", "morbi", "sem", "leo", "tincidunt", "aliquet",
-            "eu", "lectus", "scelerisque", "quis", "sagittis", "vivamus", "mollis",
-            "nisi", "enim", "laoreet"
-        };
+        private static readonly string[] Words =
+        [
+            "lorem",
+            "ipsum",
+            "dolor",
+            "sit",
+            "amet",
+            "consectetur",
+            "adipiscing",
+            "elit",
+            "sed",
+            "do",
+            "eiusmod",
+            "tempor",
+            "incididunt",
+            "ut",
+            "labore",
+            "et",
+            "dolore",
+            "magna",
+            "aliqua",
+            "phasellus",
+            "fermentum",
+            "malesuada",
+            "phasellus",
+            "netus",
+            "dictum",
+            "aenean",
+            "placerat",
+            "egestas",
+            "amet",
+            "ornare",
+            "taciti",
+            "semper",
+            "tristique",
+            "morbi",
+            "sem",
+            "leo",
+            "tincidunt",
+            "aliquet",
+            "eu",
+            "lectus",
+            "scelerisque",
+            "quis",
+            "sagittis",
+            "vivamus",
+            "mollis",
+            "nisi",
+            "enim",
+            "laoreet"
+        ];
 
-        private static readonly Random Rand = new Random();
+        private static readonly Random Rand = new();
 
-        public int Id { get; set; }
+        [IndexIgnore]
+        public Guid Id { get; set; }
 
         protected static string GenerateLoremIpsum(int numWords)
         {
@@ -28,7 +70,7 @@ namespace WebExpress.WebIndex.Test.Index
                 sb.Append(Words[Rand.Next(Words.Length)]);
                 if (i < numWords - 1)
                 {
-                    sb.Append(" ");
+                    sb.Append(' ');
                 }
             }
             return sb.ToString();
@@ -83,7 +125,7 @@ namespace WebExpress.WebIndex.Test.Index
 
                 if (i < numWords - 1)
                 {
-                    sb.Append(" ");
+                    sb.Append(' ');
                 }
             }
 
@@ -100,7 +142,7 @@ namespace WebExpress.WebIndex.Test.Index
 
                 if (i < numWords - 1)
                 {
-                    sb.Append(" ");
+                    sb.Append(' ');
                 }
             }
             return sb.ToString();

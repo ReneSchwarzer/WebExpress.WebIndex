@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -59,6 +60,11 @@ namespace WebExpress.WebIndex.Storage
         public CultureInfo Culture { get; private set; }
 
         /// <summary>
+        /// Returns or sets the predicted capacity (number of items to store) of the reverse index.
+        /// </summary>
+        private uint Capacity { get; set; }
+
+        /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="context">The index context.</param>
@@ -70,6 +76,7 @@ namespace WebExpress.WebIndex.Storage
             Context = context;
             Property = property;
             Culture = culture;
+            Capacity = capacity;
             FileName = Path.Combine(Context.IndexDirectory, $"{typeof(T).Name}.{property.Name}.wri");
 
             var exists = File.Exists(FileName);
@@ -77,7 +84,7 @@ namespace WebExpress.WebIndex.Storage
             Header = new IndexStorageSegmentHeader(new IndexStorageContext(this)) { Identifier = "wri" };
             Allocator = new IndexStorageSegmentAllocator(new IndexStorageContext(this));
             Statistic = new IndexStorageSegmentStatistic(new IndexStorageContext(this));
-            HashMap = new IndexStorageSegmentHashMap<IndexStorageSegmentTerm>(new IndexStorageContext(this), capacity);
+            HashMap = new IndexStorageSegmentHashMap<IndexStorageSegmentTerm>(new IndexStorageContext(this), Capacity);
 
             Allocator.Alloc(Statistic);
             Allocator.Alloc(HashMap);
@@ -122,6 +129,27 @@ namespace WebExpress.WebIndex.Storage
         }
 
         /// <summary>
+        /// Removed all data from the index.
+        /// </summary>
+        public void Clear()
+        {
+            Header = new IndexStorageSegmentHeader(new IndexStorageContext(this)) { Identifier = "wri" };
+            Allocator = new IndexStorageSegmentAllocator(new IndexStorageContext(this));
+            Statistic = new IndexStorageSegmentStatistic(new IndexStorageContext(this));
+            HashMap = new IndexStorageSegmentHashMap<IndexStorageSegmentTerm>(new IndexStorageContext(this), Capacity);
+
+            Allocator.Alloc(Statistic);
+            Allocator.Alloc(HashMap);
+
+            IndexFile.Write(Header);
+            IndexFile.Write(Allocator);
+            IndexFile.Write(Statistic);
+            IndexFile.Write(HashMap);
+
+            IndexFile.Flush();
+        }
+
+        /// <summary>
         /// The data to be removed from the field.
         /// </summary>
         /// <typeparam name="T">The data type. This must have the IIndexData interface.</typeparam>
@@ -136,9 +164,22 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         /// <param name="term">The term.</param>
         /// <returns>An enumeration of the data ids.</returns>
-        public IEnumerable<int> Collect(object term)
+        public IEnumerable<Guid> Collect(object term)
         {
-            return Enumerable.Empty<int>();
+            var list = new List<Guid>();
+            var terms = IndexAnalyzer.Analyze(term?.ToString(), Culture);
+
+            foreach (var normalized in terms)
+            {
+                var documents = HashMap[normalized.Value]
+                    .Where(x => x.Term.Equals(normalized.Value))
+                    .SelectMany(x => x.Postings.All)
+                    .Select(x => x.DocumentID);
+
+                list.AddRange(documents);
+            }
+
+            return list;
         }
 
         /// <summary>

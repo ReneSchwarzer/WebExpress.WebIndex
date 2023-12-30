@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -54,6 +55,11 @@ namespace WebExpress.WebIndex.Storage
         public IEnumerable<T> All => HashMap.All.Select(x => GetItem(x));
 
         /// <summary>
+        /// Returns or sets the predicted capacity (number of items to store) of the reverse index.
+        /// </summary>
+        private uint Capacity { get; set; }
+
+        /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="context">The index context.</param>
@@ -61,6 +67,7 @@ namespace WebExpress.WebIndex.Storage
         public IndexStorageForward(IIndexContext context, uint capacity)
         {
             Context = context;
+            Capacity = capacity;
             FileName = Path.Combine(Context.IndexDirectory, $"{typeof(T).Name}.wfi");
 
             var exists = File.Exists(FileName);
@@ -68,7 +75,7 @@ namespace WebExpress.WebIndex.Storage
             Header = new IndexStorageSegmentHeader(new IndexStorageContext(this)) { Identifier = "wfi" };
             Allocator = new IndexStorageSegmentAllocator(new IndexStorageContext(this));
             Statistic = new IndexStorageSegmentStatistic(new IndexStorageContext(this));
-            HashMap = new IndexStorageSegmentHashMap<IndexStorageSegmentItem>(new IndexStorageContext(this), capacity);
+            HashMap = new IndexStorageSegmentHashMap<IndexStorageSegmentItem>(new IndexStorageContext(this), Capacity);
 
             Allocator.Alloc(Statistic);
             Allocator.Alloc(HashMap);
@@ -109,6 +116,27 @@ namespace WebExpress.WebIndex.Storage
         }
 
         /// <summary>
+        /// Removed all data from the index.
+        /// </summary>
+        public void Clear()
+        {
+            Header = new IndexStorageSegmentHeader(new IndexStorageContext(this)) { Identifier = "wfi" };
+            Allocator = new IndexStorageSegmentAllocator(new IndexStorageContext(this));
+            Statistic = new IndexStorageSegmentStatistic(new IndexStorageContext(this));
+            HashMap = new IndexStorageSegmentHashMap<IndexStorageSegmentItem>(new IndexStorageContext(this), Capacity);
+
+            Allocator.Alloc(Statistic);
+            Allocator.Alloc(HashMap);
+
+            IndexFile.Write(Header);
+            IndexFile.Write(Allocator);
+            IndexFile.Write(Statistic);
+            IndexFile.Write(HashMap);
+
+            IndexFile.Flush();
+        }
+
+        /// <summary>
         /// Remove an item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -125,7 +153,7 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         /// <param name="id">The id of the item.</param>
         /// <returns>The item.</returns>
-        public T GetItem(int id)
+        public T GetItem(Guid id)
         {
             return GetItem(HashMap[id].SkipWhile(x => x.Id != id).FirstOrDefault());
         }
@@ -135,7 +163,7 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         /// <param name="id">The segment of the item.</param>
         /// <returns>The item.</returns>
-        private T GetItem(IndexStorageSegmentItem segment)
+        private static T GetItem(IndexStorageSegmentItem segment)
         {
             var bytes = segment?.Data;
 

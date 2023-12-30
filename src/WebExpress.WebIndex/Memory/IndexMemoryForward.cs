@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace WebExpress.WebIndex.Memory
 {
@@ -7,12 +8,17 @@ namespace WebExpress.WebIndex.Memory
     /// Key: The id of the item.
     /// Value: The item.
     /// </summary>
-    public class IndexMemoryForward<T> : Dictionary<int, T>, IIndexForward<T> where T : IIndexItem
+    public class IndexMemoryForward<T> : Dictionary<Guid, T>, IIndexForward<T> where T : IIndexItem
     {
         /// <summary>
         /// Returns all items.
         /// </summary>
         public IEnumerable<T> All => Values;
+
+        /// <summary>
+        /// Returns the index context.
+        /// </summary>
+        public IIndexContext Context { get; private set; }
 
         /// <summary>
         /// Constructor
@@ -22,6 +28,7 @@ namespace WebExpress.WebIndex.Memory
         public IndexMemoryForward(IIndexContext context, uint capacity)
             : base((int)capacity)
         {
+            Context = context;
         }
 
         /// <summary>
@@ -44,8 +51,7 @@ namespace WebExpress.WebIndex.Memory
         {
             if (ContainsKey(item.Id))
             {
-                T value;
-                Remove(item.Id, out value);
+                Remove(item.Id, out _);
             }
         }
 
@@ -54,7 +60,7 @@ namespace WebExpress.WebIndex.Memory
         /// </summary>
         /// <param name="id">The id of the item.</param>
         /// <returns>The item.</returns>
-        public T GetItem(int id)
+        public T GetItem(Guid id)
         {
             if (ContainsKey(id))
             {

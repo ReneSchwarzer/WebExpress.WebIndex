@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.IO;
 
 namespace WebExpress.WebIndex.Storage
@@ -13,7 +14,7 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Returns or sets the document id.
         /// </summary>
-        public int DocumentID { get; set; }
+        public Guid DocumentID { get; set; }
 
         /// <summary>
         /// Returns the position list.
@@ -22,8 +23,9 @@ namespace WebExpress.WebIndex.Storage
 
         /// <summary>
         /// Returns the amount of space required on the storage device.
+        /// SuccessorAddr + Id
         /// </summary>
-        public override uint Size => sizeof(ulong) + sizeof(int) + IndexStorageSegmentList<IndexStorageSegmentPosition>.SegmentSize;
+        public override uint Size => sizeof(ulong) + 16 + IndexStorageSegmentList<IndexStorageSegmentPosition>.SegmentSize;
 
         /// <summary>
         /// Constructor
@@ -57,7 +59,7 @@ namespace WebExpress.WebIndex.Storage
             reader.BaseStream.Seek((long)Addr, SeekOrigin.Begin);
 
             SuccessorAddr = reader.ReadUInt64();
-            DocumentID = reader.ReadInt32();
+            DocumentID = new Guid(reader.ReadBytes(16));
 
             Positions.Read(reader, addr + Size - Positions.Size);
         }
@@ -71,7 +73,7 @@ namespace WebExpress.WebIndex.Storage
             writer.BaseStream.Seek((long)Addr, SeekOrigin.Begin);
 
             writer.Write(SuccessorAddr);
-            writer.Write(DocumentID);
+            writer.Write(DocumentID.ToByteArray());
 
             Positions.Write(writer);
         }

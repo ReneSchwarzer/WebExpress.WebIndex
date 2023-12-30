@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 
 namespace WebExpress.WebIndex.Memory
 {
@@ -7,7 +8,7 @@ namespace WebExpress.WebIndex.Memory
     /// Key: The id of the item.
     /// Value: The position of the term in the input value.
     /// </summary>
-    public class IndexMemoryReverseItem<T> : ConcurrentDictionary<int, IndexMemoryReversePosition> where T : IIndexItem
+    public class IndexMemoryReverseItem<T> : ConcurrentDictionary<Guid, IndexMemoryReversePosition> where T : IIndexItem
     {
         /// <summary>
         /// Constructor
@@ -16,7 +17,7 @@ namespace WebExpress.WebIndex.Memory
         /// <param name="position">The position of the term in the input value.</param>
         public IndexMemoryReverseItem(T item, uint position)
         {
-            GetOrAdd(item.Id, new IndexMemoryReversePosition() { position });
+            GetOrAdd(item.Id, [position]);
         }
 
         /// <summary>
@@ -26,7 +27,7 @@ namespace WebExpress.WebIndex.Memory
         /// <param name="position">The position of the term in the input value.</param>
         public void Add(T item, uint position)
         {
-            GetOrAdd(item.Id, new IndexMemoryReversePosition() { position });
+            GetOrAdd(item.Id, [position]);
         }
 
         /// <summary>
@@ -34,7 +35,7 @@ namespace WebExpress.WebIndex.Memory
         /// </summary>
         /// <param name="id">The id of the item.</param>
         /// <returns>An enumeration of the position data.</returns>
-        public IndexMemoryReversePosition GetIndexItem(int id)
+        public IndexMemoryReversePosition GetIndexItem(Guid id)
         {
             return ContainsKey(id) ? this[id] : null;
         }

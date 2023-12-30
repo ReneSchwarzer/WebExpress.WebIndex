@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 
 namespace WebExpress.WebIndex.Storage
@@ -23,7 +24,7 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Returns or sets the id of the item.
         /// </summary>
-        public int Id { get; set; }
+        public Guid Id { get; set; }
 
         /// <summary>
         /// Returns or sets the item data.
@@ -32,8 +33,9 @@ namespace WebExpress.WebIndex.Storage
 
         /// <summary>
         /// Returns the amount of space required on the storage device.
+        /// SuccessorAddr + Length + Fequency + Id + Data
         /// </summary>
-        public override uint Size => sizeof(ulong) + sizeof(uint) + sizeof(uint) + sizeof(int) + Length;
+        public override uint Size => sizeof(ulong) + sizeof(uint) + sizeof(uint) + 16 + Length;
 
         /// <summary>
         /// Constructor
@@ -65,7 +67,7 @@ namespace WebExpress.WebIndex.Storage
 
             SuccessorAddr = reader.ReadUInt64();
             Fequency = reader.ReadUInt32();
-            Id = reader.ReadInt32();
+            Id = new Guid(reader.ReadBytes(16));
             var length = reader.ReadUInt32();
             Data = reader.ReadBytes((int)length);
         }
@@ -80,7 +82,7 @@ namespace WebExpress.WebIndex.Storage
 
             writer.Write(SuccessorAddr);
             writer.Write(Fequency);
-            writer.Write(Id);
+            writer.Write(Id.ToByteArray());
             writer.Write(Length);
             writer.Write(Data);
         }

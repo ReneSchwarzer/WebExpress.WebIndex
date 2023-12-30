@@ -128,6 +128,8 @@ namespace WebExpress.WebIndex.Storage
             //}
 
             FileStream.Flush();
+            BufferedStream.Flush();
+            Writer.Flush();
         }
 
         /// <summary>

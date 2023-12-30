@@ -115,14 +115,19 @@ namespace WebExpress.WebIndex.Memory
         /// </summary>
         /// <param name="term">The term.</param>
         /// <returns>An enumeration of the data ids.</returns>
-        public IEnumerable<int> Collect(object term)
+        public IEnumerable<Guid> Collect(object term)
         {
             var offset = 1;
             var terms = IndexAnalyzer.Analyze(term?.ToString(), Culture);
 
             // processing the first token
             var items = GetIndexItems(terms.FirstOrDefault());
-            var hashSet = new HashSet<int>(items.Keys);
+            if (items == null)
+            {
+                return Enumerable.Empty<Guid>();
+            }
+
+            var hashSet = new HashSet<Guid>(items.Keys);
 
             // processing the next token
             foreach (var normalizedToken in terms.Skip(1))
@@ -132,11 +137,11 @@ namespace WebExpress.WebIndex.Memory
                 foreach (var hash in hashSet.ToList())
                 {
                     // check if an item is also available in the next term
-                    if (next.ContainsKey(hash))
+                    if (next.TryGetValue(hash, out IndexMemoryReversePosition value))
                     {
                         var hasSuccessor = false;
-                        var postionsItem = items.ContainsKey(hash) ? items[hash] : null;
-                        var postionsNext = next.ContainsKey(hash) ? next[hash] : null;
+                        var postionsItem = items.TryGetValue(hash, out IndexMemoryReversePosition v) ? v : null;
+                        var postionsNext = next.ContainsKey(hash) ? value : null;
 
                         // compare the positions of the terms
                         foreach (var posItem in postionsItem)

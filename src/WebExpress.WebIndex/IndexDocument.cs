@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using WebExpress.WebIndex.Memory;
 using WebExpress.WebIndex.Storage;
+using WebExpress.WebIndex.WebAttribute;
 
 namespace WebExpress.WebIndex
 {
@@ -87,6 +88,11 @@ namespace WebExpress.WebIndex
         /// <param name="property">The property that makes up the index.</param>
         public void Add(PropertyInfo property)
         {
+            if (property.GetCustomAttribute<IndexIgnore>() != null)
+            {
+                return;
+            }
+
             switch (IndexType)
             {
                 case IndexType.Memory:
@@ -116,7 +122,7 @@ namespace WebExpress.WebIndex
         /// <param name="item">The data to be added to the index.</param>
         public void Add(T item)
         {
-            foreach (var property in typeof(T).GetProperties().Where(x => x.Name != "Id"))
+            foreach (var property in typeof(T).GetProperties().Where(x => x.GetCustomAttribute<IndexIgnore>() == null))
             {
                 if (GetReverseIndex(property) is IIndexReverse<T> reverseIndex)
                 {
@@ -125,6 +131,22 @@ namespace WebExpress.WebIndex
             }
 
             ForwardIndex.Add(item);
+        }
+
+        /// <summary>
+        /// Removed all data from the index.
+        /// </summary>
+        public new void Clear()
+        {
+            foreach (var property in typeof(T).GetProperties().Where(x => x.GetCustomAttribute<IndexIgnore>() == null))
+            {
+                if (GetReverseIndex(property) is IIndexReverse<T> reverseIndex)
+                {
+                    reverseIndex.Clear();
+                }
+            }
+
+            ForwardIndex.Clear();
         }
 
         /// <summary>

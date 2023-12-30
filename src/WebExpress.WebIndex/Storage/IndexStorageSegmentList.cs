@@ -204,7 +204,7 @@ namespace WebExpress.WebIndex.Storage
         /// found in the list.</returns>
         public bool Remove(T item)
         {
-            var predecessor = GetPredecessor(item, out uint count);
+            var predecessor = GetPredecessor(item, out _);
 
             if (predecessor == null)
             {
@@ -237,7 +237,7 @@ namespace WebExpress.WebIndex.Storage
             }
 
             var addr = HeadAddr;
-            var item = default(T);
+            T item;
 
             do
             {

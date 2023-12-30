@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 
 namespace WebExpress.WebIndex.Wql.Condition
 {
@@ -17,7 +18,7 @@ namespace WebExpress.WebIndex.Wql.Condition
         /// Applies the filter to the index.
         /// </summary>
         /// <returns>The data ids from the index.</returns>
-        public override IQueryable<int> Apply()
+        public override IQueryable<Guid> Apply()
         {
             var property = Attribute?.Property;
             var value = Parameter.GetValue();

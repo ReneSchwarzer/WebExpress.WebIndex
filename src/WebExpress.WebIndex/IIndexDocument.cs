@@ -27,6 +27,11 @@ namespace WebExpress.WebIndex
         void Add(T item);
 
         /// <summary>
+        /// Removed all data from the index.
+        /// </summary>
+        void Clear();
+
+        /// <summary>
         /// The data to be removed from the index.
         /// </summary>
         /// <param name="item">The data to be removed from the index.</param>

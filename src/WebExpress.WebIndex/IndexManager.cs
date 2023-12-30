@@ -68,7 +68,7 @@ namespace WebExpress.WebIndex
                         sw.Write(sr.ReadToEnd());
                     }
                 }
-                catch (IOException ex)
+                catch
                 {
                 }
             }
@@ -104,6 +104,8 @@ namespace WebExpress.WebIndex
         /// <param name="items">The data to be added to the index.</param>
         public void ReIndex<T>(IEnumerable<T> items) where T : IIndexItem
         {
+            Clear<T>();
+
             foreach (var item in items)
             {
                 Add(item);
@@ -132,6 +134,18 @@ namespace WebExpress.WebIndex
         {
             Remove(item);
             Add(item);
+        }
+
+        /// <summary>
+        /// Clear all data from index document.
+        /// </summary>
+        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
+        public void Clear<T>() where T : IIndexItem
+        {
+            if (GetIndexDocument<T>() is IIndexDocument<T> document)
+            {
+                document.Clear();
+            }
         }
 
         /// <summary>

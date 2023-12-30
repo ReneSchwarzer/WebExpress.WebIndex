@@ -26,11 +26,8 @@
 
   <ItemGroup>
     <Compile Remove="Assets\**" />
-    <Compile Remove="WebAttribute\**" />
     <EmbeddedResource Remove="Assets\**" />
-    <EmbeddedResource Remove="WebAttribute\**" />
     <None Remove="Assets\**" />
-    <None Remove="WebAttribute\**" />
   </ItemGroup>
 
 	<ItemGroup>

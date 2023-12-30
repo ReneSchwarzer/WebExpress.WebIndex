@@ -5,11 +5,11 @@ namespace WebExpress.WebIndex.Test.Index
 {
     public class UnitTestIndexWqlFixture : UnitTestIndexFixture
     {
-        public IEnumerable<UnitTestIndexTestMockA> TestData { get; } = UnitTestIndexTestMockA.GenerateTestData();
+        public IEnumerable<UnitTestIndexTestMockD> TestData { get; } = UnitTestIndexTestMockD.GenerateTestData();
 
         public UnitTestIndexWqlFixture()
         {
-            IndexManager.Register<UnitTestIndexTestMockA>(CultureInfo.GetCultureInfo("en"));
+            IndexManager.Register<UnitTestIndexTestMockD>(CultureInfo.GetCultureInfo("en"));
             IndexManager.ReIndex(TestData);
         }
 
@@ -17,9 +17,9 @@ namespace WebExpress.WebIndex.Test.Index
         {
         }
 
-        public IWqlStatement<UnitTestIndexTestMockA> ExecuteWql(string wql)
+        public IWqlStatement<UnitTestIndexTestMockD> ExecuteWql(string wql)
         {
-            return IndexManager.ExecuteWql<UnitTestIndexTestMockA>(wql);
+            return IndexManager.ExecuteWql<UnitTestIndexTestMockD>(wql);
         }
     }
 }

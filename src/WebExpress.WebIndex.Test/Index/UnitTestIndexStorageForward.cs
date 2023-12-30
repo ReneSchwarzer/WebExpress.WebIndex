@@ -4,16 +4,10 @@ using Xunit.Abstractions;
 namespace WebExpress.WebIndex.Test.Index
 {
     [Collection("UnitTestIndexCollectionFixture")]
-    public class UnitTestIndexStorageForward
+    public class UnitTestIndexStorageForward(UnitTestIndexFixture fixture, ITestOutputHelper output)
     {
-        public ITestOutputHelper Output { get; private set; }
-        protected UnitTestIndexFixture Fixture { get; set; }
-
-        public UnitTestIndexStorageForward(UnitTestIndexFixture fixture, ITestOutputHelper output)
-        {
-            Fixture = fixture;
-            Output = output;
-        }
+        public ITestOutputHelper Output { get; private set; } = output;
+        protected UnitTestIndexFixture Fixture { get; set; } = fixture;
 
         [Fact]
         public void Create()
@@ -21,8 +15,8 @@ namespace WebExpress.WebIndex.Test.Index
             var context = new IndexContext();
             context.IndexDirectory = Path.Combine(context.IndexDirectory, Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
 
-            var data = UnitTestIndexTestMockA.GenerateTestData();
-            var forwardIndex = new IndexStorageForward<UnitTestIndexTestMockA>(context, (uint)data.Count);
+            var data = UnitTestIndexTestMockD.GenerateTestData();
+            var forwardIndex = new IndexStorageForward<UnitTestIndexTestMockD>(context, (uint)data.Count);
 
             forwardIndex.Dispose();
 
@@ -35,8 +29,8 @@ namespace WebExpress.WebIndex.Test.Index
             var context = new IndexContext();
             context.IndexDirectory = Path.Combine(context.IndexDirectory, Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
 
-            var data = UnitTestIndexTestMockA.GenerateTestData();
-            var forwardIndex = new IndexStorageForward<UnitTestIndexTestMockA>(context, (uint)data.Count);
+            var data = UnitTestIndexTestMockD.GenerateTestData();
+            var forwardIndex = new IndexStorageForward<UnitTestIndexTestMockD>(context, (uint)data.Count);
 
             foreach (var item in data)
             {
@@ -45,7 +39,7 @@ namespace WebExpress.WebIndex.Test.Index
 
             forwardIndex.Dispose();
 
-            forwardIndex = new IndexStorageForward<UnitTestIndexTestMockA>(context, (uint)data.Count);
+            forwardIndex = new IndexStorageForward<UnitTestIndexTestMockD>(context, (uint)data.Count);
 
             forwardIndex.Dispose();
 
@@ -58,9 +52,9 @@ namespace WebExpress.WebIndex.Test.Index
             var context = new IndexContext();
             context.IndexDirectory = Path.Combine(context.IndexDirectory, Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
 
-            var data = UnitTestIndexTestMockA.GenerateTestData();
+            var data = UnitTestIndexTestMockD.GenerateTestData();
             var randomItem = data[new Random().Next() % data.Count];
-            var forwardIndex = new IndexStorageForward<UnitTestIndexTestMockA>(context, (uint)data.Count);
+            var forwardIndex = new IndexStorageForward<UnitTestIndexTestMockD>(context, (uint)data.Count);
 
             foreach (var item in data)
             {
@@ -82,8 +76,8 @@ namespace WebExpress.WebIndex.Test.Index
             var context = new IndexContext();
             context.IndexDirectory = Path.Combine(context.IndexDirectory, Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
 
-            var data = UnitTestIndexTestMockA.GenerateTestData();
-            var forwardIndex = new IndexStorageForward<UnitTestIndexTestMockA>(context, (uint)data.Count);
+            var data = UnitTestIndexTestMockD.GenerateTestData();
+            var forwardIndex = new IndexStorageForward<UnitTestIndexTestMockD>(context, (uint)data.Count);
 
             foreach (var item in data)
             {
@@ -92,7 +86,7 @@ namespace WebExpress.WebIndex.Test.Index
 
             var all = forwardIndex.All;
 
-            Assert.True(all.Select(x => x.Id).SequenceEqual(data.Select(x => x.Id)));
+            Assert.True(all.Select(x => x.Id).OrderBy(x => x).SequenceEqual(data.Select(x => x.Id).OrderBy(x => x)));
 
             forwardIndex.Dispose();
 
@@ -105,9 +99,9 @@ namespace WebExpress.WebIndex.Test.Index
             var context = new IndexContext();
             context.IndexDirectory = Path.Combine(context.IndexDirectory, Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
 
-            var data = UnitTestIndexTestMockA.GenerateTestData();
+            var data = UnitTestIndexTestMockD.GenerateTestData();
             var randomItem = data[new Random().Next() % data.Count];
-            var forwardIndex = new IndexStorageForward<UnitTestIndexTestMockA>(context, (uint)data.Count);
+            var forwardIndex = new IndexStorageForward<UnitTestIndexTestMockD>(context, (uint)data.Count);
 
             foreach (var item in data)
             {
@@ -117,7 +111,7 @@ namespace WebExpress.WebIndex.Test.Index
             forwardIndex.Remove(randomItem);
             var all = forwardIndex.All;
 
-            Assert.True(all.Select(x => x.Id).SequenceEqual(data.Where(x => x.Id != randomItem.Id).Select(x => x.Id)));
+            Assert.True(all.Select(x => x.Id).OrderBy(x => x).SequenceEqual(data.Where(x => x.Id != randomItem.Id).Select(x => x.Id).OrderBy(x => x)));
 
             forwardIndex.Dispose();
 

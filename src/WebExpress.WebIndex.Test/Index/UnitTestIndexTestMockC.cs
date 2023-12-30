@@ -11,7 +11,7 @@
             {
                 yield return new UnitTestIndexTestMockC
                 {
-                    Id = i,
+                    Id = Guid.NewGuid(),
                     Text = GenerateWords(wordCount, vocabulary, wordLength),
                 };
             }

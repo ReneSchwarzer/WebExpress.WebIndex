@@ -56,7 +56,7 @@ namespace WebExpress.WebIndex.Test.Index
                 .Select(x => x.Value)
                 .ToList();
 
-            Assert.True(res.Intersect(singularWords).Count() == res.Count());
+            Assert.True(res.Intersect(singularWords).Count() == res.Count);
         }
 
         [Fact]
@@ -99,7 +99,7 @@ namespace WebExpress.WebIndex.Test.Index
                 .Select(x => x.Value)
                 .ToList();
 
-            Assert.True(res.Intersect(singularWords).Count() == res.Count());
+            Assert.True(res.Intersect(singularWords).Count() == res.Count);
         }
     }
 }

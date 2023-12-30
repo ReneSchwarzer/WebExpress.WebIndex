@@ -13,7 +13,7 @@ namespace WebExpress.WebIndex.Storage
         /// specific hash value. A bucket provides a concatenated list by recording the 
         /// collisions (different keys with the same hash value).
         /// </summary>
-        private IndexStorageSegmentList<T>[] Buckets;
+        private readonly IndexStorageSegmentList<T>[] Buckets;
 
         /// <summary>
         /// The number of fields (buckets) of the hash map. This should be a 

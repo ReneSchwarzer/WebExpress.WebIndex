@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace WebExpress.WebIndex.Test.Index
+﻿namespace WebExpress.WebIndex.Test.Index
 {
     public class UnitTestIndexTestMockB : UnitTestIndexTestDocument
     {
@@ -21,13 +18,13 @@ namespace WebExpress.WebIndex.Test.Index
             {
                 testDataList.Add(new UnitTestIndexTestMockB
                 {
-                    Id = i,
+                    Id = Guid.NewGuid(),
                     Name = $"Name_{i}",
                     Summary = $"Der Name_{i}",
                     Description = GenerateLoremIpsum(1000),
                     Date = DateTime.Now.AddMonths(i % 12),
                     Price = i,
-                    New = i % 2 == 0 ? false : true
+                    New = i % 2 != 0
                 });
             }
 

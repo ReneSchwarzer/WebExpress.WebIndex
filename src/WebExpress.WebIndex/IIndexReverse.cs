@@ -13,6 +13,11 @@ namespace WebExpress.WebIndex
         void Add(T item);
 
         /// <summary>
+        /// Removed all data from the index.
+        /// </summary>
+        void Clear();
+
+        /// <summary>
         /// The data to be removed from the index.
         /// </summary>
         /// <typeparam name="T">The data type. This must have the IIndexData interface.</typeparam>
@@ -24,6 +29,6 @@ namespace WebExpress.WebIndex
         /// </summary>
         /// <param name="term">The term.</param>
         /// <returns>An enumeration of the data ids.</returns>
-        IEnumerable<int> Collect(object term);
+        IEnumerable<Guid> Collect(object term);
     }
 }

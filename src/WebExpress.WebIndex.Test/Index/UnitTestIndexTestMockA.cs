@@ -2,164 +2,147 @@
 {
     public class UnitTestIndexTestMockA : UnitTestIndexTestDocument
     {
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string PhoneNumber { get; set; }
-        public string Description { get; set; }
-        public DateTime DateOfBirth { get; set; }
-        public string Salutation { get; set; }
-        public string Address { get; set; }
+        public string Name { get; set; }
 
         public static List<UnitTestIndexTestMockA> GenerateTestData()
         {
-            int id = 0;
             var testDataList = new List<UnitTestIndexTestMockA>
             {
-                new UnitTestIndexTestMockA
+                new()
                 {
-                    Id = id++,
-                    FirstName = "Emma",
-                    LastName = "Smith",
-                    PhoneNumber = "123-456-7890",
-                    DateOfBirth = new DateTime(1990, 1, 1),
-                    Description = "aliqua do tempor ornare morbi eiusmod lorem ipsum phasellus enim aliquet ornare phasellus leo ipsum eu morbi leo tincidunt tincidunt sit sed laoreet amet incididunt eu taciti et et elit netus leo et semper vivamus sagittis vivamus fermentum netus scelerisque phasellus lorem tristique tristique taciti adipiscing aliquet labore mollis dolor morbi adipiscing ipsum tincidunt ut vivamus netus netus ut aenean labore dolore",
-                    Salutation = "Ms.",
-                    Address = "123 Main St."
+                    Id = Guid.Parse("DABC3985-0E5B-4C18-A1C5-BEAD46AE9CFC"),
+                    Name = "Emma"
                 },
-                new UnitTestIndexTestMockA
+                new()
                 {
-                    Id = id++,
-                    FirstName = "Liam",
-                    LastName = "Johnson",
-                    PhoneNumber = "234-567-8901",
-                    DateOfBirth = new DateTime(1985, 2, 2),
-                    Description = "lorem scelerisque ornare mollis quis malesuada eiusmod mollis eiusmod leo labore sit dolore consectetur eu incididunt scelerisque scelerisque vivamus phasellus phasellus quis et morbi leo sit sem tincidunt amet amet incididunt incididunt",
-                    Salutation = "Mr.",
-                    Address = "456 Elm St."
+                    Id = Guid.Parse("E8CE186F-A00D-49A0-9DAA-CCE7B99C79A2"),
+                    Name = "Liam"
                 },
-                new UnitTestIndexTestMockA
+                new()
                 {
-                    Id = id++,
-                    FirstName = "Olivia",
-                    LastName = "Williams",
-                    PhoneNumber = "523-446-9890",
-                    DateOfBirth = new DateTime(1991, 1, 16),
-                    Description = "lorem malesuada sit malesuada elit quis tristique ipsum placerat netus enim et et phasellus mollis aliquet do enim labore incididunt dolore",
-                    Salutation = "Ms.",
-                    Address = "923 Main St."
+                    Id = Guid.Parse("D50774B3-5D95-4FB4-97FB-D107DD6FB9A0"),
+                    Name = "Olivia"
                 },
-                new UnitTestIndexTestMockA
+                new()
                 {
-                    Id = id++,
-                    FirstName = "Noah",
-                    LastName = "Jones",
-                    PhoneNumber = "834-517-8933",
-                    DateOfBirth = new DateTime(1975, 8, 2),
-                    Description = "labore aliquet fermentum dictum tempor magna labore consectetur ipsum malesuada scelerisque ornare vivamus amet tempor aliqua lectus aenean amet fermentum vivamus adipiscing",
-                    Salutation = "Mr.",
-                    Address = "756 Elm St."
+                    Id = Guid.Parse("ED242C79-E41B-4214-BFBC-C4673E87433B"),
+                    Name = "Noah"
                 },
-                new UnitTestIndexTestMockA
+                new()
                 {
-                    Id = id++,
-                    FirstName = "Isabella",
-                    LastName = "Miller",
-                    PhoneNumber = "342-983-9256",
-                    DateOfBirth = new DateTime(1961, 8, 6),
-                    Description = "lorem ipsum aenean labore sed consectetur sem sed enim incididunt semper enim sem leo consectetur leo fermentum elit morbi do amet aenean tristique sed egestas consectetur",
-                    Salutation = "Ms.",
-                    Address = "154 Main St."
+                    Id = Guid.Parse("21051515-457F-4CC1-8175-8422A233C179"),
+                    Name = "Isabella"
                 },
-                new UnitTestIndexTestMockA
+                new()
                 {
-                    Id = id++,
-                    FirstName = "Sophia",
-                    LastName = "Brown",
-                    PhoneNumber = "823-406-7821",
-                    DateOfBirth = new DateTime(1979, 7, 13),
-                    Description = "vivamus phasellus phasellus quis et morbi leo sit sem tincidunt amet amet incididunt incididunt dolor fermentum do aliqua incididunt labore sem adipiscing enim",
-                    Salutation = "Ms.",
-                    Address = "456 Elm St."
+                    Id = Guid.Parse("4BAB72B9-C52A-44F6-ADD5-D50A601F6C8B"),
+                    Name = "Sophia"
                 },
-                new UnitTestIndexTestMockA
+                new()
                 {
-                    Id = id++,
-                    FirstName = "Xantia",
-                    LastName = "Garcia",
-                    PhoneNumber = "345-093-9352",
-                    DateOfBirth = new DateTime(1981, 6, 30),
-                    Description = GenerateLoremIpsum(id * 2 % 1000),
-                    Salutation = "Mr.",
-                    Address = "14 Maple Ave."
+                    Id = Guid.Parse("2E7AC878-D2A3-42E7-808E-F38F30D0AD19"),
+                    Name = "Xantia"
                 },
-                new UnitTestIndexTestMockA
+                new()
                 {
-                    Id = id++,
-                    FirstName = "Ava",
-                    LastName = "Martinez",
-                    PhoneNumber = "345-093-9352",
-                    DateOfBirth = new DateTime(1961, 9, 20),
-                    Description = GenerateLoremIpsum(id * 2 % 1000),
-                    Salutation = "Ms.",
-                    Address = "154 Oak Ave."
+                    Id = Guid.Parse("B3FDD146-8070-441B-99DF-827670C70BC8"),
+                    Name = "Ava"
                 },
-                new UnitTestIndexTestMockA
+                new()
                 {
-                    Id = id++,
-                    FirstName = "James",
-                    LastName = "Davis",
-                    PhoneNumber = "937-482-8352",
-                    DateOfBirth = new DateTime(1952, 3, 15),
-                    Description = GenerateLoremIpsum(id * 2 % 1000),
-                    Salutation = "Mr.",
-                    Address = "536 Pine St."
+                    Id = Guid.Parse("43F9AA18-273E-4A09-A943-B81832F6302A"),
+                    Name = "James"
                 },
-                new UnitTestIndexTestMockA
+                new()
                 {
-                    Id = id++,
-                    FirstName = "Noah",
-                    LastName = "Smith",
-                    PhoneNumber = "631-378-2956",
-                    DateOfBirth = new DateTime(1952, 3, 15),
-                    Description = GenerateLoremIpsum(id * 2 % 1000),
-                    Salutation = "Mr.",
-                    Address = "756 Elm St."
+                    Id = Guid.Parse("CC4CE993-658C-4E7A-B7A5-FF03E6E0E973"),
+                    Name = "Noah"
                 },
-                new UnitTestIndexTestMockA
+                new()
                 {
-                    Id = id++,
-                    FirstName = "Isabella",
-                    LastName = "Johnson",
-                    PhoneNumber = "245-5239-3325",
-                    DateOfBirth = new DateTime(1955, 6, 13),
-                    Description = GenerateLoremIpsum(id * 2 % 1000),
-                    Salutation = "Ms.",
-                    Address = "154 Main St."
+                    Id = Guid.Parse("7B922A2A-2658-4A4E-B7EB-EB29F679F7AD"),
+                    Name = "Isabella"
+                },
+                new ()
+                {
+                    Id = Guid.Parse("5ABB1742-BEE1-45F4-BB6A-8AF6A3465FA3"),
+                    Name = "Berta"
+                },
+                new ()
+                {
+                    Id = Guid.Parse("BBDE531A-EB43-46DB-8576-284DBB93D254"),
+                    Name = "Cäsar"
+                },
+                new ()
+                {
+                    Id = Guid.Parse("87CD42D7-169E-4329-8F6E-255F510EE013"),
+                    Name = "Doris"
+                },
+                new ()
+                {
+                    Id = Guid.Parse("A3E4DDCB-5E79-4BF9-8ECA-FEA791E6DD4A"),
+                    Name = "Anton"
+                },
+                new ()
+                {
+                    Id = Guid.Parse("2D242F03-27FC-4DA2-A70A-0AAC3D94A69F"),
+                    Name = "Emil"
+                },
+                new ()
+                {
+                    Id = Guid.Parse("3B30F151-6B01-4E3C-85F2-CCB048387F76"),
+                    Name = "Fina"
+                },
+                new ()
+                {
+                    Id = Guid.Parse("3CAE888A-EC88-44D8-BA7B-ABBD0681F0AB"),
+                    Name = "Kerstin"
+                },
+                new ()
+                {
+                    Id = Guid.Parse("5D07AABE-3F7C-448C-B571-5A32F358E722"),
+                    Name = "Gustav"
+                },
+                new ()
+                {
+                    Id = Guid.Parse("124E9CDD-1EFB-40C0-B2FC-38AA9BCABAC5"),
+                    Name = "Hans"
+                },
+                new ()
+                {
+                    Id = Guid.Parse("65C26230-9157-4B22-95EF-A91FA112AEEC"),
+                    Name = "Ines"
+                },
+                new ()
+                {
+                    Id = Guid.Parse("336118D9-BE1C-482B-9FF7-724058119220"),
+                    Name = "Jana"
+                },
+                new ()
+                {
+                    Id = Guid.Parse("4DA00D0E-1E2A-4BAF-A95A-2E4DB46C4366"),
+                    Name = "Anton"
+                },
+                new ()
+                {
+                    Id = Guid.Parse("5046CB91-049C-4F03-B822-B7C1B961FB08"),
+                    Name = "Karin"
+                },
+                new ()
+                {
+                    Id = Guid.Parse("160A6CBA-5F74-4D0D-939A-5E0764276B04"),
+                    Name = "Lars"
                 }
-            };
 
-            // Add more test data here
-            for (int i = 0; i < 1000; i++)
-            {
-                testDataList.Add(new UnitTestIndexTestMockA
-                {
-                    Id = id++,
-                    FirstName = $"FirstName{i}",
-                    LastName = $"LastName{i}",
-                    PhoneNumber = $"{i:000}-000-0000",
-                    DateOfBirth = new DateTime(2000, 1, 1).AddDays(i),
-                    Description = GenerateLoremIpsum(1000),
-                    Salutation = i % 2 == 0 ? "Mr." : "Ms.",
-                    Address = $"{i} {GenerateSreet(i)}"
-                });
-            }
+
+            };
 
             return testDataList;
         }
 
         public override string ToString()
         {
-            return $"{Id} - {FirstName} {LastName}";
+            return $"{Id} - {Name}";
         }
     }
 }
