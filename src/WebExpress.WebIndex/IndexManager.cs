@@ -93,7 +93,7 @@ namespace WebExpress.WebIndex
         {
             if (!Documents.ContainsKey(typeof(T)))
             {
-                Documents.Add(typeof(T), new IndexDocument<T>(Context, type, culture, capacity));
+                Documents.Add(typeof(T), new IndexDocument<T>(Context, type, GetSupportedCulture(culture), capacity));
             }
         }
 
@@ -199,6 +199,21 @@ namespace WebExpress.WebIndex
         public IIndexDocument<T> GetIndexDocument<T>() where T : IIndexItem
         {
             return Documents.ContainsKey(typeof(T)) ? Documents[typeof(T)] as IIndexDocument<T> : null;
+        }
+
+        /// <summary>
+        /// Transforms a given culture into a supported culture.
+        /// </summary>
+        /// <param name="culture">The culture to be used.</param>
+        /// <returns>A supported culture, this may differ from the desired culture.</returns>
+        public static CultureInfo GetSupportedCulture(CultureInfo culture)
+        {
+            return culture.TwoLetterISOLanguageName switch
+            {
+                "en" => CultureInfo.GetCultureInfo("en"),
+                "de" => CultureInfo.GetCultureInfo("de"),
+                _ => CultureInfo.GetCultureInfo("en"),
+            };
         }
     }
 }

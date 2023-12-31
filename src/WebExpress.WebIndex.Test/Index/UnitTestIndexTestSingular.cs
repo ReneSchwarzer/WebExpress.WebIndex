@@ -22,7 +22,7 @@ namespace WebExpress.WebIndex.Test.Index
             IndexTermConverterSingular.Initialization(context);
         }
         [Fact]
-        public void PluralToSingularEn()
+        public void PluralToSingular_En()
         {
             var culture = CultureInfo.GetCultureInfo("en");
 
@@ -60,7 +60,7 @@ namespace WebExpress.WebIndex.Test.Index
         }
 
         [Fact]
-        public void PluralToSingularDe()
+        public void PluralToSingular_De()
         {
             var culture = CultureInfo.GetCultureInfo("de");
             string[] pluralWords =

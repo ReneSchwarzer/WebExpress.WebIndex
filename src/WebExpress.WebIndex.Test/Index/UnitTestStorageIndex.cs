@@ -35,11 +35,56 @@ namespace WebExpress.WebIndex.Test.Index
         }
 
         [Fact]
-        public void ReIndexTestDataA()
+        public void ReIndexTestDataA_En()
         {
             var testData = UnitTestIndexTestMockA.GenerateTestData();
 
             Fixture.IndexManager.Register<UnitTestIndexTestMockA>(CultureInfo.GetCultureInfo("en"), 11, IndexType.Storage);
+            Fixture.IndexManager.ReIndex(testData);
+
+            var wql = Fixture.IndexManager.ExecuteWql<UnitTestIndexTestMockA>("name = 'Noah'");
+            var item = wql.Apply();
+
+            Assert.NotNull(wql);
+            Assert.Equal(2, item.Count());
+        }
+
+        [Fact]
+        public void ReIndexTestDataA_De()
+        {
+            var testData = UnitTestIndexTestMockA.GenerateTestData();
+
+            Fixture.IndexManager.Register<UnitTestIndexTestMockA>(CultureInfo.GetCultureInfo("de"), 11, IndexType.Storage);
+            Fixture.IndexManager.ReIndex(testData);
+
+            var wql = Fixture.IndexManager.ExecuteWql<UnitTestIndexTestMockA>("name = 'Noah'");
+            var item = wql.Apply();
+
+            Assert.NotNull(wql);
+            Assert.Equal(2, item.Count());
+        }
+
+        [Fact]
+        public void ReIndexTestDataA_DeDE()
+        {
+            var testData = UnitTestIndexTestMockA.GenerateTestData();
+
+            Fixture.IndexManager.Register<UnitTestIndexTestMockA>(CultureInfo.GetCultureInfo("de-DE"), 11, IndexType.Storage);
+            Fixture.IndexManager.ReIndex(testData);
+
+            var wql = Fixture.IndexManager.ExecuteWql<UnitTestIndexTestMockA>("name = 'Noah'");
+            var item = wql.Apply();
+
+            Assert.NotNull(wql);
+            Assert.Equal(2, item.Count());
+        }
+
+        [Fact]
+        public void ReIndexTestDataA_Fr()
+        {
+            var testData = UnitTestIndexTestMockA.GenerateTestData();
+
+            Fixture.IndexManager.Register<UnitTestIndexTestMockA>(CultureInfo.GetCultureInfo("fr"), 11, IndexType.Storage);
             Fixture.IndexManager.ReIndex(testData);
 
             var wql = Fixture.IndexManager.ExecuteWql<UnitTestIndexTestMockA>("name = 'Noah'");

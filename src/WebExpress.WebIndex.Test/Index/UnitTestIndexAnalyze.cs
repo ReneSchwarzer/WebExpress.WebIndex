@@ -17,7 +17,7 @@ namespace WebExpress.WebIndex.Test.Index
         }
 
         [Fact]
-        public void Analyze()
+        public void Analyze1_En()
         {
             var input = "abc def, ghi jkl mno-p.";
             var tokens = IndexAnalyzer.Analyze(input, CultureInfo.GetCultureInfo("en"));
@@ -36,7 +36,7 @@ namespace WebExpress.WebIndex.Test.Index
         }
 
         [Fact]
-        public void AnalyzeEn1()
+        public void Analyze2_En()
         {
             var input = Fixture.GetRessource("JourneyThroughTheUniverse.en");
             var tokens = IndexAnalyzer.Analyze(input, CultureInfo.GetCultureInfo("en"));
@@ -45,7 +45,7 @@ namespace WebExpress.WebIndex.Test.Index
         }
 
         [Fact]
-        public void AnalyzeEn2()
+        public void Analyze3_En()
         {
             var input = Fixture.GetRessource("InterstellarConversations.en");
             var tokens = IndexAnalyzer.Analyze(input, CultureInfo.GetCultureInfo("en"));
@@ -54,12 +54,36 @@ namespace WebExpress.WebIndex.Test.Index
         }
 
         [Fact]
-        public void AnalyzeDe()
+        public void Analyze_De()
         {
             var input = Fixture.GetRessource("BotanischeBindungenMicrosReiseZuVerdantia.de");
             var tokens = IndexAnalyzer.Analyze(input, CultureInfo.GetCultureInfo("de"));
 
             Assert.True(tokens.Count() == 362); // of 731
+        }
+
+        /// <summary>
+        /// Test of a regional language.
+        /// </summary>
+        [Fact]
+        public void Analyze_DeDE()
+        {
+            var input = Fixture.GetRessource("BotanischeBindungenMicrosReiseZuVerdantia.de");
+            var tokens = IndexAnalyzer.Analyze(input, IndexManager.GetSupportedCulture(CultureInfo.GetCultureInfo("de-DE")));
+
+            Assert.True(tokens.Count() == 362); // of 731
+        }
+
+        /// <summary>
+        /// Test of an unsupported language.
+        /// </summary>
+        [Fact]
+        public void Analyze_Fr()
+        {
+            var input = Fixture.GetRessource("BotanischeBindungenMicrosReiseZuVerdantia.de");
+            var tokens = IndexAnalyzer.Analyze(input, IndexManager.GetSupportedCulture(CultureInfo.GetCultureInfo("fr")));
+
+            Assert.True(tokens.Count() == 716); // of 731
         }
     }
 }

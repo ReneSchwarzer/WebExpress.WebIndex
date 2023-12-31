@@ -5,7 +5,7 @@ VisualStudioVersion = 17.7.34221.43
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebExpress.WebIndex", "WebExpress.WebIndex\WebExpress.WebIndex.csproj", "{F316988F-ACCB-4A18-87AB-4CF3D51D1F07}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebExpress.WebIndex.Test", "WebExpress.WebIndex.Test\WebExpress.WebIndex.Test.csproj", "{6C888BC6-DF6C-4F00-9568-9A7DEEC642ED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebExpress.WebIndex.Test", "WebExpress.WebIndex.Test\WebExpress.WebIndex.Test.csproj", "{6C888BC6-DF6C-4F00-9568-9A7DEEC642ED}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
