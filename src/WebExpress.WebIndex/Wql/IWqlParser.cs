@@ -3,7 +3,7 @@ using WebExpress.WebIndex.Wql.Function;
 
 namespace WebExpress.WebIndex.Wql
 {
-    public interface IWqlParser<T> where T : IIndexItem
+    public interface IWqlParser<T> where T : IWebIndexItem
     {
         /// <summary>
         /// Parses a given wql query.

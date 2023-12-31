@@ -5,7 +5,7 @@ using System.Text;
 
 namespace WebExpress.WebIndex.Wql
 {
-    public class WqlStatement<T> : IWqlStatement<T> where T : IIndexItem
+    public class WqlStatement<T> : IWqlStatement<T> where T : IWebIndexItem
     {
         /// <summary>
         /// Returns the index document.

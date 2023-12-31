@@ -7,13 +7,13 @@ namespace WebExpress.WebIndex.Test.Index
 {
     public class UnitTestIndexFixture
     {
-        public IndexManager IndexManager { get; } = new IndexManagerTest();
+        public WebIndexManager IndexManager { get; } = new WebIndexManagerTest();
 
         public UnitTestIndexFixture()
         {
             lock (IndexManager)
             {
-                IndexManager.Initialization(new IndexContext());
+                IndexManager.Initialization(new WebIndexContext());
             }
         }
 

@@ -6,7 +6,7 @@ namespace WebExpress.WebIndex.Wql.Condition
     /// <summary>
     /// Describes the condition value expression of a wql statement.
     /// </summary>
-    public abstract class WqlExpressionNodeFilterConditionSet<T> : WqlExpressionNodeFilterCondition<T> where T : IIndexItem
+    public abstract class WqlExpressionNodeFilterConditionSet<T> : WqlExpressionNodeFilterCondition<T> where T : IWebIndexItem
     {
         /// <summary>
         /// Returns the parameter expressions.

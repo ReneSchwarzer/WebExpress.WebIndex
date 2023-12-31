@@ -7,7 +7,7 @@ namespace WebExpress.WebIndex.Wql
     /// <summary>
     /// Interface of a wql expression.
     /// </summary>
-    public interface IWqlExpressionNodeApply<T> : IWqlExpressionNode<T> where T : IIndexItem
+    public interface IWqlExpressionNodeApply<T> : IWqlExpressionNode<T> where T : IWebIndexItem
     {
         /// <summary>
         /// Applies the filter to the index.

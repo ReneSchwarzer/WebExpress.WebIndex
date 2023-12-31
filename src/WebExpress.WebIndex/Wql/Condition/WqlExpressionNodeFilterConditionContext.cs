@@ -2,7 +2,7 @@
 
 namespace WebExpress.WebIndex.Wql.Condition
 {
-    public class WqlExpressionNodeFilterConditionContext<T> : IWqlExpressionNodeFilterConditionContext where T : IIndexItem
+    public class WqlExpressionNodeFilterConditionContext<T> : IWqlExpressionNodeFilterConditionContext where T : IWebIndexItem
     {
     }
 }

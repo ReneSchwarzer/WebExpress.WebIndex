@@ -7,7 +7,7 @@ namespace WebExpress.WebIndex.Wql.Function
     /// Describes the function expression of a wql statement.
     /// Returns the current date.
     /// </summary>
-    public class WqlExpressionNodeFilterFunctionDay<T> : WqlExpressionNodeFilterFunction<T> where T : IIndexItem
+    public class WqlExpressionNodeFilterFunctionDay<T> : WqlExpressionNodeFilterFunction<T> where T : IWebIndexItem
     {
         /// <summary>
         /// Constructor

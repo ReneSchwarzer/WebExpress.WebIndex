@@ -6,7 +6,7 @@ namespace WebExpress.WebIndex.Wql.Function
     /// <summary>
     /// Describes the function expression of a wql statement.
     /// </summary>
-    public abstract class WqlExpressionNodeFilterFunction<T> : IWqlExpressionNode<T> where T : IIndexItem
+    public abstract class WqlExpressionNodeFilterFunction<T> : IWqlExpressionNode<T> where T : IWebIndexItem
     {
         /// <summary>
         /// Returns the function name.

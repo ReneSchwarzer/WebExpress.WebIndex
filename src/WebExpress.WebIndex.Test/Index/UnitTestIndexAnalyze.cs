@@ -20,7 +20,7 @@ namespace WebExpress.WebIndex.Test.Index
         public void Analyze1_En()
         {
             var input = "abc def, ghi jkl mno-p.";
-            var tokens = IndexAnalyzer.Analyze(input, CultureInfo.GetCultureInfo("en"));
+            var tokens = WebIndexAnalyzer.Analyze(input, CultureInfo.GetCultureInfo("en"));
 
             Assert.True(tokens.Count() == 5);
             Assert.True(tokens.First().Position == 0);
@@ -39,7 +39,7 @@ namespace WebExpress.WebIndex.Test.Index
         public void Analyze2_En()
         {
             var input = Fixture.GetRessource("JourneyThroughTheUniverse.en");
-            var tokens = IndexAnalyzer.Analyze(input, CultureInfo.GetCultureInfo("en"));
+            var tokens = WebIndexAnalyzer.Analyze(input, CultureInfo.GetCultureInfo("en"));
 
             Assert.True(tokens.Count() == 218); // of 546
         }
@@ -48,7 +48,7 @@ namespace WebExpress.WebIndex.Test.Index
         public void Analyze3_En()
         {
             var input = Fixture.GetRessource("InterstellarConversations.en");
-            var tokens = IndexAnalyzer.Analyze(input, CultureInfo.GetCultureInfo("en"));
+            var tokens = WebIndexAnalyzer.Analyze(input, CultureInfo.GetCultureInfo("en"));
 
             Assert.True(tokens.Count() == 157); // of 281
         }
@@ -57,7 +57,7 @@ namespace WebExpress.WebIndex.Test.Index
         public void Analyze_De()
         {
             var input = Fixture.GetRessource("BotanischeBindungenMicrosReiseZuVerdantia.de");
-            var tokens = IndexAnalyzer.Analyze(input, CultureInfo.GetCultureInfo("de"));
+            var tokens = WebIndexAnalyzer.Analyze(input, CultureInfo.GetCultureInfo("de"));
 
             Assert.True(tokens.Count() == 362); // of 731
         }
@@ -69,7 +69,7 @@ namespace WebExpress.WebIndex.Test.Index
         public void Analyze_DeDE()
         {
             var input = Fixture.GetRessource("BotanischeBindungenMicrosReiseZuVerdantia.de");
-            var tokens = IndexAnalyzer.Analyze(input, CultureInfo.GetCultureInfo("de-DE"));
+            var tokens = WebIndexAnalyzer.Analyze(input, CultureInfo.GetCultureInfo("de-DE"));
 
             Assert.True(tokens.Count() == 362); // of 731
         }
@@ -81,7 +81,7 @@ namespace WebExpress.WebIndex.Test.Index
         public void Analyze_Fr()
         {
             var input = Fixture.GetRessource("BotanischeBindungenMicrosReiseZuVerdantia.de");
-            var tokens = IndexAnalyzer.Analyze(input, CultureInfo.GetCultureInfo("fr"));
+            var tokens = WebIndexAnalyzer.Analyze(input, CultureInfo.GetCultureInfo("fr"));
 
             Assert.True(tokens.Count() == 716); // of 731
         }

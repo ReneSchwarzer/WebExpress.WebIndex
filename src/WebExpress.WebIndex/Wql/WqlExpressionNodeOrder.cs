@@ -7,7 +7,7 @@ namespace WebExpress.WebIndex.Wql
     /// <summary>
     /// Describes the order expression of a wql statement.
     /// </summary>
-    public class WqlExpressionNodeOrder<T> : IWqlExpressionNode<T> where T : IIndexItem
+    public class WqlExpressionNodeOrder<T> : IWqlExpressionNode<T> where T : IWebIndexItem
     {
         /// <summary>
         /// Returns the order attribute expressions.

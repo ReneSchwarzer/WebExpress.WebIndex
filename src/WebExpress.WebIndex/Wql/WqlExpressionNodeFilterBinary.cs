@@ -7,7 +7,7 @@ namespace WebExpress.WebIndex.Wql
     /// <summary>
     /// Describes the filter expression of a wql statement.
     /// </summary>
-    public class WqlExpressionNodeFilterBinary<T> : WqlExpressionNodeFilter<T> where T : IIndexItem
+    public class WqlExpressionNodeFilterBinary<T> : WqlExpressionNodeFilter<T> where T : IWebIndexItem
     {
         /// <summary>
         /// Returns the left filter expressions.

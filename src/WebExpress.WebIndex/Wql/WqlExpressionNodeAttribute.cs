@@ -5,7 +5,7 @@ namespace WebExpress.WebIndex.Wql
     /// <summary>
     /// Describes the attribute expression of a wql statement.
     /// </summary>
-    public class WqlExpressionNodeAttribute<T> : IWqlExpressionNode<T> where T : IIndexItem
+    public class WqlExpressionNodeAttribute<T> : IWqlExpressionNode<T> where T : IWebIndexItem
     {
         /// <summary>
         /// Returns the name of the attribute.
@@ -20,7 +20,7 @@ namespace WebExpress.WebIndex.Wql
         /// <summary>
         /// Returns the reverse index.
         /// </summary>
-        public IIndexReverse<T> ReverseIndex { get; internal set; }
+        public IWebIndexReverse<T> ReverseIndex { get; internal set; }
 
         /// <summary>
         /// Constructor

@@ -8,7 +8,7 @@ namespace WebExpress.WebIndex.Wql.Condition
     /// <summary>
     /// Interface of a condition expression.
     /// </summary>
-    public abstract class WqlExpressionNodeFilterCondition<T> : IWqlExpressionNodeFilterCondition, IWqlExpressionNodeApply<T> where T : IIndexItem
+    public abstract class WqlExpressionNodeFilterCondition<T> : IWqlExpressionNodeFilterCondition, IWqlExpressionNodeApply<T> where T : IWebIndexItem
     {
         /// <summary>
         /// Returns the attribute expression.
