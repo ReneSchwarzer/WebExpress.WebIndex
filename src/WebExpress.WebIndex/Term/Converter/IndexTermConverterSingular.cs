@@ -116,15 +116,17 @@ namespace WebExpress.WebIndex.Term.Converter
         /// <returns>The terms where the words have been converted to singular.</returns>
         public static IEnumerable<IndexTermToken> Singular(this IEnumerable<IndexTermToken> input, CultureInfo culture)
         {
-            var dict = IrregularWordDictionary[culture];
+            var supportedCulture = GetSupportedCulture(culture);
 
-            if (!IrregularWordDictionary.ContainsKey(culture))
+            if (!IrregularWordDictionary.ContainsKey(supportedCulture))
             {
                 foreach (var token in input)
                 {
                     yield return token;
                 }
             }
+
+            var dict = IrregularWordDictionary[supportedCulture];
 
             foreach (var token in input)
             {
@@ -138,7 +140,7 @@ namespace WebExpress.WebIndex.Term.Converter
                 {
                     var treated = false;
 
-                    foreach (var keyValue in RegularWordDictionary[culture])
+                    foreach (var keyValue in RegularWordDictionary[supportedCulture])
                     {
                         if (Regex.Match(token.Value, keyValue.Key).Success)
                         {
@@ -157,6 +159,28 @@ namespace WebExpress.WebIndex.Term.Converter
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Transforms a given culture into a supported culture.
+        /// </summary>
+        /// <param name="culture">The culture to be used.</param>
+        /// <returns>A supported culture, this may differ from the desired culture.</returns>
+        private static CultureInfo GetSupportedCulture(CultureInfo culture)
+        {
+            if (RegularWordDictionary.ContainsKey(culture))
+            {
+                return culture;
+            }
+
+            var generalCulture = CultureInfo.GetCultureInfo(culture.TwoLetterISOLanguageName);
+
+            if (RegularWordDictionary.ContainsKey(generalCulture))
+            {
+                return generalCulture;
+            }
+
+            return CultureInfo.GetCultureInfo("en");
         }
     }
 }

@@ -70,7 +70,9 @@ namespace WebExpress.WebIndex.Term.Converter
         /// <returns>The terms at which the misspelled words have been converted.</returns>
         public static IEnumerable<IndexTermToken> Misspelled(this IEnumerable<IndexTermToken> input, CultureInfo culture)
         {
-            if (!MisspelledWordDictionary.ContainsKey(culture))
+            var supportedCulture = GetSupportedCulture(culture);
+
+            if (!MisspelledWordDictionary.ContainsKey(supportedCulture))
             {
                 foreach (var token in input)
                 {
@@ -80,9 +82,9 @@ namespace WebExpress.WebIndex.Term.Converter
 
             foreach (var token in input)
             {
-                if (MisspelledWordDictionary[culture].ContainsKey(token.Value))
+                if (MisspelledWordDictionary[supportedCulture].ContainsKey(token.Value))
                 {
-                    token.Value = MisspelledWordDictionary[culture][token.Value];
+                    token.Value = MisspelledWordDictionary[supportedCulture][token.Value];
                     yield return token;
                 }
                 else
@@ -90,6 +92,28 @@ namespace WebExpress.WebIndex.Term.Converter
                     yield return token;
                 }
             }
+        }
+
+        /// <summary>
+        /// Transforms a given culture into a supported culture.
+        /// </summary>
+        /// <param name="culture">The culture to be used.</param>
+        /// <returns>A supported culture, this may differ from the desired culture.</returns>
+        private static CultureInfo GetSupportedCulture(CultureInfo culture)
+        {
+            if (MisspelledWordDictionary.ContainsKey(culture))
+            {
+                return culture;
+            }
+
+            var generalCulture = CultureInfo.GetCultureInfo(culture.TwoLetterISOLanguageName);
+
+            if (MisspelledWordDictionary.ContainsKey(generalCulture))
+            {
+                return generalCulture;
+            }
+
+            return CultureInfo.GetCultureInfo("en");
         }
     }
 }

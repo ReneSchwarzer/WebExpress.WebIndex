@@ -64,7 +64,9 @@ namespace WebExpress.WebIndex.Term.Filter
         /// <returns>The filtered term enumeration.</returns>
         public static IEnumerable<IndexTermToken> StopWord(this IEnumerable<IndexTermToken> input, CultureInfo culture)
         {
-            if (!StopWordDictionary.ContainsKey(culture))
+            var supportedCulture = GetSupportedCulture(culture);
+
+            if (!StopWordDictionary.ContainsKey(supportedCulture))
             {
                 foreach (var token in input)
                 {
@@ -74,11 +76,33 @@ namespace WebExpress.WebIndex.Term.Filter
 
             foreach (var token in input)
             {
-                if (!StopWordDictionary[culture].Contains(token.Value))
+                if (!StopWordDictionary[supportedCulture].Contains(token.Value))
                 {
                     yield return token;
                 }
             }
+        }
+
+        /// <summary>
+        /// Transforms a given culture into a supported culture.
+        /// </summary>
+        /// <param name="culture">The culture to be used.</param>
+        /// <returns>A supported culture, this may differ from the desired culture.</returns>
+        private static CultureInfo GetSupportedCulture(CultureInfo culture)
+        {
+            if (StopWordDictionary.ContainsKey(culture))
+            {
+                return culture;
+            }
+
+            var generalCulture = CultureInfo.GetCultureInfo(culture.TwoLetterISOLanguageName);
+
+            if (StopWordDictionary.ContainsKey(generalCulture))
+            {
+                return generalCulture;
+            }
+
+            return CultureInfo.GetCultureInfo("en");
         }
     }
 }

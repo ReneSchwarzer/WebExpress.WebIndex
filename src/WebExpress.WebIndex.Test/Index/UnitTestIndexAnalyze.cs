@@ -69,7 +69,7 @@ namespace WebExpress.WebIndex.Test.Index
         public void Analyze_DeDE()
         {
             var input = Fixture.GetRessource("BotanischeBindungenMicrosReiseZuVerdantia.de");
-            var tokens = IndexAnalyzer.Analyze(input, IndexManager.GetSupportedCulture(CultureInfo.GetCultureInfo("de-DE")));
+            var tokens = IndexAnalyzer.Analyze(input, CultureInfo.GetCultureInfo("de-DE"));
 
             Assert.True(tokens.Count() == 362); // of 731
         }
@@ -81,7 +81,7 @@ namespace WebExpress.WebIndex.Test.Index
         public void Analyze_Fr()
         {
             var input = Fixture.GetRessource("BotanischeBindungenMicrosReiseZuVerdantia.de");
-            var tokens = IndexAnalyzer.Analyze(input, IndexManager.GetSupportedCulture(CultureInfo.GetCultureInfo("fr")));
+            var tokens = IndexAnalyzer.Analyze(input, CultureInfo.GetCultureInfo("fr"));
 
             Assert.True(tokens.Count() == 716); // of 731
         }
