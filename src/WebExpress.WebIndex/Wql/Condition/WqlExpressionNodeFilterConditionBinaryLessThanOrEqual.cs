@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace WebExpress.WebIndex.Wql.Condition
 {
-    public class WqlExpressionNodeFilterConditionBinaryLessThanOrEqual<T> : WqlExpressionNodeFilterConditionBinary<T> where T : IWebIndexItem
+    public class WqlExpressionNodeFilterConditionBinaryLessThanOrEqual<T> : WqlExpressionNodeFilterConditionBinary<T> where T : IIndexItem
     {
         /// <summary>
         /// Constructor

@@ -3,7 +3,7 @@ using WebExpress.WebIndex.WebAttribute;
 
 namespace WebExpress.WebIndex.Test.Index
 {
-    public abstract class UnitTestIndexTestDocument : IWebIndexItem
+    public abstract class UnitTestIndexTestDocument : IIndexItem
     {
         private static readonly string[] Words =
         [
@@ -59,7 +59,7 @@ namespace WebExpress.WebIndex.Test.Index
 
         private static readonly Random Rand = new();
 
-        [WebIndexIgnore]
+        [IndexIgnore]
         public Guid Id { get; set; }
 
         protected static string GenerateLoremIpsum(int numWords)

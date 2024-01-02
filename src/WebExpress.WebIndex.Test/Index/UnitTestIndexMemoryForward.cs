@@ -12,10 +12,10 @@ namespace WebExpress.WebIndex.Test.Index
         [Fact]
         public void Create()
         {
-            var context = new WebIndexContext();
+            var context = new IndexContext();
 
             var data = UnitTestIndexTestMockD.GenerateTestData();
-            var forwardIndex = new WebIndexMemoryForward<UnitTestIndexTestMockD>(context, (uint)data.Count);
+            var forwardIndex = new IndexMemoryForward<UnitTestIndexTestMockD>(context, (uint)data.Count);
 
             forwardIndex.Dispose();
 
@@ -25,11 +25,11 @@ namespace WebExpress.WebIndex.Test.Index
         [Fact]
         public void Add()
         {
-            var context = new WebIndexContext();
+            var context = new IndexContext();
 
             var data = UnitTestIndexTestMockD.GenerateTestData();
             var randomItem = data[new Random().Next() % data.Count];
-            var forwardIndex = new WebIndexMemoryForward<UnitTestIndexTestMockD>(context, (uint)data.Count);
+            var forwardIndex = new IndexMemoryForward<UnitTestIndexTestMockD>(context, (uint)data.Count);
 
             foreach (var item in data)
             {
@@ -46,10 +46,10 @@ namespace WebExpress.WebIndex.Test.Index
         [Fact]
         public void All()
         {
-            var context = new WebIndexContext();
+            var context = new IndexContext();
 
             var data = UnitTestIndexTestMockD.GenerateTestData();
-            var forwardIndex = new WebIndexMemoryForward<UnitTestIndexTestMockD>(context, (uint)data.Count);
+            var forwardIndex = new IndexMemoryForward<UnitTestIndexTestMockD>(context, (uint)data.Count);
 
             foreach (var item in data)
             {
@@ -66,11 +66,11 @@ namespace WebExpress.WebIndex.Test.Index
         [Fact]
         public void Remove()
         {
-            var context = new WebIndexContext();
+            var context = new IndexContext();
 
             var data = UnitTestIndexTestMockD.GenerateTestData();
             var randomItem = data[new Random().Next() % data.Count];
-            var forwardIndex = new WebIndexMemoryForward<UnitTestIndexTestMockD>(context, (uint)data.Count);
+            var forwardIndex = new IndexMemoryForward<UnitTestIndexTestMockD>(context, (uint)data.Count);
 
             foreach (var item in data)
             {

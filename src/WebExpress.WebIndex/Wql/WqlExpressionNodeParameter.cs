@@ -8,7 +8,7 @@ namespace WebExpress.WebIndex.Wql
     /// <summary>
     /// Describes the parameter expression of a wql statement.
     /// </summary>
-    public class WqlExpressionNodeParameter<T> : IWqlExpressionNode<T> where T : IWebIndexItem
+    public class WqlExpressionNodeParameter<T> : IWqlExpressionNode<T> where T : IIndexItem
     {
         /// <summary>
         /// Returns the value expressions.

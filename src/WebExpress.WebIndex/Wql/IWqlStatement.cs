@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace WebExpress.WebIndex.Wql
 {
-    public interface IWqlStatement<T> where T : IWebIndexItem
+    public interface IWqlStatement<T> where T : IIndexItem
     {
         /// <summary>
         /// Returns the original wql statement.

@@ -36,7 +36,7 @@ namespace WebExpress.WebIndex.Wql
     /// Number               ::= [0-9]+
     /// </code>
     /// </summary>
-    public class WqlParser<T> : IWqlParser<T> where T : IWebIndexItem
+    public class WqlParser<T> : IWqlParser<T> where T : IIndexItem
     {
         private static readonly Regex NumberRegex = new Regex("^[0-9]+$", RegexOptions.Compiled);
         private static readonly Regex DoubleRegex = new Regex("^[+-]?[0-9]*[.]?[0-9]+$", RegexOptions.Compiled);

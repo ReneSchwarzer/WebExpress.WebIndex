@@ -6,7 +6,7 @@ namespace WebExpress.WebIndex.Wql
     /// <summary>
     /// Describes the partitioning expression of a wql statement.
     /// </summary>
-    public class WqlExpressionNodePartitioningFunction<T> : IWqlExpressionNode<T> where T : IWebIndexItem
+    public class WqlExpressionNodePartitioningFunction<T> : IWqlExpressionNode<T> where T : IIndexItem
     {
         /// <summary>
         /// Returns the operator expressions.

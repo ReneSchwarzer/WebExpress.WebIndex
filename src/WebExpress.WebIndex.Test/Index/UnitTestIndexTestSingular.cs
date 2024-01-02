@@ -16,10 +16,10 @@ namespace WebExpress.WebIndex.Test.Index
             Fixture = fixture;
             Output = output;
 
-            var context = new WebIndexContext();
+            var context = new IndexContext();
 
-            WebIndexTermConverterLowerCase.Initialization(context);
-            WebIndexTermConverterSingular.Initialization(context);
+            IndexTermConverterLowerCase.Initialization(context);
+            IndexTermConverterSingular.Initialization(context);
         }
         [Fact]
         public void PluralToSingular_En()
@@ -48,7 +48,7 @@ namespace WebExpress.WebIndex.Test.Index
             var pluralWords = words.Select(x => x.Item1);
             var singularWords = words.Select(x => x.Item2);
 
-            var tokenizer = new WebIndexTermTokenizer();
+            var tokenizer = new IndexTermTokenizer();
 
             var res = tokenizer
                 .Tokenize(string.Join(" ", pluralWords))
@@ -91,7 +91,7 @@ namespace WebExpress.WebIndex.Test.Index
                 "stuhl"
             ];
 
-            var tokenizer = new WebIndexTermTokenizer();
+            var tokenizer = new IndexTermTokenizer();
 
             var res = tokenizer
                 .Tokenize(string.Join(" ", pluralWords))
