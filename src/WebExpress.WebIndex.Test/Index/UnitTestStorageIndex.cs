@@ -95,6 +95,32 @@ namespace WebExpress.WebIndex.Test.Index
         }
 
         [Fact]
+        public void ReIndexTestDataA_Update()
+        {
+            var testData = UnitTestIndexTestMockA.GenerateTestData();
+
+            Fixture.IndexManager.Register<UnitTestIndexTestMockA>(CultureInfo.GetCultureInfo("fr"), 11, WebIndexType.Storage);
+            Fixture.IndexManager.ReIndex(testData);
+
+            var wql = Fixture.IndexManager.ExecuteWql<UnitTestIndexTestMockA>("name = 'Noah'");
+            var item = wql.Apply();
+
+            Assert.NotNull(wql);
+            Assert.Equal(2, item.Count());
+
+            var first = item.FirstOrDefault();
+            first.Name = "Aurora";
+
+            Fixture.IndexManager.Update(first);
+
+            wql = Fixture.IndexManager.ExecuteWql<UnitTestIndexTestMockA>("name = 'Aurora'");
+            item = wql.Apply();
+
+            Assert.NotNull(wql);
+            Assert.Equal(1, item.Count());
+        }
+
+        [Fact]
         public void ReIndexTestDataB()
         {
             var testData = UnitTestIndexTestMockB.GenerateTestData();
