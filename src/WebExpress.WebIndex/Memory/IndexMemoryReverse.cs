@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using Microsoft.VisualBasic;
 using WebExpress.WebIndex.Term;
 
 namespace WebExpress.WebIndex.Memory
@@ -12,7 +13,7 @@ namespace WebExpress.WebIndex.Memory
     /// Key: The terms.
     /// Value: The index item.
     /// </summary>
-    public class IndexMemoryReverse<T> : Dictionary<object, IndexMemoryReverseItem<T>>, IIndexReverse<T> where T : IIndexItem
+    public class IndexMemoryReverse<T> : IIndexReverse<T> where T : IIndexItem
     {
         /// <summary>
         /// Returns the field name for the reverse index.
@@ -40,14 +41,17 @@ namespace WebExpress.WebIndex.Memory
         public CultureInfo Culture { get; private set; }
 
         /// <summary>
+        /// 
+        /// </summary>
+        public IndexMemoryReverseTreeNode<T> Root { get; private set; } = new ();
+
+        /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="context">The index context.</param>
         /// <param name="property">The property that makes up the index.</param>
         /// <param name="culture">The culture.</param>
-        /// <param name="capacity">The predicted capacity (number of items to store) of the reverse index.</param>
-        public IndexMemoryReverse(IIndexContext context, PropertyInfo property, CultureInfo culture, uint capacity)
-            : base((int)capacity)
+        public IndexMemoryReverse(IIndexContext context, PropertyInfo property, CultureInfo culture)
         {
             Context = context;
             Property = property;
@@ -58,46 +62,24 @@ namespace WebExpress.WebIndex.Memory
         /// <summary>
         /// Adds a item to the field.
         /// </summary>
-        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
         /// <param name="item">The data to be added to the index.</param>
         public void Add(T item)
         {
             var value = GetValueDelegate(item);
+            var terms = IndexAnalyzer.Analyze(value?.ToString(), Culture);
 
-            if (value is string str)
+            foreach (var term in terms)
             {
-                var terms = IndexAnalyzer.Analyze(str, Culture);
+                Root.Add(item, term.Value, term.Position);
+            }
+        }
 
-                foreach (var term in terms)
-                {
-                    if (GetIndexItems(term) is IndexMemoryReverseItem<T> itemStore)
-                    {
-                        if (itemStore.GetIndexItem(item.Id) is IndexMemoryReversePosition itemPosition)
-                        {
-                            itemPosition.Add(term.Position);
-                        }
-                        else
-                        {
-                            itemStore.Add(item, term.Position);
-                        }
-                    }
-                    else
-                    {
-                        Add(term.Value, new IndexMemoryReverseItem<T>(item, term.Position));
-                    }
-                }
-            }
-            else if (value is int v)
-            {
-                if (GetIndexItems(v) is IndexMemoryReverseItem<T> itemStore)
-                {
-                    itemStore.Add(item, 0);
-                }
-                else
-                {
-                    Add(v, new IndexMemoryReverseItem<T>(item, 0));
-                }
-            }
+        /// <summary>
+        /// Removed all data from the index.
+        /// </summary>
+        public void Clear()
+        {
+            Root = new IndexMemoryReverseTreeNode<T>();
         }
 
         /// <summary>
@@ -107,7 +89,13 @@ namespace WebExpress.WebIndex.Memory
         /// <param name="item">The data to be removed from the field.</param>
         public void Remove(T item)
         {
+            var value = GetValueDelegate(item);
+            var terms = IndexAnalyzer.Analyze(value?.ToString(), Culture);
 
+            foreach (var term in terms)
+            {
+                Root.Remove(term.Value, item);
+            }
         }
 
         /// <summary>
@@ -117,78 +105,9 @@ namespace WebExpress.WebIndex.Memory
         /// <returns>An enumeration of the data ids.</returns>
         public IEnumerable<Guid> Collect(object term)
         {
-            var offset = 1;
             var terms = IndexAnalyzer.Analyze(term?.ToString(), Culture);
 
-            // processing the first token
-            var items = GetIndexItems(terms.FirstOrDefault());
-            if (items == null)
-            {
-                return Enumerable.Empty<Guid>();
-            }
-
-            var hashSet = new HashSet<Guid>(items.Keys);
-
-            // processing the next token
-            foreach (var normalizedToken in terms.Skip(1))
-            {
-                var next = GetIndexItems(normalizedToken);
-
-                foreach (var hash in hashSet.ToList())
-                {
-                    // check if an item is also available in the next term
-                    if (next.TryGetValue(hash, out IndexMemoryReversePosition value))
-                    {
-                        var hasSuccessor = false;
-                        var postionsItem = items.TryGetValue(hash, out IndexMemoryReversePosition v) ? v : null;
-                        var postionsNext = next.ContainsKey(hash) ? value : null;
-
-                        // compare the positions of the terms
-                        foreach (var posItem in postionsItem)
-                        {
-                            if (postionsNext.Contains(posItem + (uint)offset))
-                            {
-                                hasSuccessor = true;
-
-                                break;
-                            }
-                        }
-
-                        if (!hasSuccessor)
-                        {
-                            hashSet.Remove(hash);
-                        }
-                    }
-                    else
-                    {
-                        hashSet.Remove(hash);
-                    }
-                }
-
-                offset++;
-            }
-
-            return hashSet;
-        }
-
-        /// <summary>
-        /// Returns an enumeration of the data contained for a term.
-        /// </summary>
-        /// <param name="term">The index term.</param>
-        /// <returns>An enumeration of the data contained for a term.</returns>
-        private IndexMemoryReverseItem<T> GetIndexItems(IndexTermToken term)
-        {
-            return ContainsKey(term?.Value) ? this[term?.Value] : null;
-        }
-
-        /// <summary>
-        /// Returns an enumeration of the data contained for a term.
-        /// </summary>
-        /// <param name="key">The index term.</param>
-        /// <returns>An enumeration of the data contained for a term.</returns>
-        private IndexMemoryReverseItem<T> GetIndexItems(object key)
-        {
-            return ContainsKey(key) ? this[key] : null;
+            return terms.SelectMany(x => Root.Collect(x.Value)).Distinct();
         }
 
         /// <summary>

@@ -11,19 +11,19 @@ namespace WebExpress.WebIndex.Test.Index
         protected UnitTestIndexFixture Fixture { get; set; } = fixture;
 
         [Fact]
-        public void Register()
+        public void RegisterTestDataA()
         {
-            Fixture.IndexManager.Register<UnitTestIndexTestMockA>(CultureInfo.GetCultureInfo("en"), 11, IndexType.Storage);
+            Fixture.IndexManager.Register<UnitTestIndexTestMockA>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
 
             Assert.NotNull(Fixture.IndexManager.GetIndexDocument<UnitTestIndexTestMockA>());
         }
 
         [Fact]
-        public void Clear()
+        public void ClearTestDataA()
         {
             var testData = UnitTestIndexTestMockA.GenerateTestData();
 
-            Fixture.IndexManager.Register<UnitTestIndexTestMockA>(CultureInfo.GetCultureInfo("en"), 11, IndexType.Storage);
+            Fixture.IndexManager.Register<UnitTestIndexTestMockA>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
             Fixture.IndexManager.ReIndex(testData);
             Fixture.IndexManager.Clear<UnitTestIndexTestMockA>();
 
@@ -39,7 +39,7 @@ namespace WebExpress.WebIndex.Test.Index
         {
             var testData = UnitTestIndexTestMockA.GenerateTestData();
 
-            Fixture.IndexManager.Register<UnitTestIndexTestMockA>(CultureInfo.GetCultureInfo("en"), 11, IndexType.Storage);
+            Fixture.IndexManager.Register<UnitTestIndexTestMockA>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
             Fixture.IndexManager.ReIndex(testData);
 
             var wql = Fixture.IndexManager.ExecuteWql<UnitTestIndexTestMockA>("name = 'Noah'");
@@ -54,7 +54,7 @@ namespace WebExpress.WebIndex.Test.Index
         {
             var testData = UnitTestIndexTestMockA.GenerateTestData();
 
-            Fixture.IndexManager.Register<UnitTestIndexTestMockA>(CultureInfo.GetCultureInfo("de"), 11, IndexType.Storage);
+            Fixture.IndexManager.Register<UnitTestIndexTestMockA>(CultureInfo.GetCultureInfo("de"), IndexType.Storage);
             Fixture.IndexManager.ReIndex(testData);
 
             var wql = Fixture.IndexManager.ExecuteWql<UnitTestIndexTestMockA>("name = 'Noah'");
@@ -69,7 +69,7 @@ namespace WebExpress.WebIndex.Test.Index
         {
             var testData = UnitTestIndexTestMockA.GenerateTestData();
 
-            Fixture.IndexManager.Register<UnitTestIndexTestMockA>(CultureInfo.GetCultureInfo("de-DE"), 11, IndexType.Storage);
+            Fixture.IndexManager.Register<UnitTestIndexTestMockA>(CultureInfo.GetCultureInfo("de-DE"), IndexType.Storage);
             Fixture.IndexManager.ReIndex(testData);
 
             var wql = Fixture.IndexManager.ExecuteWql<UnitTestIndexTestMockA>("name = 'Noah'");
@@ -84,7 +84,7 @@ namespace WebExpress.WebIndex.Test.Index
         {
             var testData = UnitTestIndexTestMockA.GenerateTestData();
 
-            Fixture.IndexManager.Register<UnitTestIndexTestMockA>(CultureInfo.GetCultureInfo("fr"), 11, IndexType.Storage);
+            Fixture.IndexManager.Register<UnitTestIndexTestMockA>(CultureInfo.GetCultureInfo("fr"), IndexType.Storage);
             Fixture.IndexManager.ReIndex(testData);
 
             var wql = Fixture.IndexManager.ExecuteWql<UnitTestIndexTestMockA>("name = 'Noah'");
@@ -92,32 +92,6 @@ namespace WebExpress.WebIndex.Test.Index
 
             Assert.NotNull(wql);
             Assert.Equal(2, item.Count());
-        }
-
-        [Fact]
-        public void ReIndexTestDataA_Update()
-        {
-            var testData = UnitTestIndexTestMockA.GenerateTestData();
-
-            Fixture.IndexManager.Register<UnitTestIndexTestMockA>(CultureInfo.GetCultureInfo("fr"), 11, IndexType.Storage);
-            Fixture.IndexManager.ReIndex(testData);
-
-            var wql = Fixture.IndexManager.ExecuteWql<UnitTestIndexTestMockA>("name = 'Noah'");
-            var item = wql.Apply();
-
-            Assert.NotNull(wql);
-            Assert.Equal(2, item.Count());
-
-            var first = item.FirstOrDefault();
-            first.Name = "Aurora";
-
-            Fixture.IndexManager.Update(first);
-
-            wql = Fixture.IndexManager.ExecuteWql<UnitTestIndexTestMockA>("name = 'Aurora'");
-            item = wql.Apply();
-
-            Assert.NotNull(wql);
-            Assert.Equal(1, item.Count());
         }
 
         [Fact]
@@ -125,7 +99,7 @@ namespace WebExpress.WebIndex.Test.Index
         {
             var testData = UnitTestIndexTestMockB.GenerateTestData();
 
-            Fixture.IndexManager.Register<UnitTestIndexTestMockB>(CultureInfo.GetCultureInfo("en"), ushort.MaxValue, IndexType.Storage);
+            Fixture.IndexManager.Register<UnitTestIndexTestMockB>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
             Fixture.IndexManager.ReIndex(testData);
 
             var wql = Fixture.IndexManager.ExecuteWql<UnitTestIndexTestMockB>("description = 'phasellus'");
@@ -145,7 +119,7 @@ namespace WebExpress.WebIndex.Test.Index
 
             var testData = UnitTestIndexTestMockC.GenerateTestData(itemCount, wordCount, vocabulary, wordLength).ToList();
 
-            Fixture.IndexManager.Register<UnitTestIndexTestMockC>(CultureInfo.GetCultureInfo("en"), ushort.MaxValue, IndexType.Storage);
+            Fixture.IndexManager.Register<UnitTestIndexTestMockC>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
             Fixture.IndexManager.ReIndex(testData);
             Fixture.IndexManager.ExecuteWql<UnitTestIndexTestMockC>("Text ~ 'abcdaaaaaa'");
         }
@@ -186,7 +160,7 @@ namespace WebExpress.WebIndex.Test.Index
 
                             var testData = UnitTestIndexTestMockC.GenerateTestData(i, w, v, l);
 
-                            Fixture.IndexManager.Register<UnitTestIndexTestMockC>(CultureInfo.GetCultureInfo("en"), (uint)i, IndexType.Storage);
+                            Fixture.IndexManager.Register<UnitTestIndexTestMockC>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
 
                             // preparing for a measurement
                             stopWatch.Start();
@@ -222,7 +196,7 @@ namespace WebExpress.WebIndex.Test.Index
         {
             var testData = UnitTestIndexTestMockD.GenerateTestData();
 
-            Fixture.IndexManager.Register<UnitTestIndexTestMockD>(CultureInfo.GetCultureInfo("en"), ushort.MaxValue, IndexType.Storage);
+            Fixture.IndexManager.Register<UnitTestIndexTestMockD>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
             Fixture.IndexManager.ReIndex(testData);
 
             var wql = Fixture.IndexManager.ExecuteWql<UnitTestIndexTestMockD>("firstname = 'Noah' and lastname = 'Smith'");
@@ -230,6 +204,79 @@ namespace WebExpress.WebIndex.Test.Index
 
             Assert.NotNull(wql);
             Assert.True(item.Any());
+        }
+
+        [Fact]
+        public void RemoveTestDataA_Noah()
+        {
+            var testData = UnitTestIndexTestMockA.GenerateTestData();
+  
+            Fixture.IndexManager.Register<UnitTestIndexTestMockA>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
+            Fixture.IndexManager.ReIndex(testData);
+
+            var wql = Fixture.IndexManager.ExecuteWql<UnitTestIndexTestMockA>("name = 'Noah'");
+            var item = wql.Apply();
+
+            Assert.NotNull(wql);
+            Assert.Equal(2, item.Count());
+
+            Fixture.IndexManager.Remove(testData.Where(x => x.Name == "Noah").FirstOrDefault());
+
+            wql = Fixture.IndexManager.ExecuteWql<UnitTestIndexTestMockA>("name = 'Noah'");
+            item = wql.Apply();
+
+            Assert.NotNull(wql);
+            Assert.Equal(1, item.Count());
+        }
+
+        [Fact]
+        public void RemoveTestDataA_Ines()
+        {
+            var testData = UnitTestIndexTestMockA.GenerateTestData();
+  
+            Fixture.IndexManager.Register<UnitTestIndexTestMockA>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
+            Fixture.IndexManager.ReIndex(testData);
+
+            var wql = Fixture.IndexManager.ExecuteWql<UnitTestIndexTestMockA>("name = 'Ines'");
+            var item = wql.Apply();
+
+            Assert.NotNull(wql);
+            Assert.Equal(1, item.Count());
+
+            Fixture.IndexManager.Remove(testData.Where(x => x.Name == "Ines").FirstOrDefault());
+
+            wql = Fixture.IndexManager.ExecuteWql<UnitTestIndexTestMockA>("name = 'Ines'");
+            item = wql.Apply();
+
+            Assert.NotNull(wql);
+            Assert.Equal(0, item.Count());
+        }
+
+        [Fact]
+        public void UpdateTestDataA()
+        {
+            var testData = new List<UnitTestIndexTestMockA>
+            {
+                new()
+                {
+                    Id = Guid.Parse("ED242C79-E41B-4214-BFBC-C4673E87433B"),
+                    Name = "Noah"
+                }
+            };
+
+            Fixture.IndexManager.Register<UnitTestIndexTestMockA>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
+            Fixture.IndexManager.ReIndex(testData);
+            Fixture.IndexManager.Update(new UnitTestIndexTestMockA()
+            {
+                Id = Guid.Parse("ED242C79-E41B-4214-BFBC-C4673E87433B"),
+                Name = "Aurora"
+            });
+
+            var wql = Fixture.IndexManager.ExecuteWql<UnitTestIndexTestMockA>("name = 'Aurora'");
+            var item = wql.Apply();
+
+            Assert.NotNull(wql);
+            Assert.Equal(1, item.Count());
         }
     }
 }

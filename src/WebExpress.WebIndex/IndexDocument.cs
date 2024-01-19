@@ -36,11 +36,6 @@ namespace WebExpress.WebIndex
         public IIndexContext Context { get; private set; }
 
         /// <summary>
-        /// Returns the predicted capacity (number of items to store) of the index.
-        /// </summary>
-        public uint Capacity { get; private set; }
-
-        /// <summary>
         /// Returns the culture.
         /// </summary>
         public CultureInfo Culture { get; private set; }
@@ -51,25 +46,23 @@ namespace WebExpress.WebIndex
         /// <param name="context">The index context.</param>
         /// <param name="indexType">The index type.</param>
         /// <param name="culture">The culture.</param>
-        /// <param name="capacity">The predicted capacity (number of items to store) of the index.</param>
-        public IndexDocument(IIndexContext context, IndexType indexType, CultureInfo culture, uint capacity)
+        public IndexDocument(IIndexContext context, IndexType indexType, CultureInfo culture)
         {
             Context = context;
             IndexType = indexType;
             Culture = culture;
-            Capacity = capacity;
 
             switch (IndexType)
             {
                 case IndexType.Memory:
                     {
-                        ForwardIndex = new IndexMemoryForward<T>(Context, Capacity);
+                        ForwardIndex = new IndexMemoryForward<T>(Context, ushort.MaxValue);
 
                         break;
                     }
                 default:
                     {
-                        ForwardIndex = new IndexStorageForward<T>(Context, Capacity);
+                        ForwardIndex = new IndexStorageForward<T>(Context, ushort.MaxValue);
 
                         break;
                     }
@@ -99,7 +92,7 @@ namespace WebExpress.WebIndex
                     {
                         if (!ContainsKey(property))
                         {
-                            Add(property, new IndexMemoryReverse<T>(Context, property, Culture, Capacity));
+                            Add(property, new IndexMemoryReverse<T>(Context, property, Culture));
                         }
 
                         break;
@@ -108,7 +101,7 @@ namespace WebExpress.WebIndex
                     {
                         if (!ContainsKey(property))
                         {
-                            Add(property, new IndexStorageReverse<T>(Context, property, Culture, Capacity));
+                            Add(property, new IndexStorageReverse<T>(Context, property, Culture));
                         }
 
                         break;

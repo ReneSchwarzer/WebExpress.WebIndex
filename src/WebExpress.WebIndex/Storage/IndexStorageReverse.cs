@@ -35,9 +35,9 @@ namespace WebExpress.WebIndex.Storage
         public IndexStorageSegmentHeader Header { get; private set; }
 
         /// <summary>
-        /// Returns or sets the hash map.
+        /// Returns or sets the term tree.
         /// </summary>
-        public IndexStorageSegmentHashMap<IndexStorageSegmentTerm> HashMap { get; private set; }
+        public IndexStorageSegmentTreeNode Tree { get; private set; }
 
         /// <summary>
         /// Returns or sets the memory manager.
@@ -60,23 +60,16 @@ namespace WebExpress.WebIndex.Storage
         public CultureInfo Culture { get; private set; }
 
         /// <summary>
-        /// Returns or sets the predicted capacity (number of items to store) of the reverse index.
-        /// </summary>
-        private uint Capacity { get; set; }
-
-        /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="context">The index context.</param>
         /// <param name="property">The property that makes up the index.</param>
         /// <param name="culture">The culture.</param>
-        /// <param name="capacity">The predicted capacity (number of items to store) of the reverse index.</param>
-        public IndexStorageReverse(IIndexContext context, PropertyInfo property, CultureInfo culture, uint capacity)
+        public IndexStorageReverse(IIndexContext context, PropertyInfo property, CultureInfo culture)
         {
             Context = context;
             Property = property;
             Culture = culture;
-            Capacity = capacity;
             FileName = Path.Combine(Context.IndexDirectory, $"{typeof(T).Name}.{property.Name}.wri");
 
             var exists = File.Exists(FileName);
@@ -84,24 +77,24 @@ namespace WebExpress.WebIndex.Storage
             Header = new IndexStorageSegmentHeader(new IndexStorageContext(this)) { Identifier = "wri" };
             Allocator = new IndexStorageSegmentAllocator(new IndexStorageContext(this));
             Statistic = new IndexStorageSegmentStatistic(new IndexStorageContext(this));
-            HashMap = new IndexStorageSegmentHashMap<IndexStorageSegmentTerm>(new IndexStorageContext(this), Capacity);
+            Tree = new IndexStorageSegmentTreeNode(new IndexStorageContext(this));
 
             Allocator.Alloc(Statistic);
-            Allocator.Alloc(HashMap);
+            Allocator.Alloc(Tree);
 
             if (exists)
             {
                 Header = IndexFile.Read(Header);
                 Allocator = IndexFile.Read(Allocator);
                 Statistic = IndexFile.Read(Statistic);
-                HashMap = IndexFile.Read(HashMap);
+                Tree = IndexFile.Read(Tree);
             }
             else
             {
                 IndexFile.Write(Header);
                 IndexFile.Write(Allocator);
                 IndexFile.Write(Statistic);
-                IndexFile.Write(HashMap);
+                IndexFile.Write(Tree);
             }
 
             IndexFile.Flush();
@@ -119,8 +112,8 @@ namespace WebExpress.WebIndex.Storage
 
             foreach (var term in terms)
             {
-                HashMap[term.Value]
-                    .Add(new IndexStorageSegmentTerm(new IndexStorageContext(this)) { Term = term.Value, Fequency = 1 })
+                Tree.Add(term.Value)
+                    .Term
                     .Postings[item.Id]
                     .Add(new IndexStorageSegmentPosting(new IndexStorageContext(this)) { DocumentID = item.Id })
                     .Positions
@@ -136,15 +129,15 @@ namespace WebExpress.WebIndex.Storage
             Header = new IndexStorageSegmentHeader(new IndexStorageContext(this)) { Identifier = "wri" };
             Allocator = new IndexStorageSegmentAllocator(new IndexStorageContext(this));
             Statistic = new IndexStorageSegmentStatistic(new IndexStorageContext(this));
-            HashMap = new IndexStorageSegmentHashMap<IndexStorageSegmentTerm>(new IndexStorageContext(this), Capacity);
+            Tree = new IndexStorageSegmentTreeNode(new IndexStorageContext(this));
 
             Allocator.Alloc(Statistic);
-            Allocator.Alloc(HashMap);
+            Allocator.Alloc(Tree);
 
             IndexFile.Write(Header);
             IndexFile.Write(Allocator);
             IndexFile.Write(Statistic);
-            IndexFile.Write(HashMap);
+            IndexFile.Write(Tree);
 
             IndexFile.Flush();
         }
@@ -171,12 +164,13 @@ namespace WebExpress.WebIndex.Storage
 
             foreach (var normalized in terms)
             {
-                var documents = HashMap[normalized.Value]
-                    .Where(x => x.Term.Equals(normalized.Value))
-                    .SelectMany(x => x.Postings.All)
+                var documents = Tree[normalized.Value]
+                    ?.Term
+                    ?.Postings
+                    ?.All
                     .Select(x => x.DocumentID);
 
-                list.AddRange(documents);
+                list.AddRange(documents ?? Enumerable.Empty<Guid>());
             }
 
             return list;

@@ -87,13 +87,12 @@ namespace WebExpress.WebIndex
         /// </summary>
         /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
         /// <param name="culture">The culture.</param>
-        /// <param name="capacity">The predicted capacity (number of items to store) of the index.</param>
         /// <param name="type">The index type.</param>
-        public void Register<T>(CultureInfo culture, uint capacity = ushort.MaxValue, IndexType type = IndexType.Memory) where T : IIndexItem
+        public void Register<T>(CultureInfo culture, IndexType type = IndexType.Memory) where T : IIndexItem
         {
             if (!Documents.ContainsKey(typeof(T)))
             {
-                Documents.Add(typeof(T), new IndexDocument<T>(Context, type, culture, capacity));
+                Documents.Add(typeof(T), new IndexDocument<T>(Context, type, culture));
             }
         }
 
