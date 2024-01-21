@@ -103,12 +103,15 @@ namespace WebExpress.WebIndex
         /// <param name="items">The data to be added to the index.</param>
         public void ReIndex<T>(IEnumerable<T> items) where T : IIndexItem
         {
-            Clear<T>();
-
-            foreach (var item in items)
+            if (GetIndexDocument<T>() is IIndexDocument<T> document)
             {
-                Add(item);
-            };
+                document.ReBuild((uint)items.Count());
+
+                foreach (var item in items)
+                {
+                    document.Add(item);
+                };
+            }
         }
 
         /// <summary>

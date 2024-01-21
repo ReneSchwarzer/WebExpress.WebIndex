@@ -57,7 +57,7 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Returns or sets the predicted capacity (number of items to store) of the reverse index.
         /// </summary>
-        private uint Capacity { get; set; }
+        public uint Capacity { get; set; }
 
         /// <summary>
         /// Constructor

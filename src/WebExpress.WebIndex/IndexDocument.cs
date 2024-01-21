@@ -52,20 +52,32 @@ namespace WebExpress.WebIndex
             IndexType = indexType;
             Culture = culture;
 
-            switch (IndexType)
+            ReBuild(ushort.MaxValue);
+        }
+
+        /// <summary>
+        /// Rebuilds the index.
+        /// </summary>
+        /// <param name="capacity">The predicted capacity (number of items to store) of the index.</param>
+        public virtual void ReBuild(uint capacity)
+        {
+            if (ForwardIndex == null || capacity > ForwardIndex.Capacity)
             {
-                case IndexType.Memory:
-                    {
-                        ForwardIndex = new IndexMemoryForward<T>(Context, ushort.MaxValue);
+                switch (IndexType)
+                {
+                    case IndexType.Memory:
+                        {
+                            ForwardIndex = new IndexMemoryForward<T>(Context, capacity);
 
-                        break;
-                    }
-                default:
-                    {
-                        ForwardIndex = new IndexStorageForward<T>(Context, ushort.MaxValue);
+                            break;
+                        }
+                    default:
+                        {
+                            ForwardIndex = new IndexStorageForward<T>(Context, capacity);
 
-                        break;
-                    }
+                            break;
+                        }
+                }
             }
 
             foreach (var property in typeof(T).GetProperties())
@@ -79,7 +91,7 @@ namespace WebExpress.WebIndex
         /// </summary>
         /// <typeparam name="T">The data type. This must have the IIndexData interface.</typeparam>
         /// <param name="property">The property that makes up the index.</param>
-        public void Add(PropertyInfo property)
+        public virtual void Add(PropertyInfo property)
         {
             if (property.GetCustomAttribute<IndexIgnore>() != null)
             {
@@ -113,7 +125,7 @@ namespace WebExpress.WebIndex
         /// Adds a item to the index.
         /// </summary>
         /// <param name="item">The data to be added to the index.</param>
-        public void Add(T item)
+        public virtual void Add(T item)
         {
             foreach (var property in typeof(T).GetProperties().Where(x => x.GetCustomAttribute<IndexIgnore>() == null))
             {
@@ -129,7 +141,7 @@ namespace WebExpress.WebIndex
         /// <summary>
         /// Removed all data from the index.
         /// </summary>
-        public new void Clear()
+        public virtual new void Clear()
         {
             foreach (var property in typeof(T).GetProperties().Where(x => x.GetCustomAttribute<IndexIgnore>() == null))
             {
@@ -146,7 +158,7 @@ namespace WebExpress.WebIndex
         /// The data to be removed from the index.
         /// </summary>
         /// <param name="item">The data to be removed from the index.</param>
-        public void Remove(T item)
+        public virtual void Remove(T item)
         {
             foreach (var property in typeof(T).GetProperties())
             {
@@ -164,7 +176,7 @@ namespace WebExpress.WebIndex
         /// </summary>
         /// <param name="property">The property that makes up the index.</param>
         /// <returns>The index field or null.</returns>
-        public IIndexReverse<T> GetReverseIndex(PropertyInfo property)
+        public virtual IIndexReverse<T> GetReverseIndex(PropertyInfo property)
         {
             return ContainsKey(property) ? this[property] : null;
         }
@@ -173,7 +185,7 @@ namespace WebExpress.WebIndex
         /// Performs application-defined tasks associated with freeing, releasing, 
         /// or resetting unmanaged resources.
         /// </summary>
-        public void Dispose()
+        public virtual void Dispose()
         {
             ForwardIndex.Dispose();
 

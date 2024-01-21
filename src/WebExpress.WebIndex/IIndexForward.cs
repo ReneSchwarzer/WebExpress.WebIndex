@@ -11,6 +11,11 @@ namespace WebExpress.WebIndex
         IEnumerable<T> All { get; }
 
         /// <summary>
+        /// Returns the predicted capacity (number of items to store) of the index.
+        /// </summary>
+        uint Capacity { get; }
+
+        /// <summary>
         /// Adds a item to the index.
         /// </summary>
         /// <typeparam name="T">The data type. This must have the IIndexData interface.</typeparam>

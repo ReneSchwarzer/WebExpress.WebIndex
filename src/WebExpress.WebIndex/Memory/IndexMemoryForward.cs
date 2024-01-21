@@ -15,6 +15,12 @@ namespace WebExpress.WebIndex.Memory
         /// </summary>
         public IEnumerable<T> All => Values;
 
+
+        /// <summary>
+        /// Returns the predicted capacity (number of items to store) of the index.
+        /// </summary>
+        public uint Capacity => (uint)Count;
+
         /// <summary>
         /// Returns the index context.
         /// </summary>

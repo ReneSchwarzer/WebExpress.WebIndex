@@ -38,6 +38,12 @@ namespace WebExpress.WebIndex
         void Remove(T item);
 
         /// <summary>
+        /// Rebuilds the index.
+        /// </summary>
+        /// <param name="capacity">The predicted capacity (number of items to store) of the index.</param>
+        void ReBuild(uint capacity);
+
+        /// <summary>
         /// Returns an index field based on its name.
         /// </summary>
         /// <param name="property">The property that makes up the index.</param>
