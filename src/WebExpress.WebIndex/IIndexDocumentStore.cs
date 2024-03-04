@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace WebExpress.WebIndex
 {
-    public interface IIndexForward<T> : IDisposable where T : IIndexItem
+    public interface IIndexDocumentStore<T> : IDisposable where T : IIndexItem
     {
         /// <summary>
         /// Returns all items.
@@ -11,7 +11,7 @@ namespace WebExpress.WebIndex
         IEnumerable<T> All { get; }
 
         /// <summary>
-        /// Returns the predicted capacity (number of items to store) of the index.
+        /// Returns the predicted capacity (number of items to store).
         /// </summary>
         uint Capacity { get; }
 
@@ -23,15 +23,15 @@ namespace WebExpress.WebIndex
         void Add(T item);
 
         /// <summary>
-        /// Removed all data from the index.
+        /// Removed all data from the document store.
         /// </summary>
         void Clear();
 
         /// <summary>
-        /// The data to be removed from the index.
+        /// The data to be removed from the document store.
         /// </summary>
         /// <typeparam name="T">The data type. This must have the IIndexData interface.</typeparam>
-        /// <param name="item">The data to be removed from the index.</param>
+        /// <param name="item">The data to be removed from the document store.</param>
         void Remove(T item);
 
         /// <summary>

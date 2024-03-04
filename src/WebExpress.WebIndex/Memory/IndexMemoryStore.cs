@@ -4,11 +4,11 @@ using System.Collections.Generic;
 namespace WebExpress.WebIndex.Memory
 {
     /// <summary>
-    /// The forward index.
+    /// The document store.
     /// Key: The id of the item.
     /// Value: The item.
     /// </summary>
-    public class IndexMemoryForward<T> : Dictionary<Guid, T>, IIndexForward<T> where T : IIndexItem
+    public class IndexMemoryStore<T> : Dictionary<Guid, T>, IIndexDocumentStore<T> where T : IIndexItem
     {
         /// <summary>
         /// Returns all items.
@@ -17,7 +17,7 @@ namespace WebExpress.WebIndex.Memory
 
 
         /// <summary>
-        /// Returns the predicted capacity (number of items to store) of the index.
+        /// Returns the predicted capacity (number of items to store) of the document store.
         /// </summary>
         public uint Capacity => (uint)Count;
 
@@ -30,8 +30,8 @@ namespace WebExpress.WebIndex.Memory
         /// Constructor
         /// </summary>
         /// <param name="context">The index context.</param>
-        /// <param name="capacity">The predicted capacity (number of items to store) of the reverse index.</param>
-        public IndexMemoryForward(IIndexContext context, uint capacity)
+        /// <param name="capacity">The predicted capacity (number of items to store) of the document store.</param>
+        public IndexMemoryStore(IIndexContext context, uint capacity)
             : base((int)capacity)
         {
             Context = context;

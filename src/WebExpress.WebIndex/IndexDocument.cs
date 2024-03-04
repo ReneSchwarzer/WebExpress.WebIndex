@@ -16,9 +16,9 @@ namespace WebExpress.WebIndex
     public class IndexDocument<T> : Dictionary<PropertyInfo, IIndexReverse<T>>, IIndexDocument<T> where T : IIndexItem
     {
         /// <summary>
-        /// Returns the forward index.
+        /// Returns the document store.
         /// </summary>
-        public IIndexForward<T> ForwardIndex { get; private set; }
+        public IIndexDocumentStore<T> DocumentStore { get; private set; }
 
         /// <summary>
         /// Returns the index type.
@@ -61,19 +61,19 @@ namespace WebExpress.WebIndex
         /// <param name="capacity">The predicted capacity (number of items to store) of the index.</param>
         public virtual void ReBuild(uint capacity)
         {
-            if (ForwardIndex == null || capacity > ForwardIndex.Capacity)
+            if (DocumentStore == null || capacity > DocumentStore.Capacity)
             {
                 switch (IndexType)
                 {
                     case IndexType.Memory:
                         {
-                            ForwardIndex = new IndexMemoryForward<T>(Context, capacity);
+                            DocumentStore = new IndexMemoryStore<T>(Context, capacity);
 
                             break;
                         }
                     default:
                         {
-                            ForwardIndex = new IndexStorageForward<T>(Context, capacity);
+                            DocumentStore = new IndexStorageStore<T>(Context, capacity);
 
                             break;
                         }
@@ -135,7 +135,7 @@ namespace WebExpress.WebIndex
                 }
             }
 
-            ForwardIndex.Add(item);
+            DocumentStore.Add(item);
         }
 
         /// <summary>
@@ -151,7 +151,7 @@ namespace WebExpress.WebIndex
                 }
             }
 
-            ForwardIndex.Clear();
+            DocumentStore.Clear();
         }
 
         /// <summary>
@@ -168,7 +168,7 @@ namespace WebExpress.WebIndex
                 }
             }
 
-            ForwardIndex.Remove(item);
+            DocumentStore.Remove(item);
         }
 
         /// <summary>
@@ -187,7 +187,7 @@ namespace WebExpress.WebIndex
         /// </summary>
         public virtual void Dispose()
         {
-            ForwardIndex.Dispose();
+            DocumentStore.Dispose();
 
             foreach (var property in typeof(T).GetProperties())
             {

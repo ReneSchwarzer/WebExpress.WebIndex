@@ -11,9 +11,9 @@ namespace WebExpress.WebIndex
     public interface IIndexDocument<T> : IIndexDocument where T : IIndexItem
     {
         /// <summary>
-        /// Returns the forward index.
+        /// Returns the document store.
         /// </summary>
-        IIndexForward<T> ForwardIndex { get; }
+        IIndexDocumentStore<T> DocumentStore { get; }
 
         /// <summary>
         /// Return the index field names.

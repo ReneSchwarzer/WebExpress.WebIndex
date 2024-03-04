@@ -94,11 +94,11 @@ namespace WebExpress.WebIndex.Wql
 
             if (Filter != null)
             {
-                filtered = Filter.Apply().Select(x => IndexDocument.ForwardIndex.GetItem(x)).AsQueryable();
+                filtered = Filter.Apply().Select(x => IndexDocument.DocumentStore.GetItem(x)).AsQueryable();
             }
             else
             {
-                filtered = IndexDocument?.ForwardIndex.All.AsQueryable();
+                filtered = IndexDocument?.DocumentStore.All.AsQueryable();
             }
 
             if (Order != null)

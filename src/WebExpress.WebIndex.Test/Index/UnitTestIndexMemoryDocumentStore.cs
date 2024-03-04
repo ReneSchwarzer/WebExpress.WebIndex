@@ -4,7 +4,7 @@ using Xunit.Abstractions;
 namespace WebExpress.WebIndex.Test.Index
 {
     [Collection("UnitTestIndexCollectionFixture")]
-    public class UnitTestIndexMemoryForward(UnitTestIndexFixture fixture, ITestOutputHelper output)
+    public class UnitTestIndexMemoryDocumentStore(UnitTestIndexFixture fixture, ITestOutputHelper output)
     {
         public ITestOutputHelper Output { get; private set; } = output;
         protected UnitTestIndexFixture Fixture { get; set; } = fixture;
@@ -15,7 +15,7 @@ namespace WebExpress.WebIndex.Test.Index
             var context = new IndexContext();
 
             var data = UnitTestIndexTestMockD.GenerateTestData();
-            var forwardIndex = new IndexMemoryForward<UnitTestIndexTestMockD>(context, (uint)data.Count);
+            var forwardIndex = new IndexMemoryStore<UnitTestIndexTestMockD>(context, (uint)data.Count);
 
             forwardIndex.Dispose();
 
@@ -29,7 +29,7 @@ namespace WebExpress.WebIndex.Test.Index
 
             var data = UnitTestIndexTestMockD.GenerateTestData();
             var randomItem = data[new Random().Next() % data.Count];
-            var forwardIndex = new IndexMemoryForward<UnitTestIndexTestMockD>(context, (uint)data.Count);
+            var forwardIndex = new IndexMemoryStore<UnitTestIndexTestMockD>(context, (uint)data.Count);
 
             foreach (var item in data)
             {
@@ -49,7 +49,7 @@ namespace WebExpress.WebIndex.Test.Index
             var context = new IndexContext();
 
             var data = UnitTestIndexTestMockD.GenerateTestData();
-            var forwardIndex = new IndexMemoryForward<UnitTestIndexTestMockD>(context, (uint)data.Count);
+            var forwardIndex = new IndexMemoryStore<UnitTestIndexTestMockD>(context, (uint)data.Count);
 
             foreach (var item in data)
             {
@@ -70,7 +70,7 @@ namespace WebExpress.WebIndex.Test.Index
 
             var data = UnitTestIndexTestMockD.GenerateTestData();
             var randomItem = data[new Random().Next() % data.Count];
-            var forwardIndex = new IndexMemoryForward<UnitTestIndexTestMockD>(context, (uint)data.Count);
+            var forwardIndex = new IndexMemoryStore<UnitTestIndexTestMockD>(context, (uint)data.Count);
 
             foreach (var item in data)
             {

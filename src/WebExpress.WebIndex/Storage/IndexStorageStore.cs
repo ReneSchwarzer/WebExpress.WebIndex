@@ -9,10 +9,10 @@ using System.Text.Json;
 namespace WebExpress.WebIndex.Storage
 {
     /// <summary>
-    /// Implementation of the web forward index, which stores the key-value pairs on disk.
+    /// Implementation of the web document store, which stores the key-value pairs on disk.
     /// </summary>
     /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
-    public class IndexStorageForward<T> : IIndexForward<T>, IIndexStorage where T : IIndexItem
+    public class IndexStorageStore<T> : IIndexDocumentStore<T>, IIndexStorage where T : IIndexItem
     {
         /// <summary>
         /// Returns the file name for the reverse index.
@@ -20,7 +20,7 @@ namespace WebExpress.WebIndex.Storage
         public string FileName { get; private set; }
 
         /// <summary>
-        /// Returns or sets the reverse index file.
+        /// Returns or sets the file.
         /// </summary>
         public IndexStorageFile IndexFile { get; private set; }
 
@@ -55,7 +55,7 @@ namespace WebExpress.WebIndex.Storage
         public IEnumerable<T> All => HashMap.All.Select(x => GetItem(x));
 
         /// <summary>
-        /// Returns or sets the predicted capacity (number of items to store) of the reverse index.
+        /// Returns or sets the predicted capacity (number of items to store) of the document store.
         /// </summary>
         public uint Capacity { get; set; }
 
@@ -63,8 +63,8 @@ namespace WebExpress.WebIndex.Storage
         /// Constructor
         /// </summary>
         /// <param name="context">The index context.</param>
-        /// <param name="capacity">The predicted capacity (number of items to store) of the reverse index.</param>
-        public IndexStorageForward(IIndexContext context, uint capacity)
+        /// <param name="capacity">The predicted capacity (number of items to store) of the document store.</param>
+        public IndexStorageStore(IIndexContext context, uint capacity)
         {
             Context = context;
             Capacity = capacity;
@@ -116,7 +116,7 @@ namespace WebExpress.WebIndex.Storage
         }
 
         /// <summary>
-        /// Removed all data from the index.
+        /// Removed all data from the document store.
         /// </summary>
         public void Clear()
         {
