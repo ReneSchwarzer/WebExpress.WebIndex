@@ -8,7 +8,7 @@ namespace WebExpress.WebIndex.Memory
     /// Key: The id of the item.
     /// Value: The item.
     /// </summary>
-    public class IndexMemoryStore<T> : Dictionary<Guid, T>, IIndexDocumentStore<T> where T : IIndexItem
+    public class IndexMemoryDocumentStore<T> : Dictionary<Guid, T>, IIndexDocumentStore<T> where T : IIndexItem
     {
         /// <summary>
         /// Returns all items.
@@ -31,7 +31,7 @@ namespace WebExpress.WebIndex.Memory
         /// </summary>
         /// <param name="context">The index context.</param>
         /// <param name="capacity">The predicted capacity (number of items to store) of the document store.</param>
-        public IndexMemoryStore(IIndexContext context, uint capacity)
+        public IndexMemoryDocumentStore(IIndexContext context, uint capacity)
             : base((int)capacity)
         {
             Context = context;

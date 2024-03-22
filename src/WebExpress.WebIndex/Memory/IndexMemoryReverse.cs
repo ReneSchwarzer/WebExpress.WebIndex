@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using Microsoft.VisualBasic;
 using WebExpress.WebIndex.Term;
 
 namespace WebExpress.WebIndex.Memory
@@ -43,7 +42,7 @@ namespace WebExpress.WebIndex.Memory
         /// <summary>
         /// 
         /// </summary>
-        public IndexMemoryReverseTreeNode<T> Root { get; private set; } = new ();
+        public IndexMemoryReverseTerm<T> Root { get; private set; } = new ();
 
         /// <summary>
         /// Constructor
@@ -79,7 +78,7 @@ namespace WebExpress.WebIndex.Memory
         /// </summary>
         public void Clear()
         {
-            Root = new IndexMemoryReverseTreeNode<T>();
+            Root = new IndexMemoryReverseTerm<T>();
         }
 
         /// <summary>

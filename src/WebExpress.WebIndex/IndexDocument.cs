@@ -67,13 +67,13 @@ namespace WebExpress.WebIndex
                 {
                     case IndexType.Memory:
                         {
-                            DocumentStore = new IndexMemoryStore<T>(Context, capacity);
+                            DocumentStore = new IndexMemoryDocumentStore<T>(Context, capacity);
 
                             break;
                         }
                     default:
                         {
-                            DocumentStore = new IndexStorageStore<T>(Context, capacity);
+                            DocumentStore = new IndexStorageDocumentStore<T>(Context, capacity);
 
                             break;
                         }
@@ -93,7 +93,7 @@ namespace WebExpress.WebIndex
         /// <param name="property">The property that makes up the index.</param>
         public virtual void Add(PropertyInfo property)
         {
-            if (property.GetCustomAttribute<IndexIgnore>() != null)
+            if (property.GetCustomAttribute<IndexIgnoreAttribute>() != null)
             {
                 return;
             }
@@ -127,7 +127,7 @@ namespace WebExpress.WebIndex
         /// <param name="item">The data to be added to the index.</param>
         public virtual void Add(T item)
         {
-            foreach (var property in typeof(T).GetProperties().Where(x => x.GetCustomAttribute<IndexIgnore>() == null))
+            foreach (var property in typeof(T).GetProperties().Where(x => x.GetCustomAttribute<IndexIgnoreAttribute>() == null))
             {
                 if (GetReverseIndex(property) is IIndexReverse<T> reverseIndex)
                 {
@@ -143,7 +143,7 @@ namespace WebExpress.WebIndex
         /// </summary>
         public virtual new void Clear()
         {
-            foreach (var property in typeof(T).GetProperties().Where(x => x.GetCustomAttribute<IndexIgnore>() == null))
+            foreach (var property in typeof(T).GetProperties().Where(x => x.GetCustomAttribute<IndexIgnoreAttribute>() == null))
             {
                 if (GetReverseIndex(property) is IIndexReverse<T> reverseIndex)
                 {

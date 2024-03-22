@@ -7,7 +7,7 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Returns the address of the segment.
         /// </summary>
-        public virtual ulong Addr { get; protected set; }
+        public virtual ulong Addr { get; private set; }
 
         /// <summary>
         /// Returns the the context of the index.
@@ -15,25 +15,13 @@ namespace WebExpress.WebIndex.Storage
         public IndexStorageContext Context { get; private set; }
 
         /// <summary>
-        /// Returns the amount of space required on the storage device.
-        /// </summary>
-        public abstract uint Size { get; }
-
-        /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="context">The reference to the context of the index.</param>
-        public IndexStorageSegment(IndexStorageContext context)
+        /// <param name="addr">The address of the segment.</param>
+        public IndexStorageSegment(IndexStorageContext context, ulong addr)
         {
             Context = context;
-        }
-
-        /// <summary>
-        /// Assigns an address to the segment.
-        /// </summary>
-        /// <param name="addr">The address of the segment.</param>
-        public virtual void OnAllocated(ulong addr)
-        {
             Addr = addr;
         }
 
@@ -41,8 +29,7 @@ namespace WebExpress.WebIndex.Storage
         /// Reads the record from the storage medium.
         /// </summary>
         /// <param name="reader">The reader for i/o operations.</param>
-        /// <param name="addr">The address of the segment.</param>
-        public abstract void Read(BinaryReader reader, ulong addr);
+        public abstract void Read(BinaryReader reader);
 
         /// <summary>
         /// Writes the record to the storage medium.

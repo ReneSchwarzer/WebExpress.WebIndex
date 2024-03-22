@@ -1,4 +1,6 @@
 ﻿# Misspelled words in the form of false=right. One key-value pair per line.
+&=and
+|=or
 alot=a lot
 accomodate=accommodate
 adress=address

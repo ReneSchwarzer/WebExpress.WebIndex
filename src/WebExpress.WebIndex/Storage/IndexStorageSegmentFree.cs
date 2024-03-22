@@ -1,52 +1,46 @@
-﻿using System;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
+using WebExpress.WebIndex.WebAttribute;
 
 namespace WebExpress.WebIndex.Storage
 {
     /// <summary>
-    /// The items are stored in a segment. The size of the segment is variable and is determined by the size of the compressed 
-    /// item instance. The segment are stored in the variable memory area of the IndexDocumentStore.
+    /// Free memory slots are stored in a linked list, which represents the free segments in the file. These can be reused for storing new data. Unused 
+    /// segments are replaced with the `Free`-Segment, and neighboring free segments are merged. This process creates room for larger segments but may 
+    /// lead to the formation of dead memory spaces too small for reuse. 
     /// </summary>
-    public class IndexStorageSegmentItem : IndexStorageSegment, IIndexStorageSegmentListItem
+    [SegmentCached]
+    public class IndexStorageSegmentFree : IndexStorageSegment, IIndexStorageSegmentListItem
     {
         /// <summary>
-        /// Returns or sets the address of the following term.
+        /// Returns or sets the size of free space.
+        /// </summary>
+        public uint Lenght { get; set; }
+        
+        /// <summary>
+        /// Returns or sets the address of the following free segment or 0 if the last.
         /// </summary>
         public ulong SuccessorAddr { get; set; }
 
         /// <summary>
-        /// Returns the number of characters in the term.
-        /// </summary>
-        public uint Length => (uint)Data.Length;
-
-        /// <summary>
-        /// Returns or sets the id of the item.
-        /// </summary>
-        public Guid Id { get; set; }
-
-        /// <summary>
-        /// Returns or sets the item data.
-        /// </summary>
-        public byte[] Data { get; set; }
-
-        /// <summary>
         /// Returns the amount of space required on the storage device.
         /// </summary>
-        public static uint SegmentSize => sizeof(ulong) + sizeof(uint) + sizeof(uint) + 16;
-
-        /// <summary>
-        /// Returns the amount of space required on the storage device.
-        /// SuccessorAddr + Length + Fequency + Id + Data
-        /// </summary>
-        public uint Size => SegmentSize + Length;
+        public static uint SegmentSize => sizeof(uint) + sizeof(ulong);
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="context">The reference to the context of the index.</param>
-        /// <param name="addr">The adress of the segment.</param>
-        public IndexStorageSegmentItem(IndexStorageContext context, ulong addr)
+        public IndexStorageSegmentFree(IndexStorageContext context)
+            : this(context, 0)
+        {
+        }
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="context">The reference to the context of the index.</param>
+        /// <param name="addr">The adress of the free segment.</param>
+        public IndexStorageSegmentFree(IndexStorageContext context, ulong addr)
             : base(context, addr)
         {
         }
@@ -57,10 +51,8 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="reader">The reader for i/o operations.</param>
         public override void Read(BinaryReader reader)
         {
-            Id = new Guid(reader.ReadBytes(16));
-            var length = reader.ReadUInt32();
+            Lenght = reader.ReadUInt32();
             SuccessorAddr = reader.ReadUInt64();
-            Data = reader.ReadBytes((int)length);
         }
 
         /// <summary>
@@ -69,10 +61,8 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="writer">The writer for i/o operations.</param>
         public override void Write(BinaryWriter writer)
         {
-            writer.Write(Id.ToByteArray());
-            writer.Write(Length);
+            writer.Write(Lenght);
             writer.Write(SuccessorAddr);
-            writer.Write(Data);
         }
 
         /// <summary>
@@ -90,9 +80,9 @@ namespace WebExpress.WebIndex.Storage
         /// <exception cref="System.ArgumentException">Obj is not the same type as this instance.</exception>
         public int CompareTo(object obj)
         {
-            if (obj is IndexStorageSegmentItem item)
+            if (obj is IndexStorageSegmentFree free)
             {
-                return Data.SequenceEqual(item.Data) ? 0 : -1;
+                return Addr.CompareTo(free.Addr);
             }
 
             throw new System.ArgumentException();

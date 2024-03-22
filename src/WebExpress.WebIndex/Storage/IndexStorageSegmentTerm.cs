@@ -1,71 +1,26 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace WebExpress.WebIndex.Storage
 {
-    public class IndexStorageSegmentTerm : IndexStorageSegment
+    /// <summary>
+    /// Each term is broken down into individual characters and stored as separate nodes in a search tree. With the exception 
+    /// of the root node, the TreeNode segments, which have a constant length, are stored in the data area of the reverse 
+    /// index. The path determines the term. Each node, which is a complete term, points to a term segment, which has additional 
+    /// information about the term, such as its frequency, position in the document, and other relevant information that can be
+    /// useful in search queries.
+    /// </summary>
+    public class IndexStorageSegmentTerm : IndexStorageSegmentTermNode
     {
-        /// <summary>
-        /// Returns or sets the number of times the term is used (postings).
-        /// </summary>
-        public uint Fequency { get; set; }
-
-        /// <summary>
-        /// Returns the postings.
-        /// </summary>
-        public IndexStorageSegmentHashMap<IndexStorageSegmentPosting> Postings { get; private set; }
-
-        /// <summary>
-        /// Returns the amount of space required on the storage device.
-        /// </summary>
-        public override uint Size => sizeof(uint) + Postings.Size;
-
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="context">The reference to the context of the index.</param>
         public IndexStorageSegmentTerm(IndexStorageContext context)
-            : base(context)
+            : base(context, context.IndexFile.Alloc(SegmentSize))
         {
-            Postings = new IndexStorageSegmentHashMap<IndexStorageSegmentPosting>(Context, 10);
-        }
-
-        /// <summary>
-        /// Assigns an address to the segment.
-        /// </summary>
-        /// <param name="addr">The address of the segment.</param>
-        public override void OnAllocated(ulong addr)
-        {
-            base.OnAllocated(addr);
-
-            Postings.OnAllocated(addr + Size - Postings.Size);
-        }
-
-        /// <summary>
-        /// Reads the record from the storage medium.
-        /// </summary>
-        /// <param name="reader">The reader for i/o operations.</param>
-        /// <param name="addr">The address of the segment.</param>
-        public override void Read(BinaryReader reader, ulong addr)
-        {
-            Addr = addr;
-            reader.BaseStream.Seek((long)Addr, SeekOrigin.Begin);
-
-            Fequency = reader.ReadUInt32();
-
-            Postings.Read(reader, addr + Size - Postings.Size);
-        }
-
-        /// <summary>
-        /// Writes the record to the storage medium.
-        /// </summary>
-        /// <param name="writer">The writer for i/o operations.</param>
-        public override void Write(BinaryWriter writer)
-        {
-            writer.BaseStream.Seek((long)Addr, SeekOrigin.Begin);
-
-            writer.Write(Fequency);
-
-            Postings.Write(writer);
         }
     }
 }

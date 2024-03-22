@@ -1,67 +1,155 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 
 namespace WebExpress.WebIndex.Storage
 {
+    /// <summary>
+    /// The posting segment is designed as a list and contains the IDs of the documents that belong to a term. For each document, the 
+    /// posting segment refers to the position information that indicates where the term is located in the document. The posting 
+    /// segment is stored in the variable memory area of the inverted index.
+    /// </summary>
     public class IndexStorageSegmentPosting : IndexStorageSegment, IIndexStorageSegmentListItem
     {
+        /// <summary>
+        /// Returns or sets the document id.
+        /// </summary>
+        public Guid DocumentID { get; set; }
         /// <summary>
         /// Returns or sets the address of the following posting.
         /// </summary>
         public ulong SuccessorAddr { get; set; }
 
         /// <summary>
-        /// Returns or sets the document id.
+        /// Returns the adress of the first position element of a sorted list or 0 if there is no element.
         /// </summary>
-        public Guid DocumentID { get; set; }
-
-        /// <summary>
-        /// Returns the position list.
-        /// </summary>
-        public IndexStorageSegmentList<IndexStorageSegmentPosition> Positions { get; private set; }
+        public ulong PositionAddr { get; private set; }
 
         /// <summary>
         /// Returns the amount of space required on the storage device.
-        /// SuccessorAddr + Id
         /// </summary>
-        public override uint Size => sizeof(ulong) + 16 + IndexStorageSegmentList<IndexStorageSegmentPosition>.SegmentSize;
+        public static uint SegmentSize =>  16 + sizeof(ulong) + sizeof(ulong);
+
+        /// <summary>
+        /// Returns the a sorted list of the positions or no element.
+        /// </summary>
+        public IEnumerable<IndexStorageSegmentPosition> Positions 
+        {
+            get 
+            {
+                if (PositionAddr == 0)
+                {
+                    yield break;
+                }
+
+                var addr = PositionAddr;
+
+                while (addr != 0)
+                {
+                    var item = Context.IndexFile.Read<IndexStorageSegmentPosition>(addr, Context);
+                    yield return item;
+
+                    addr = item.SuccessorAddr;
+                }
+            }
+        }
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="context">The reference to the context of the index.</param>
-        public IndexStorageSegmentPosting(IndexStorageContext context)
-            : base(context)
+        /// <param name="addr">The adress of the segment.</param>
+        public IndexStorageSegmentPosting(IndexStorageContext context, ulong addr)
+            : base(context, addr)
         {
-            Positions = new IndexStorageSegmentList<IndexStorageSegmentPosition>(context, ListSortDirection.Descending);
         }
 
         /// <summary>
-        /// Assigns an address to the segment.
+        /// Add a position segments.
         /// </summary>
-        /// <param name="addr">The address of the segment.</param>
-        public override void OnAllocated(ulong addr)
+        /// <param name="pos">The position of the term.</params>
+        /// <returns>The position segment.</returns>
+        public IndexStorageSegmentPosition AddPosition(uint pos)
         {
-            base.OnAllocated(addr);
+            var item = default(IndexStorageSegmentPosition);
 
-            Positions.OnAllocated(addr + Size - Positions.Size);
+            if (PositionAddr == 0)
+            {
+                PositionAddr = Context.Allocator.Alloc(IndexStorageSegmentPosition.SegmentSize);
+                item = new IndexStorageSegmentPosition(Context, PositionAddr)
+                {
+                    Position = pos
+                };
+
+                Context.IndexFile.Write(this);
+                Context.IndexFile.Write(item);
+            }
+            else
+            {
+                // check whether it exists
+                var last = default(IndexStorageSegmentPosition);
+                var count = 0U;
+
+                foreach (var i in Positions)
+                {
+                    var compare = i.Position.CompareTo(pos);
+
+                    if (compare > 0)
+                    {
+                        break;
+                    }
+                    else if (compare == 0)
+                    {
+                        return i;
+                    }
+
+                    last = i;
+
+                    count++;
+                }
+
+                item = new IndexStorageSegmentPosition(Context, Context.Allocator.Alloc(IndexStorageSegmentPosition.SegmentSize))
+                {
+                    Position = pos
+                };
+
+                if (last == null)
+                {
+                    // insert at the beginning
+                    var tempAddr = PositionAddr;
+                    PositionAddr = item.Addr;
+                    item.SuccessorAddr = tempAddr;
+
+                    Context.IndexFile.Write(this);
+                    Context.IndexFile.Write(item);
+                }
+                else
+                {
+                    // insert in the correct place
+                    var tempAddr = last.SuccessorAddr;
+                    last.SuccessorAddr = item.Addr;
+                    item.SuccessorAddr = tempAddr;
+
+                    Context.IndexFile.Write(this);
+                    Context.IndexFile.Write(last);
+                    Context.IndexFile.Write(item);
+                }
+            }
+
+            return item;
         }
 
         /// <summary>
         /// Reads the record from the storage medium.
         /// </summary>
         /// <param name="reader">The reader for i/o operations.</param>
-        /// <param name="addr">The address of the segment.</param>
-        public override void Read(BinaryReader reader, ulong addr)
+        public override void Read(BinaryReader reader)
         {
-            Addr = addr;
-            reader.BaseStream.Seek((long)Addr, SeekOrigin.Begin);
-
-            SuccessorAddr = reader.ReadUInt64();
             DocumentID = new Guid(reader.ReadBytes(16));
-
-            Positions.Read(reader, addr + Size - Positions.Size);
+            SuccessorAddr = reader.ReadUInt64();
+            PositionAddr = reader.ReadUInt64();
         }
 
         /// <summary>
@@ -70,12 +158,9 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="writer">The writer for i/o operations.</param>
         public override void Write(BinaryWriter writer)
         {
-            writer.BaseStream.Seek((long)Addr, SeekOrigin.Begin);
-
-            writer.Write(SuccessorAddr);
             writer.Write(DocumentID.ToByteArray());
-
-            Positions.Write(writer);
+            writer.Write(SuccessorAddr);
+            writer.Write(PositionAddr);
         }
 
         /// <summary>

@@ -12,7 +12,7 @@ namespace WebExpress.WebIndex.Storage
     /// Implementation of the web document store, which stores the key-value pairs on disk.
     /// </summary>
     /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
-    public class IndexStorageStore<T> : IIndexDocumentStore<T>, IIndexStorage where T : IIndexItem
+    public class IndexStorageDocumentStore<T> : IIndexDocumentStore<T>, IIndexStorage where T : IIndexItem
     {
         /// <summary>
         /// Returns the file name for the reverse index.
@@ -32,7 +32,7 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Returns or sets the hash map.
         /// </summary>
-        public IndexStorageSegmentHashMap<IndexStorageSegmentItem> HashMap { get; private set; }
+        public IndexStorageSegmentHashMap HashMap { get; private set; }
 
         /// <summary>
         /// Returns or sets the memory manager.
@@ -64,21 +64,25 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         /// <param name="context">The index context.</param>
         /// <param name="capacity">The predicted capacity (number of items to store) of the document store.</param>
-        public IndexStorageStore(IIndexContext context, uint capacity)
+        public IndexStorageDocumentStore(IIndexContext context, uint capacity)
         {
             Context = context;
             Capacity = capacity;
-            FileName = Path.Combine(Context.IndexDirectory, $"{typeof(T).Name}.wfi");
+            FileName = Path.Combine(Context.IndexDirectory, $"{typeof(T).Name}.wds");
 
             var exists = File.Exists(FileName);
+            if (exists)
+            {
+                File.Delete(FileName);
+                exists = false;
+            }
             IndexFile = new IndexStorageFile(FileName);
-            Header = new IndexStorageSegmentHeader(new IndexStorageContext(this)) { Identifier = "wfi" };
+            Header = new IndexStorageSegmentHeader(new IndexStorageContext(this)) { Identifier = "wds" };
             Allocator = new IndexStorageSegmentAllocator(new IndexStorageContext(this));
             Statistic = new IndexStorageSegmentStatistic(new IndexStorageContext(this));
-            HashMap = new IndexStorageSegmentHashMap<IndexStorageSegmentItem>(new IndexStorageContext(this), Capacity);
+            HashMap = new IndexStorageSegmentHashMap(new IndexStorageContext(this), Capacity);
 
-            Allocator.Alloc(Statistic);
-            Allocator.Alloc(HashMap);
+            Allocator.Initialization();
 
             if (exists)
             {
@@ -106,13 +110,19 @@ namespace WebExpress.WebIndex.Storage
         {
             var json = JsonSerializer.Serialize(item);
             var bytes = CompressString(json);
-            var segment = new IndexStorageSegmentItem(new IndexStorageContext(this))
+            var segment = new IndexStorageSegmentItem(new IndexStorageContext(this), Allocator.Alloc((uint)(IndexStorageSegmentItem.SegmentSize + bytes.Length)))
             {
                 Id = item.Id,
                 Data = bytes
             };
 
-            HashMap[item.Id].Add(segment);
+            if (HashMap.Add(segment) == segment)
+            {
+                Statistic.Count++;
+                IndexFile.Write(Statistic);
+            }
+
+            IndexFile.Write(segment);
         }
 
         /// <summary>
@@ -120,13 +130,13 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         public void Clear()
         {
+            IndexFile.NextFreeAddr = 0;
             Header = new IndexStorageSegmentHeader(new IndexStorageContext(this)) { Identifier = "wfi" };
             Allocator = new IndexStorageSegmentAllocator(new IndexStorageContext(this));
             Statistic = new IndexStorageSegmentStatistic(new IndexStorageContext(this));
-            HashMap = new IndexStorageSegmentHashMap<IndexStorageSegmentItem>(new IndexStorageContext(this), Capacity);
+            HashMap = new IndexStorageSegmentHashMap(new IndexStorageContext(this), Capacity);
 
-            Allocator.Alloc(Statistic);
-            Allocator.Alloc(HashMap);
+            Allocator.Initialization();
 
             IndexFile.Write(Header);
             IndexFile.Write(Allocator);
@@ -142,10 +152,10 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="item">The item.</param>
         public void Remove(T item)
         {
-            var list = HashMap[item.Id];
+            var list = HashMap.GetBucket(item.Id);
             var segmnt = list.SkipWhile(x => x.Id != item.Id).FirstOrDefault();
 
-            HashMap[item.Id].Remove(segmnt);
+            HashMap.Remove(segmnt);
         }
 
         /// <summary>
@@ -155,7 +165,7 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>The item.</returns>
         public T GetItem(Guid id)
         {
-            return GetItem(HashMap[id].SkipWhile(x => x.Id != id).FirstOrDefault());
+            return GetItem(HashMap.GetBucket(id).SkipWhile(x => x.Id != id).FirstOrDefault());
         }
 
         /// <summary>
@@ -218,6 +228,4 @@ namespace WebExpress.WebIndex.Storage
             return reader.ReadToEnd();
         }
     }
-
-
 }

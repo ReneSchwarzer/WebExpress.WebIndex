@@ -37,7 +37,7 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Returns or sets the term tree.
         /// </summary>
-        public IndexStorageSegmentTreeNode Tree { get; private set; }
+        public IndexStorageSegmentTerm Term { get; private set; }
 
         /// <summary>
         /// Returns or sets the memory manager.
@@ -73,28 +73,32 @@ namespace WebExpress.WebIndex.Storage
             FileName = Path.Combine(Context.IndexDirectory, $"{typeof(T).Name}.{property.Name}.wri");
 
             var exists = File.Exists(FileName);
+            if (exists)
+            {
+                File.Delete(FileName);
+                exists = false;
+            }
             IndexFile = new IndexStorageFile(FileName);
             Header = new IndexStorageSegmentHeader(new IndexStorageContext(this)) { Identifier = "wri" };
             Allocator = new IndexStorageSegmentAllocator(new IndexStorageContext(this));
             Statistic = new IndexStorageSegmentStatistic(new IndexStorageContext(this));
-            Tree = new IndexStorageSegmentTreeNode(new IndexStorageContext(this));
+            Term = new IndexStorageSegmentTerm(new IndexStorageContext(this));
 
-            Allocator.Alloc(Statistic);
-            Allocator.Alloc(Tree);
+            Allocator.Initialization();
 
             if (exists)
             {
                 Header = IndexFile.Read(Header);
                 Allocator = IndexFile.Read(Allocator);
                 Statistic = IndexFile.Read(Statistic);
-                Tree = IndexFile.Read(Tree);
+                Term = IndexFile.Read(Term);
             }
             else
             {
                 IndexFile.Write(Header);
                 IndexFile.Write(Allocator);
                 IndexFile.Write(Statistic);
-                IndexFile.Write(Tree);
+                IndexFile.Write(Term);
             }
 
             IndexFile.Flush();
@@ -112,12 +116,12 @@ namespace WebExpress.WebIndex.Storage
 
             foreach (var term in terms)
             {
-                Tree.Add(term.Value)
-                    .Term
-                    .Postings[item.Id]
-                    .Add(new IndexStorageSegmentPosting(new IndexStorageContext(this)) { DocumentID = item.Id })
-                    .Positions
-                    .Add(new IndexStorageSegmentPosition(new IndexStorageContext(this)) { Position = term.Position });
+                Term.Add(term.Value)
+                    .AddPosting(item.Id)
+                    .AddPosition(term.Position);
+
+                Statistic.Count++;
+                IndexFile.Write(Statistic);
             }
         }
 
@@ -126,18 +130,19 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         public void Clear()
         {
+            IndexFile.NextFreeAddr = 0;
+
             Header = new IndexStorageSegmentHeader(new IndexStorageContext(this)) { Identifier = "wri" };
             Allocator = new IndexStorageSegmentAllocator(new IndexStorageContext(this));
             Statistic = new IndexStorageSegmentStatistic(new IndexStorageContext(this));
-            Tree = new IndexStorageSegmentTreeNode(new IndexStorageContext(this));
+            Term = new IndexStorageSegmentTerm(new IndexStorageContext(this));
 
-            Allocator.Alloc(Statistic);
-            Allocator.Alloc(Tree);
+            Allocator.Initialization();
 
             IndexFile.Write(Header);
             IndexFile.Write(Allocator);
             IndexFile.Write(Statistic);
-            IndexFile.Write(Tree);
+            IndexFile.Write(Term);
 
             IndexFile.Flush();
         }
@@ -164,10 +169,8 @@ namespace WebExpress.WebIndex.Storage
 
             foreach (var normalized in terms)
             {
-                var documents = Tree[normalized.Value]
-                    ?.Term
+                var documents = Term[normalized.Value]
                     ?.Postings
-                    ?.All
                     .Select(x => x.DocumentID);
 
                 list.AddRange(documents ?? Enumerable.Empty<Guid>());

@@ -12,7 +12,7 @@ namespace WebExpress.WebIndex.Term
         /// <summary>
         /// Enumeration of separators.
         /// </summary>
-        private static readonly char[] delimiters = [' ', '?', '!', ':', '<', '>', '=', '%', '(', ')', '\"', '“', '”', '\''];
+        private static readonly char[] delimiters = ['?', '!', ':', '<', '>', '=', '%', '(', ')', '\"', '“', '”', '\''];
 
         /// <summary>
         /// Tokenize an input string into an enumeration of terms.

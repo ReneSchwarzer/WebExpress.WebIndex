@@ -1,4 +1,6 @@
 ﻿# Falsch geschriebene Wörter in Form von falsch=richtig. Eine Schlüssel-Wert-Paar pro Zeile.
+&=und
+|=oder
 rythmus=rhythmus
 dilema=dilemma
 potential=potenzial
@@ -7,7 +9,6 @@ paralell=parallel
 wieder=wider
 standart=standard
 nähmlich=nämlich
-zuerst=zuerst
 ebend=eben
 warscheinlich=wahrscheinlich
 wirkich=wirklich

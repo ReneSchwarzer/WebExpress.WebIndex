@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 
 namespace WebExpress.WebIndex.Storage
 {
@@ -33,7 +35,27 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Returns a buffer for caching segments.
         /// </summary>
-        private IndexStorageRingBuffer Buffer { get; } = new IndexStorageRingBuffer(10000);
+        private IndexStorageReadBuffer ReadBuffer { get; set; }
+
+        /// <summary>
+        /// Unsaved entries queue.
+        /// </summary>
+        private Queue<IIndexStorageSegment> WriteBuffer { get; } = new Queue<IIndexStorageSegment>();
+
+        /// <summary>
+        /// Returns the timer for sorting out segments from the read buffer.
+        /// </summary>
+        private Timer ReadTimer { get; set; }
+
+        /// <summary>
+        /// Returns the timer for writing the segments from the write buffer.
+        /// </summary>
+        private Timer WriteTimer { get; set; }
+
+        /// <summary>
+        /// Returns or sets the next free address.
+        /// </summary>
+        public ulong NextFreeAddr  { get; internal set; } = 0ul;
 
         /// <summary>
         /// Constructor
@@ -55,14 +77,26 @@ namespace WebExpress.WebIndex.Storage
             }
 
             BufferedStream = new BufferedStream(FileStream);
-
             Reader = new BinaryReader(BufferedStream);
             Writer = new BinaryWriter(BufferedStream);
+            ReadBuffer = new IndexStorageReadBuffer(10000);
 
-            Buffer.DataOverwritten += (s, e) =>
-            {
-                Write(e);
-            };
+            ReadTimer = new Timer((state) => ReadBuffer.ReduceLifetimeAndRemoveExpiredSegments(), null, 0, 1000 * 60);
+            WriteTimer = new Timer((state) => Flush(), null, 0, 100);
+        }
+
+         /// <summary>
+        /// Allocate the memory.
+        /// </summary>
+        /// <param name="segment">The segment determines how much memory should be reserved.</param>
+        /// <param name="size"><param>
+        /// <returns>The start address of the reserved storage area.</returns>
+        public ulong Alloc(uint size)
+        {
+            var addr = NextFreeAddr;
+            NextFreeAddr += size;
+
+            return addr;
         }
 
         /// <summary>
@@ -74,13 +108,15 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>The segment, how it was read by the storage medium.</returns>
         public T Read<T>(ulong addr, IndexStorageContext context) where T : IIndexStorageSegment
         {
-            //if (Buffer.Contains(addr))
-            //{
-            //    return (T)Buffer[addr];
-            //}
+            if (ReadBuffer.Contains(addr))
+            {
+                return (T)ReadBuffer[addr];
+            }
 
-            T segment = (T)Activator.CreateInstance(typeof(T), context);
-            segment.Read(Reader, addr);
+            T segment = (T)Activator.CreateInstance(typeof(T), context, addr);
+
+            Reader.BaseStream.Seek((long)segment.Addr, SeekOrigin.Begin);
+            segment.Read(Reader);
 
             return segment;
         }
@@ -91,12 +127,13 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="segment">The segment.</param>
         public T Read<T>(T segment) where T : IIndexStorageSegment
         {
-            //if (Buffer.Contains(segment.Addr))
-            //{
-            //    return (T)Buffer[segment.Addr];
-            //}
+            if (ReadBuffer.Contains(segment))
+            {
+                return (T)ReadBuffer[segment.Addr];
+            }
 
-            segment.Read(Reader, segment.Addr);
+            Reader.BaseStream.Seek((long)segment.Addr, SeekOrigin.Begin);
+            segment.Read(Reader);
 
             return segment;
         }
@@ -107,25 +144,34 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="segment">The segment.</param>
         public void Write(IIndexStorageSegment segment)
         {
-            //if (!Buffer.ContainsKey(segment.Addr))
-            //{
-            //    Buffer.Add(segment.Addr, segment);
-            //}
+            ReadBuffer.Add(segment);
 
-            segment.Write(Writer);
+            lock (WriteBuffer)
+            {
+                WriteBuffer.Enqueue(segment);
+            }
         }
 
         /// <summary>
-        /// Ensures that all data in the buffer is written to the storage device.
+        /// Ensures that all segments in the buffer is written to the storage device.
         /// </summary>
         public void Flush()
         {
-            //var item = default(IIndexStoragesegment);
+            var list = new List<IIndexStorageSegment>();
 
-            //while ((item = Buffer.Dequeue()) != null)
-            //{
-            //    Write(item);
-            //}
+            // lock queue before concurrent access
+            lock (WriteBuffer)
+            {
+                list.AddRange(WriteBuffer);
+                WriteBuffer.Clear();
+            }
+
+            // protect file writing from concurrent access
+            foreach (var segment in list)
+            {
+                Writer.BaseStream.Seek((long)segment.Addr, SeekOrigin.Begin);
+                segment.Write(Writer);
+            }
 
             FileStream.Flush();
             BufferedStream.Flush();
@@ -138,6 +184,9 @@ namespace WebExpress.WebIndex.Storage
         public void Dispose()
         {
             Flush();
+
+            ReadTimer.Dispose();
+            WriteTimer.Dispose();
 
             Reader.Close();
             Writer.Close();

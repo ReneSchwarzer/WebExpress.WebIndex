@@ -4,7 +4,7 @@ using System.Globalization;
 namespace WebExpress.WebIndex.Term.Filter
 {
     /// <summary>
-    /// Removes emty words
+    /// Removes emty words.
     /// </summary>
     public static class IndexTermFilterEmpty
     {

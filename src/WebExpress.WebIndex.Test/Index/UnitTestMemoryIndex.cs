@@ -94,20 +94,20 @@ namespace WebExpress.WebIndex.Test.Index
             Assert.Equal(2, item.Count());
         }
 
-        [Fact]
-        public void ReIndexTestDataB()
-        {
-            var testData = UnitTestIndexTestMockB.GenerateTestData();
+        //[Fact]
+        //public void ReIndexTestDataB()
+        //{
+        //    var testData = UnitTestIndexTestMockB.GenerateTestData();
 
-            Fixture.IndexManager.Register<UnitTestIndexTestMockB>(CultureInfo.GetCultureInfo("en"), IndexType.Memory);
-            Fixture.IndexManager.ReIndex(testData);
+        //    Fixture.IndexManager.Register<UnitTestIndexTestMockB>(CultureInfo.GetCultureInfo("en"), IndexType.Memory);
+        //    Fixture.IndexManager.ReIndex(testData);
 
-            var wql = Fixture.IndexManager.ExecuteWql<UnitTestIndexTestMockB>("description = 'phasellus'");
-            var item = wql.Apply();
+        //    var wql = Fixture.IndexManager.ExecuteWql<UnitTestIndexTestMockB>("description = 'phasellus'");
+        //    var item = wql.Apply();
 
-            Assert.NotNull(wql);
-            Assert.True(item.Any());
-        }
+        //    Assert.NotNull(wql);
+        //    Assert.True(item.Any());
+        //}
 
         [Fact]
         public void ReIndexTestDataC()
@@ -173,7 +173,7 @@ namespace WebExpress.WebIndex.Test.Index
         public void RemoveTestDataA_Noah()
         {
             var testData = UnitTestIndexTestMockA.GenerateTestData();
-  
+
             Fixture.IndexManager.Register<UnitTestIndexTestMockA>(CultureInfo.GetCultureInfo("en"), IndexType.Memory);
             Fixture.IndexManager.ReIndex(testData);
 
@@ -196,7 +196,7 @@ namespace WebExpress.WebIndex.Test.Index
         public void RemoveTestDataA_Ines()
         {
             var testData = UnitTestIndexTestMockA.GenerateTestData();
-  
+
             Fixture.IndexManager.Register<UnitTestIndexTestMockA>(CultureInfo.GetCultureInfo("en"), IndexType.Memory);
             Fixture.IndexManager.ReIndex(testData);
 

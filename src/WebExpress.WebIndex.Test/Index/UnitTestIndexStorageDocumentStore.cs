@@ -16,7 +16,7 @@ namespace WebExpress.WebIndex.Test.Index
             context.IndexDirectory = Path.Combine(context.IndexDirectory, Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
 
             var data = UnitTestIndexTestMockD.GenerateTestData();
-            var forwardIndex = new IndexStorageStore<UnitTestIndexTestMockD>(context, (uint)data.Count);
+            var forwardIndex = new IndexStorageDocumentStore<UnitTestIndexTestMockD>(context, (uint)data.Count);
 
             forwardIndex.Dispose();
 
@@ -30,7 +30,7 @@ namespace WebExpress.WebIndex.Test.Index
             context.IndexDirectory = Path.Combine(context.IndexDirectory, Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
 
             var data = UnitTestIndexTestMockD.GenerateTestData();
-            var forwardIndex = new IndexStorageStore<UnitTestIndexTestMockD>(context, (uint)data.Count);
+            var forwardIndex = new IndexStorageDocumentStore<UnitTestIndexTestMockD>(context, (uint)data.Count);
 
             foreach (var item in data)
             {
@@ -39,7 +39,7 @@ namespace WebExpress.WebIndex.Test.Index
 
             forwardIndex.Dispose();
 
-            forwardIndex = new IndexStorageStore<UnitTestIndexTestMockD>(context, (uint)data.Count);
+            forwardIndex = new IndexStorageDocumentStore<UnitTestIndexTestMockD>(context, (uint)data.Count);
 
             forwardIndex.Dispose();
 
@@ -54,7 +54,7 @@ namespace WebExpress.WebIndex.Test.Index
 
             var data = UnitTestIndexTestMockD.GenerateTestData();
             var randomItem = data[new Random().Next() % data.Count];
-            var forwardIndex = new IndexStorageStore<UnitTestIndexTestMockD>(context, (uint)data.Count);
+            var forwardIndex = new IndexStorageDocumentStore<UnitTestIndexTestMockD>(context, (uint)data.Count);
 
             foreach (var item in data)
             {
@@ -77,7 +77,7 @@ namespace WebExpress.WebIndex.Test.Index
             context.IndexDirectory = Path.Combine(context.IndexDirectory, Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
 
             var data = UnitTestIndexTestMockD.GenerateTestData();
-            var forwardIndex = new IndexStorageStore<UnitTestIndexTestMockD>(context, (uint)data.Count);
+            var forwardIndex = new IndexStorageDocumentStore<UnitTestIndexTestMockD>(context, (uint)data.Count);
 
             foreach (var item in data)
             {
@@ -101,7 +101,7 @@ namespace WebExpress.WebIndex.Test.Index
 
             var data = UnitTestIndexTestMockD.GenerateTestData();
             var randomItem = data[new Random().Next() % data.Count];
-            var forwardIndex = new IndexStorageStore<UnitTestIndexTestMockD>(context, (uint)data.Count);
+            var forwardIndex = new IndexStorageDocumentStore<UnitTestIndexTestMockD>(context, (uint)data.Count);
 
             foreach (var item in data)
             {

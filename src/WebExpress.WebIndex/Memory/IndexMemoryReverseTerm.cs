@@ -7,7 +7,7 @@ namespace WebExpress.WebIndex.Memory
     /// <summary>
     /// Represents a tree which is formed from the characters of the terms.
     /// </summary>
-    public class IndexMemoryReverseTreeNode<T> where T : IIndexItem
+    public class IndexMemoryReverseTerm<T> where T : IIndexItem
     {
         /// <summary>
         /// The character of the node.
@@ -17,12 +17,12 @@ namespace WebExpress.WebIndex.Memory
         /// <summary>
         /// The child nodes of the tree.
         /// </summary>
-        public IEnumerable<IndexMemoryReverseTreeNode<T>> Children { get; set; } = new List<IndexMemoryReverseTreeNode<T>>();
+        public IEnumerable<IndexMemoryReverseTerm<T>> Children { get; set; } = new List<IndexMemoryReverseTerm<T>>();
 
         /// <summary>
         /// The item. This is always on the leaf of an term.
         /// </summary>
-        public IndexMemoryReverseItem<T> Term { get; set; }
+        public IEnumerable<IndexMemoryReversePosting<T>> Posting { get; set; }
 
         /// <summary>
         /// Checks whether the current node is the root.
@@ -33,11 +33,11 @@ namespace WebExpress.WebIndex.Memory
         /// Passes through the tree in pre order.
         /// </summary>
         /// <returns>The tree as a list.</returns>
-        public IEnumerable<IndexMemoryReverseTreeNode<T>> PreOrder
+        public IEnumerable<IndexMemoryReverseTerm<T>> PreOrder
         {
             get
             {
-                var list = new List<IndexMemoryReverseTreeNode<T>>
+                var list = new List<IndexMemoryReverseTerm<T>>
                 {
                     this
                 };
@@ -77,7 +77,7 @@ namespace WebExpress.WebIndex.Memory
         /// <summary>
         /// Constructor
         /// </summary>
-        internal IndexMemoryReverseTreeNode()
+        internal IndexMemoryReverseTerm()
         {
         }
 
@@ -92,19 +92,22 @@ namespace WebExpress.WebIndex.Memory
             if (subterm == null)
             {
                 // end of recursive descent reached
-                if (Term == null)
+                Posting ??= new List<IndexMemoryReversePosting<T>>();
+                var posting = Posting.FirstOrDefault(x => x.Id.Equals(item.Id));
+
+                if (posting == null)
                 {
-                    Term = new IndexMemoryReverseItem<T>(item, position);
+                    (Posting as List<IndexMemoryReversePosting<T>>).Add(new IndexMemoryReversePosting<T>(item, position));
                 }
-                else
+                else if (!posting.Contains<uint>(position)) 
                 {
-                    Term.Add(item, position);
+                    posting.Add(position);
                 }
 
                 return;
             }
 
-            var children = Children as List<IndexMemoryReverseTreeNode<T>>;
+            var children = Children as List<IndexMemoryReverseTerm<T>>;
             var first = subterm.FirstOrDefault();
             var next = subterm.Length > 1 ? subterm.Substring(1) : null;
 
@@ -121,7 +124,7 @@ namespace WebExpress.WebIndex.Memory
             }
 
             // add new node
-            var node = new IndexMemoryReverseTreeNode<T>() { Character = first };
+            var node = new IndexMemoryReverseTerm<T>() { Character = first };
             children.Add(node);
             node.Add(item, next, position);
         }
@@ -135,7 +138,7 @@ namespace WebExpress.WebIndex.Memory
         {
             if (subterm == null)
             {
-                Term?.Remove(item.Id, out _);
+                Posting = Posting?.Where(X => !X.Id.Equals(item.Id));
 
                 return;
             }
@@ -163,7 +166,7 @@ namespace WebExpress.WebIndex.Memory
         {
             if (term == null)
             {
-                return Term.Keys;
+                return Posting.Select(x => x.Id);
             }
 
             var first = term.FirstOrDefault();
@@ -188,7 +191,7 @@ namespace WebExpress.WebIndex.Memory
         /// <returns>The order expression as a string.</returns>
         public override string ToString()
         {
-            return $"{Character} → {Term?.ToString() ?? "null"}";
+            return $"{Character} → {Posting?.ToString() ?? "null"}";
         }
     }
 }

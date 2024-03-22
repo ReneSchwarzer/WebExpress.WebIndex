@@ -6,7 +6,7 @@ namespace WebExpress.WebIndex.WebAttribute
     /// Indicates that a property should not be indexed.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
-    public class IndexIgnore : Attribute, IIndexAttribute
+    public class IndexIgnoreAttribute : Attribute, IIndexAttribute
     {
     }
 }

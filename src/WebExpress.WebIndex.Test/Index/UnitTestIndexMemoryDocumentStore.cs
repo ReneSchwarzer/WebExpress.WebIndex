@@ -15,7 +15,7 @@ namespace WebExpress.WebIndex.Test.Index
             var context = new IndexContext();
 
             var data = UnitTestIndexTestMockD.GenerateTestData();
-            var forwardIndex = new IndexMemoryStore<UnitTestIndexTestMockD>(context, (uint)data.Count);
+            var forwardIndex = new IndexMemoryDocumentStore<UnitTestIndexTestMockD>(context, (uint)data.Count);
 
             forwardIndex.Dispose();
 
@@ -29,7 +29,7 @@ namespace WebExpress.WebIndex.Test.Index
 
             var data = UnitTestIndexTestMockD.GenerateTestData();
             var randomItem = data[new Random().Next() % data.Count];
-            var forwardIndex = new IndexMemoryStore<UnitTestIndexTestMockD>(context, (uint)data.Count);
+            var forwardIndex = new IndexMemoryDocumentStore<UnitTestIndexTestMockD>(context, (uint)data.Count);
 
             foreach (var item in data)
             {
@@ -49,7 +49,7 @@ namespace WebExpress.WebIndex.Test.Index
             var context = new IndexContext();
 
             var data = UnitTestIndexTestMockD.GenerateTestData();
-            var forwardIndex = new IndexMemoryStore<UnitTestIndexTestMockD>(context, (uint)data.Count);
+            var forwardIndex = new IndexMemoryDocumentStore<UnitTestIndexTestMockD>(context, (uint)data.Count);
 
             foreach (var item in data)
             {
@@ -70,7 +70,7 @@ namespace WebExpress.WebIndex.Test.Index
 
             var data = UnitTestIndexTestMockD.GenerateTestData();
             var randomItem = data[new Random().Next() % data.Count];
-            var forwardIndex = new IndexMemoryStore<UnitTestIndexTestMockD>(context, (uint)data.Count);
+            var forwardIndex = new IndexMemoryDocumentStore<UnitTestIndexTestMockD>(context, (uint)data.Count);
 
             foreach (var item in data)
             {
