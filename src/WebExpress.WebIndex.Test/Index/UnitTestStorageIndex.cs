@@ -39,6 +39,32 @@ namespace WebExpress.WebIndex.Test.Index
         }
 
         [Fact]
+        public void RemoveDocumentStore()
+        {
+            var context = new IndexContext();
+            var ds = new IndexStorageDocumentStore<UnitTestIndexTestMockA>(context, 5);
+            var testData = new[]
+            {
+                new UnitTestIndexTestMockA { Id = new Guid("b2e8a5c3-1f6d-4e7b-9e1f-8c1a9d0f2b4a"), Name = "Hello Helena!"},
+                new UnitTestIndexTestMockA { Id = new Guid("c7d8f9e0-3a2b-4c5d-8e6f-9a1b0c2d4e5f"), Name = "Hello Helena, Helge & Helena!"}
+            };
+
+            ds.Clear();
+            ds.Add(testData[0]);
+            ds.Add(testData[1]);
+
+            var item = ds.GetItem(testData[0].Id);
+
+            Assert.NotNull(ds);
+            Assert.NotNull(item);
+
+            ds.Remove(item);
+
+            item = ds.GetItem(testData[0].Id);
+            Assert.Null(item);
+        }
+
+        [Fact]
         public void RetrieveDocumentStore()
         {
             var context = new IndexContext();
@@ -86,6 +112,33 @@ namespace WebExpress.WebIndex.Test.Index
             ri.Add(testData[1]);
 
             Assert.NotNull(ri);
+        }
+
+        [Fact]
+        public void RemoveReverseIndex()
+        {
+            var context = new IndexContext();
+            var property = typeof(UnitTestIndexTestMockA).GetProperty("Name");
+            var ri = new IndexStorageReverse<UnitTestIndexTestMockA>(context, property, CultureInfo.GetCultureInfo("en"));
+            var testData = new[]
+            {
+                new UnitTestIndexTestMockA { Id = new Guid("b2e8a5c3-1f6d-4e7b-9e1f-8c1a9d0f2b4a"), Name = "Hello Helena!"},
+                new UnitTestIndexTestMockA { Id = new Guid("c7d8f9e0-3a2b-4c5d-8e6f-9a1b0c2d4e5f"), Name = "Hello Helena, Helge & Helena!"}
+            };
+
+            ri.Clear();
+            ri.Add(testData[0]);
+            ri.Add(testData[1]);
+
+            var items = ri.Collect("Helena");
+
+            Assert.NotNull(ri);
+            Assert.Equal(2, items.Count());
+
+            ri.Remove(testData[1]);
+
+            items = ri.Collect("Helena");
+            Assert.Single(items);
         }
 
         [Fact]

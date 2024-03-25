@@ -154,7 +154,8 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="item">The data to be removed from the field.</param>
         public void Remove(T item)
         {
-
+            Statistic.Count--;
+            IndexFile.Write(Statistic);
         }
 
         /// <summary>

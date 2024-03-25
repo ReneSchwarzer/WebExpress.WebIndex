@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 
 namespace WebExpress.WebIndex.Storage
@@ -7,12 +6,12 @@ namespace WebExpress.WebIndex.Storage
     /// <summary>
     /// The Allocator is a mechanism for reserving and freeing up space. 
     /// </summary>
-    public class IndexStorageSegmentAllocator : IndexStorageSegment, IEnumerable<IndexStorageSegmentFree>
+    public class IndexStorageSegmentAllocator : IndexStorageSegment
     {
         /// <summary>
         /// Returns or sets the next free address.
         /// </summary>
-        private ulong NextFreeAddr  { get; set; } = 0ul;
+        private ulong NextFreeAddr { get; set; } = 0ul;
 
         /// <summary>
         /// Returns or sets the adress pointer to the free list.
@@ -23,6 +22,30 @@ namespace WebExpress.WebIndex.Storage
         /// Returns the amount of space required on the storage device.
         /// </summary>
         public static uint SegmentSize => sizeof(ulong) + sizeof(ulong);
+
+        /// <summary>
+        /// Returns the a sorted list of the free segments.
+        /// </summary>
+        public IEnumerable<IndexStorageSegmentFree> FreeSegments
+        {
+            get
+            {
+                if (FreeListAddr == 0)
+                {
+                    yield break;
+                }
+
+                var addr = FreeListAddr;
+
+                while (addr != 0)
+                {
+                    var item = Context.IndexFile.Read<IndexStorageSegmentFree>(addr, Context);
+                    yield return item;
+
+                    addr = item.SuccessorAddr;
+                }
+            }
+        }
 
         /// <summary>
         /// Constructor
@@ -52,7 +75,7 @@ namespace WebExpress.WebIndex.Storage
             var last = default(IndexStorageSegmentFree);
 
             // find free space
-            foreach (var item in this)
+            foreach (var item in FreeSegments)
             {
                 if (item.Lenght == size)
                 {
@@ -77,7 +100,59 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="segment">The segment determines how much memory should be reserved.</param>
         public void Free(IIndexStorageSegment segment)
         {
-            
+            var item = new IndexStorageSegmentFree(Context, segment.Addr);
+
+            if (FreeListAddr == 0)
+            {
+                FreeListAddr = segment.Addr;
+                Context.IndexFile.Write(this);
+            }
+            else
+            {
+                // check whether it exists
+                var last = default(IndexStorageSegmentFree);
+                var count = 0U;
+
+                foreach (var i in FreeSegments)
+                {
+                    var compare = i.Addr.CompareTo(item.Addr);
+
+                    if (compare > 0)
+                    {
+                        break;
+                    }
+                    else if (compare == 0)
+                    {
+                        return;
+                    }
+
+                    last = i;
+
+                    count++;
+                }
+
+                if (last == null)
+                {
+                    // insert at the beginning
+                    var tempAddr = FreeListAddr;
+                    FreeListAddr = item.Addr;
+                    item.SuccessorAddr = tempAddr;
+
+                    Context.IndexFile.Write(this);
+                    Context.IndexFile.Write(item);
+                }
+                else
+                {
+                    // insert in the correct place
+                    var tempAddr = last.SuccessorAddr;
+                    last.SuccessorAddr = item.Addr;
+                    item.SuccessorAddr = tempAddr;
+
+                    Context.IndexFile.Write(this);
+                    Context.IndexFile.Write(last);
+                    Context.IndexFile.Write(item);
+                }
+            }
         }
 
         /// <summary>
@@ -99,7 +174,7 @@ namespace WebExpress.WebIndex.Storage
                 predecessor.SuccessorAddr = free.Addr;
                 Context.IndexFile.Write(predecessor);
             }
-            else 
+            else
             {
                 FreeListAddr = free.Addr;
                 Context.IndexFile.Write(this);
@@ -131,44 +206,12 @@ namespace WebExpress.WebIndex.Storage
         }
 
         /// <summary>
-        /// Returns an enumerator that iterates through the collection.
-        /// </summary>
-        /// <returns>An enumerator that can be used to iterate through the collection.</returns>
-        public IEnumerator<IndexStorageSegmentFree> GetEnumerator()
-        {
-            var addr = FreeListAddr;
-            IndexStorageSegmentFree item;
-
-            if (FreeListAddr == 0)
-            {
-                yield break;
-            }
-
-            do
-            {
-                item = Context.IndexFile.Read<IndexStorageSegmentFree>(addr, Context);
-
-                yield return item;
-
-            } while ((addr = item.SuccessorAddr) != 0);
-        }
-
-        /// <summary>
-        /// Returns an enumerator that iterates through a collection.
-        /// </summary>
-        /// <returns>An IEnumerator object that can be used to iterate through the list.</returns>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        /// <summary>
         /// Converts the current object to a string.
         /// </summary>
         /// <returns>A string that represents the current object.</returns>
         public override string ToString()
         {
-            return $"[{string.Join(", ", GetEnumerator())}]";
+            return $"[{string.Join(", ", FreeSegments)}]";
         }
     }
 }

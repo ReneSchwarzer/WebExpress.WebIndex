@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Security.Cryptography.X509Certificates;
+﻿using System.Collections.Generic;
 
 namespace WebExpress.WebIndex.Storage
 {
@@ -20,7 +18,7 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="addr">The address of th segment.</param>
         public IIndexStorageSegment this[ulong addr]
         {
-            get 
+            get
             {
                 dict.TryGetValue(addr, out IndexStorageReadBufferItem value);
                 value?.Refresh();
@@ -51,28 +49,23 @@ namespace WebExpress.WebIndex.Storage
             }
 
             dict.Add(item.Addr, new IndexStorageReadBufferItem(item));
-        }    
-    
+        }
+
         /// <summary>
         /// Reduces the lifetime of all cached segments by one unit and expired segments are removed.
         /// </summary>
         public void ReduceLifetimeAndRemoveExpiredSegments()
         {
-            var keys = new List<ulong>();
+            var items = new List<KeyValuePair<ulong, IndexStorageReadBufferItem>>(dict);
 
-            foreach (var item in dict)
+            foreach (var item in items)
             {
                 item.Value.Counter--;
 
                 if (item.Value.Counter <= 0)
                 {
-                    keys.Add(item.Key);
+                    dict.Remove(item.Key);
                 }
-            }
-
-            foreach (var key in keys)
-            {
-                dict.Remove(key);
             }
         }
 

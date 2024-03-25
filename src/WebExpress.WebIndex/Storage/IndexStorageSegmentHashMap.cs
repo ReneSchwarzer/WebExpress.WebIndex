@@ -4,12 +4,12 @@ using System.IO;
 
 namespace WebExpress.WebIndex.Storage
 {
-    public class IndexStorageSegmentHashMap : IndexStorageSegment        
+    public class IndexStorageSegmentHashMap : IndexStorageSegment
     {
         /// <summary>
         /// Returns the amount of space required on the storage device.
         /// </summary>
-        public static uint SegmentSize =>  sizeof(uint);
+        public static uint SegmentSize => sizeof(uint);
 
         /// <summary>
         /// A hash bucket is a range of memory in a hash table that is associated with a 
@@ -27,9 +27,9 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Returns all items.
         /// </summary>
-        public IEnumerable<IndexStorageSegmentItem> All 
+        public IEnumerable<IndexStorageSegmentItem> All
         {
-            get 
+            get
             {
                 foreach (var bucket in Buckets)
                 {
@@ -180,6 +180,8 @@ namespace WebExpress.WebIndex.Storage
                 item.SuccessorAddr = 0;
             }
 
+            Context.Allocator.Free(item);
+
             return true;
         }
 
@@ -235,7 +237,7 @@ namespace WebExpress.WebIndex.Storage
         public override void Write(BinaryWriter writer)
         {
             writer.Write(BucketCount);
-   
+
             for (int i = 0; i < BucketCount; i++)
             {
                 writer.Write(Buckets[i]);
