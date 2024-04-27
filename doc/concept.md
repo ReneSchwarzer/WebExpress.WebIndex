@@ -32,16 +32,30 @@ part is carried out in advance during the indexing process and the actual search
  │ document │──────────────┐
  └──────────┘              │
                            ▼
- ┌───────┐ searching ┌───────────┐       ┌────────────┐       ┌──────────────────┐       ╔══════════╗
- │ query │──────────>│ tokenizer │──────>│ normalizer │──────>│ stoppword filter │──────>║ WebIndex ║
- └───────┘           └───────────┘       └────────────┘       └──────────────────┘       ╚══════════╝
-     ▲                                                                                         │
-     └─────────────────────────────────────────────────────────────────────────────────────────┘
+ ┌───────┐ searching ┌───────────┐       ┌────────────────────────────┐       ┌──────────────────┐       ╔══════════╗
+ │ query │──────────>│ tokenizer │──────>│ stemming and lemmatization │──────>│ stoppword filter │──────>║ WebIndex ║
+ └───────┘           └───────────┘       └────────────────────────────┘       └──────────────────┘       ╚══════════╝
+     ▲                                                                                                         │
+     └─────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
+
+Stemming and lemmatization are text preprocessing techniques in natural language processing (NLP). They reduce the inflected forms of 
+words in a text dataset to a common root form or dictionary form, also known as a "lemma" in computational linguistics.
+
+Stemming usually refers to a crude heuristic process that trims the ends of words in the hope of achieving this goal mostly correctly, and 
+often involves removing derivational affixes2. Stemming algorithms attempt to find the common roots of different inflections by cutting 
+off the endings or beginnings of the word.
+
+Lemmatization usually refers to doing things correctly, using a vocabulary and morphological analysis of words, usually with the aim of 
+removing only inflectional endings and returning the base or dictionary form of a word, known as a lemma2. Unlike stemming, which 
+operates on a single word without knowledge of the context, lemmatization can distinguish between words that have different meanings 
+depending on the part of speech.
+
+These techniques are particularly useful in information search systems such as search engines, where users can submit a query using 
+one word (e.g., "meditate") but expect results that use any inflected form of the word (e.g. "meditated", "meditation", etc).
 
 In this particular instance, indexing is performed on two documents by executing a series of operations: tokenization, normalization, and stop-word removal. The outcome 
 of these operations is a multi-dimensional table, which serves as a representation of the reverse index.
-
 ```
 
  ┌document a────────────────────────────────────────┐      ┌document b────────────────────────────────────────┐
@@ -372,7 +386,15 @@ preserving the remaining free space for future use.
    ╚═══════════════╝        ╚═══════════════╝
 ```
 
-### IndexDocumentStore
+### Caching
+Caching is an efficient technique for optimizing data access by enabling fast access to frequently used data and simultaneously reducing the load on 
+the file system. It stores frequently used data in memory, which speeds up access to this data as it does not have to be retrieved from the hard drive 
+again. For write accesses, the data is first written to the read cache. They are then queued before being written to a disk by a thread. This process, 
+also known as write delay, can improve system performance by decoupling write operations and writing them to the disk at a more favorable time. The 
+read cache uses a hash map to allow random access to the cached segments. Each cached segment has a defined lifetime. If this has expired, the segments 
+are removed from the read cache, unless they have been marked as immortal via the `SegmentCached` attribute.
+
+## IndexDocumentStore
 A `IndexDocumentStore` is a data structure in which each key is associated with a value. This allows efficient retrieval and retrieval of data based on the key. The 
 document store plays a crucial role in improving the efficiency of queries by enabling direct access to the document instances that contain the desired terms. Access 
 to the document instances is done via a HashMap, where the ID serves as the key. The internal structure of the document store:
@@ -396,8 +418,8 @@ to the document instances is done via a HashMap, where the ID serves as the key.
          ╚~~~~~~~~~~~~~~~╝
 ```
 
-The document instances are stored in a segment. The size of the segment is variable and is determined by the size of the compressed document instance. The segment are stored 
-in the variable memory area.
+The document instances are stored in a segment. The size of the segment is variable and is determined by the size of the 
+compressed document instance. The segment are stored in the variable memory area.
 ```
          ╔Item═══════════╗
  16 Byte ║ Id            ║ guid of the document item
@@ -405,6 +427,75 @@ in the variable memory area.
   8 Byte ║ SuccessorAddr ║ pointer to the address of the next element of a sorted list or 0 if there is no element
   n Byte ║ Data          ║ a variable memory area in which the item is stored (gzip compressed)
          ╚═══════════════╝
+```
+
+**Add**: The add function in the `IndexDocumentStore` is designed to permanently store the entire document. To efficiently utilize 
+storage space and minimize storage requirements, the object is serialized into a JSON format and subsequently compressed. 
+This process ensures efficient use of storage space without compromising the integrity or accessibility of the data. Furthermore, 
+this method allows for faster data transmission and enhances the overall performance of the `IndexDocumentStore`. Access to the 
+original data can be obtained at any time through decompression and deserialization.
+```
+  ┌──────────────────────────────┐
+  │ start                        │
+  │ ┌────────────────────────────┤
+  │ │ if !contains(id)           │ look up document id in hashmap
+  │ │ ┌──────────────────────────┤
+  │ │ │ gzip(data)               │ gzip the data
+  │ │ │ add item                 │ adding an items segment
+  │ │ └──────────────────────────┤
+  │ │ else                       │
+  │ │ ┌──────────────────────────┤
+  │ │ │ throw ArgumentException  │
+  │ │ └──────────────────────────┤
+  │ │ end if                     │
+  │ └────────────────────────────┤
+  │ end                          │
+  └──────────────────────────────┘
+```
+
+**Update**: The update process consists of a combination of delete and add operations. If the data is of the same size, the existing item 
+segment is reused. Otherwise, a new item segment is created and used. This approach optimizes storage usage and enhances 
+system efficiency by avoiding unnecessary storage allocations.
+
+```
+  ┌──────────────────────────────┐
+  │ start                        │
+  │ ┌────────────────────────────┤
+  │ │ if !contains(id)           │ look up document id in hashmap
+  │ │ ┌──────────────────────────┤
+  │ │ │ gzip(data)               │ gzip the data
+  │ │ │ delete item              │ remove the existing item segment
+  │ │ │ add item                 │ adding the updated item segment
+  │ │ └──────────────────────────┤
+  │ │ else                       │
+  │ │ ┌──────────────────────────┤
+  │ │ │ throw ArgumentException  │
+  │ │ └──────────────────────────┤
+  │ │ end if                     │
+  │ └────────────────────────────┤
+  │ end                          │
+  └──────────────────────────────┘
+```
+
+**Delete**: Documents that are no longer needed can be securely removed from the document storage by using the delete function. This 
+ensures efficient use of storage and keeps the document storage tidy and well-organized.
+
+```
+  ┌──────────────────────────────┐
+  │ start                        │
+  │ ┌────────────────────────────┤
+  │ │ if !contains(id)           │ look up document id in hashmap
+  │ │ ┌──────────────────────────┤
+  │ │ │ delete item              │ remove the existing item segment
+  │ │ └──────────────────────────┤
+  │ │ else                       │
+  │ │ ┌──────────────────────────┤
+  │ │ │ throw ArgumentException  │
+  │ │ └──────────────────────────┤
+  │ │ end if                     │
+  │ └────────────────────────────┤
+  │ end                          │
+  └──────────────────────────────┘
 ```
 
 ### IndexReverse
@@ -442,8 +533,9 @@ documents in which the term appears.
          ╚═══════════════╝
 ```
 
-The posting segment is designed as a list and contains the IDs of the documents that belong to a term. For each document, the posting segment refers to the position 
-information that indicates where the term is located in the document. The posting segment is stored in the variable memory area of the inverted index.
+The posting segment is designed as a list and contains the IDs of the documents that belong to a term. For each document, the 
+posting segment refers to the position information that indicates where the term is located in the document. The posting segment 
+is stored in the variable memory area of the inverted index.
 
 ```
          ╔Posting════════╗
@@ -453,9 +545,10 @@ information that indicates where the term is located in the document. The postin
          ╚═══════════════╝
 ```
 
-The position segments form a linked list containing the position information of the associated terms. The position of a term refers to its original 
-occurrence in the field value of a document. Each position segment has a fixed size and is created in the variable data area of the reverse index. This 
-structure allows for efficient searching and retrieval of terms based on their position in the documents.
+The position segments form a linked list containing the position information of the associated terms. The position of a term 
+refers to its original occurrence in the field value of a document. Each position segment has a fixed size and is created in 
+the variable data area of the reverse index. This structure allows for efficient searching and retrieval of terms based on their 
+position in the documents.
 
 ```
          ╔Position═══════╗
@@ -464,19 +557,119 @@ structure allows for efficient searching and retrieval of terms based on their p
          ╚═══════════════╝
 ```
 
-### Caching
-Caching is an efficient technique for optimizing data access by enabling fast access to frequently used data and simultaneously reducing the load on 
-the file system. It stores frequently used data in memory, which speeds up access to this data as it does not have to be retrieved from the hard drive 
-again. For write accesses, the data is first written to the read cache. They are then queued before being written to a disk by a thread. This process, 
-also known as write delay, can improve system performance by decoupling write operations and writing them to the disk at a more favorable time. The 
-read cache uses a hash map to allow random access to the cached segments. Each cached segment has a defined lifetime. If this has expired, the segments 
-are removed from the read cache, unless they have been marked as immortal via the `SegmentCached` attribute.
+**Add**: The procedure for adding terms from an 'IndexField' and saving references to the document with its position within the document 
+is as follows:
+
+```
+  ┌──────────────────────────────┐
+  │ start                        │
+  │ ┌────────────────────────────┤
+  │ │ loop over terms            │ retrieve all terms from the new IndexField
+  │ │ ┌──────────────────────────┤
+  │ │ │ tn := gettermnode(term)  │
+  │ │ │ if tn != null            │
+  │ │ │ ┌────────────────────────┤
+  │ │ │ │ p := getposting(id)    │
+  │ │ │ │ if p != null           │
+  │ │ │ │ ┌──────────────────────┤
+  │ │ │ │ │ add position         │ add position associated with the existing posting
+  │ │ │ │ └──────────────────────┤
+  │ │ │ │ else                   │
+  │ │ │ │ ┌──────────────────────┤
+  │ │ │ │ │ add posting          │ add posting with the document id
+  │ │ │ │ │ ┌────────────────────┤
+  │ │ │ │ │ │ add position       │ add position associated with the new posting
+  │ │ │ │ └─┴────────────────────┤
+  │ │ │ │ end if                 │
+  │ │ │ └────────────────────────┤
+  │ │ │ else                     │
+  │ │ │ ┌────────────────────────┤
+  │ │ │ │ add term node          │ add new term node
+  │ │ │ │ ┌──────────────────────┤
+  │ │ │ │ │ add posting          │ add posting with the document id
+  │ │ │ │ │ ┌────────────────────┤
+  │ │ │ │ │ │ add position       │ add position associated with the new posting
+  │ │ │ └─┴─┴────────────────────┤
+  │ │ │ end if                   │
+  │ │ └──────────────────────────┤
+  │ │ end loop                   │
+  │ └────────────────────────────┤
+  │ end                          │
+  └──────────────────────────────┘
+```
+
+**Update**: Updating an `IndexField` in a document is done by determining the difference between the saved and changed terms. All 
+postings (including positions) will be deleted if they no longer exist in the changed `IndexField`. At the same time, 
+new postings (including positions) are created for terms that were not included in the original `IndexField`.
+
+```
+  ┌──────────────────────────────┐
+  │ original O                   │
+  │                              │
+  │ to delete =        ┌─────────┼─────────────────┐
+  │ difference set O\C │         │       changed C │
+  └────────────────────┼─────────┘                 │
+                       │                  to add = │
+                       │        difference set C\O │
+                       └───────────────────────────┘
+```
+This results in the following process:
+```
+  ┌──────────────────────────────┐
+  │ start                        │
+  │ ┌────────────────────────────┤
+  │ │ deleteTerms := O\C         │
+  │ │ addTerms := C\O            │
+  │ │ ┌──────────────────────────┤
+  │ │ │ loop over deleteTerms    │
+  │ │ │ ┌────────────────────────┤
+  │ │ │ │ delete posting         │ remove all postings with the document id
+  │ │ │ │ ┌──────────────────────┤
+  │ │ │ │ │ delete position      │ remove all positions associated with the deleted postings
+  │ │ │ └─┴──────────────────────┤
+  │ │ │ end loop                 │
+  │ │ └──────────────────────────┤
+  │ │ ┌──────────────────────────┤
+  │ │ │ loop over addTerms       │
+  │ │ │ ┌────────────────────────┤
+  │ │ │ │ add posting            │ add posting with the document id
+  │ │ │ │ ┌──────────────────────┤
+  │ │ │ │ │ add position         │ add position associated with the posting
+  │ │ │ └─┴──────────────────────┤
+  │ │ │ end loop                 │
+  │ └─┴──────────────────────────┤
+  │ end                          │
+  └──────────────────────────────┘
+```
+
+**Delete**: The removal of an IndexField from a reverse index is carried out according to the following procedure:
+
+```
+  ┌──────────────────────────────┐
+  │ start                        │
+  │ ┌────────────────────────────┤
+  │ │ loop over terms            │ retrieve all terms from the stored IndexField
+  │ │ ┌──────────────────────────┤
+  │ │ │ loop over termnode(term) │ retrieve all TermNodes that correspond to the term
+  │ │ │ ┌────────────────────────┤
+  │ │ │ │ delete posting         │ remove all postings with the document id
+  │ │ │ │ ┌──────────────────────┤
+  │ │ │ │ │ delete position      │ remove all positions associated with the deleted postings
+  │ │ │ └─┴──────────────────────┤
+  │ │ │ end loop                 │
+  │ │ └──────────────────────────┤
+  │ │ end loop                   │
+  │ └────────────────────────────┤
+  │ end                          │
+  └──────────────────────────────┘
+```
 
 ## Indexing
 
-Indexing is a crucial process that enables quick information retrieval. The index is created from the values of the document fields. This index is stored 
-on the file system and is updated whenever a document value is added or changed. Sometimes it is necessary to manually regenerate the index, for example, 
-when a new document field is added or when the index is lost or damaged. The reindexing deletes all indexes and recreates them.
+Indexing is a crucial process that enables quick information retrieval. The index is created from the values of the document 
+fields. This index is stored on the file system and is updated whenever a document value is added or changed. Sometimes it 
+is necessary to manually regenerate the index, for example, when a new document field is added or when the index is lost or 
+damaged. The reindexing deletes all indexes and recreates them.
 
 ```csharp
 public class Greetings : IIndexItem
@@ -497,7 +690,6 @@ var greetings = new []
 
 IndexManager.ReIndex(greetings);
 ```
-
 ```
  ┌Term: 23┐
  │ null   │ root
@@ -541,7 +733,6 @@ IndexManager.ReIndex(greetings);
 ```
 
 ## Searching
-
 
 # WQL
 The WebExpress Query Language (WQL) is a query language that filters and sorts a given amount of data from the reverse index. A statement of the query language 
