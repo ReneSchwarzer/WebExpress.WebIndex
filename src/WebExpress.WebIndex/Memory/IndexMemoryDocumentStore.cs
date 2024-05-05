@@ -50,6 +50,23 @@ namespace WebExpress.WebIndex.Memory
         }
 
         /// <summary>
+        /// Update an item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        public void Update(T item)
+        {
+            if (!ContainsKey(item.Id))
+            {
+                Add(item);
+
+                return;
+            }
+
+            Remove(item);
+            Add(item);
+        }
+
+        /// <summary>
         /// Remove an item.
         /// </summary>
         /// <param name="item">The item.</param>

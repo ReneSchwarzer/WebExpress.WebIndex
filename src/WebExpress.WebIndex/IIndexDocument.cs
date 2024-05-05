@@ -21,6 +21,11 @@ namespace WebExpress.WebIndex
         IEnumerable<string> Fields { get; }
 
         /// <summary>
+        /// Returns all documents from the index.
+        /// </summary>
+        IEnumerable<T> All { get; }
+
+        /// <summary>
         /// Adds a item to the index.
         /// </summary>
         /// <param name="item">The data to be added to the index.</param>

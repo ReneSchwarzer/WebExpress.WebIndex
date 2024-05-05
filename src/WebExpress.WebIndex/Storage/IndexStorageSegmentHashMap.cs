@@ -63,17 +63,18 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Add an item.
         /// </summary>
-        /// <param name="id">The item.</param>
-        public IndexStorageSegmentItem Add(IndexStorageSegmentItem item)
+        /// <param name="segment">The segment.</param>
+        public IndexStorageSegmentItem Add(IndexStorageSegmentItem segment)
         {
-            var hash = item.Id.GetHashCode();
+            var hash = segment.Id.GetHashCode();
             var index = (uint)hash % BucketCount;
 
             if (Buckets[index] == 0)
             {
-                Buckets[index] = item.Addr;
+                Buckets[index] = segment.Addr;
 
                 Context.IndexFile.Write(this);
+                Context.IndexFile.Write(segment);
             }
             else
             {
@@ -81,9 +82,9 @@ namespace WebExpress.WebIndex.Storage
                 var last = default(IndexStorageSegmentItem);
                 var count = 0U;
 
-                foreach (var i in GetBucket(item.Id))
+                foreach (var i in GetBucket(segment.Id))
                 {
-                    var compare = i.CompareTo(item);
+                    var compare = i.CompareTo(segment);
 
                     if (compare > 0)
                     {
@@ -103,26 +104,26 @@ namespace WebExpress.WebIndex.Storage
                 {
                     // insert at the beginning
                     var tempAddr = Buckets[index];
-                    Buckets[index] = item.Addr;
-                    item.SuccessorAddr = tempAddr;
+                    Buckets[index] = segment.Addr;
+                    segment.SuccessorAddr = tempAddr;
 
                     Context.IndexFile.Write(this);
-                    Context.IndexFile.Write(item);
+                    Context.IndexFile.Write(segment);
                 }
                 else
                 {
                     // insert in the correct place
                     var tempAddr = last.SuccessorAddr;
-                    last.SuccessorAddr = item.Addr;
-                    item.SuccessorAddr = tempAddr;
+                    last.SuccessorAddr = segment.Addr;
+                    segment.SuccessorAddr = tempAddr;
 
                     Context.IndexFile.Write(this);
                     Context.IndexFile.Write(last);
-                    Context.IndexFile.Write(item);
+                    Context.IndexFile.Write(segment);
                 }
             }
 
-            return item;
+            return segment;
         }
 
         /// <summary>
@@ -154,33 +155,31 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Removes the first occurrence of a specific object from the list.
         /// </summary>
-        /// <param name="item">The object to remove from the list.</param>
+        /// <param name="segment">The object to remove from the list.</param>
         /// <returns>True if item was successfully removed from the list, 
         /// otherwise false. This method also returns false if item is not 
         /// found in the list.</returns>
-        public bool Remove(IndexStorageSegmentItem item)
+        public bool Remove(IndexStorageSegmentItem segment)
         {
-            var hash = item.Id.GetHashCode();
+            var hash = segment.Id.GetHashCode();
             var index = (uint)hash % BucketCount;
-            var predecessor = GetPredecessor(item, out _);
+            var predecessor = GetPredecessor(segment, out _);
 
             if (predecessor == null)
             {
-                Buckets[index] = item.SuccessorAddr;
+                Buckets[index] = segment.SuccessorAddr;
 
                 Context.IndexFile.Write(this);
-                Context.IndexFile.Write(item);
+                Context.IndexFile.Write(segment);
             }
             else
             {
-                predecessor.SuccessorAddr = item.SuccessorAddr;
+                predecessor.SuccessorAddr = segment.SuccessorAddr;
                 Context.IndexFile.Write(predecessor);
-                Context.Allocator.Free(item);
-
-                item.SuccessorAddr = 0;
+                segment.SuccessorAddr = 0;
             }
 
-            Context.Allocator.Free(item);
+            Context.Allocator.Free(segment);
 
             return true;
         }

@@ -461,15 +461,16 @@ system efficiency by avoiding unnecessary storage allocations.
   ┌──────────────────────────────┐
   │ start                        │
   │ ┌────────────────────────────┤
-  │ │ if !contains(id)           │ look up document id in hashmap
+  │ │ if contains(id)            │ look up document id in hashmap
   │ │ ┌──────────────────────────┤
+  │ │ │ delete                   │ delete item
   │ │ │ gzip(data)               │ gzip the data
   │ │ │ delete item              │ remove the existing item segment
   │ │ │ add item                 │ adding the updated item segment
   │ │ └──────────────────────────┤
   │ │ else                       │
   │ │ ┌──────────────────────────┤
-  │ │ │ throw ArgumentException  │
+  │ │ │ add                      │ add item
   │ │ └──────────────────────────┤
   │ │ end if                     │
   │ └────────────────────────────┤
@@ -477,7 +478,7 @@ system efficiency by avoiding unnecessary storage allocations.
   └──────────────────────────────┘
 ```
 
-**Delete**: Documents that are no longer needed can be securely removed from the document storage by using the delete function. This 
+**Remove**: Documents that are no longer needed can be securely removed from the document storage by using the delete function. This 
 ensures efficient use of storage and keeps the document storage tidy and well-organized.
 
 ```
@@ -642,7 +643,7 @@ This results in the following process:
   └──────────────────────────────┘
 ```
 
-**Delete**: The removal of an IndexField from a reverse index is carried out according to the following procedure:
+**Remove**: The removal of an IndexField from a reverse index is carried out according to the following procedure:
 
 ```
   ┌──────────────────────────────┐

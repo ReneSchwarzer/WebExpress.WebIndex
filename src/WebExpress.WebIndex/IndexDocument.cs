@@ -41,6 +41,11 @@ namespace WebExpress.WebIndex
         public CultureInfo Culture { get; private set; }
 
         /// <summary>
+        /// Returns all documents from the index.
+        /// </summary>
+        public IEnumerable<T> All => DocumentStore.All;
+
+        /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="context">The index context.</param>

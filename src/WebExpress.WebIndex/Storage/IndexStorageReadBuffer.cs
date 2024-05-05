@@ -10,7 +10,7 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Buffer for random access.
         /// </summary>
-        private readonly Dictionary<ulong, IndexStorageReadBufferItem> dict;
+        private readonly Dictionary<ulong, IndexStorageReadBufferItem> cache;
 
         /// <summary>
         /// Returns a segment if sored.
@@ -20,7 +20,7 @@ namespace WebExpress.WebIndex.Storage
         {
             get
             {
-                dict.TryGetValue(addr, out IndexStorageReadBufferItem value);
+                cache.TryGetValue(addr, out IndexStorageReadBufferItem value);
                 value?.Refresh();
 
                 return value?.Segment;
@@ -33,22 +33,23 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="capacity">The number of elements to be stored in the ring buffer.</param>
         public IndexStorageReadBuffer(uint capacity)
         {
-            dict = new Dictionary<ulong, IndexStorageReadBufferItem>((int)capacity);
+            cache = new Dictionary<ulong, IndexStorageReadBufferItem>((int)capacity);
         }
 
         /// <summary>
-        /// Adds an item to the end of the ring buffer.
+        /// Adds an segment to the end of the ring buffer.
         /// </summary>
-        /// <param name="item">The segment.</param>
-        public void Add(IIndexStorageSegment item)
+        /// <param name="segment">The segment.</param>
+        public void Add(IIndexStorageSegment segment)
         {
-            if (dict.TryGetValue(item.Addr, out IndexStorageReadBufferItem value))
+            if (cache.TryGetValue(segment.Addr, out IndexStorageReadBufferItem value))
             {
                 value?.Refresh();
+
                 return;
             }
 
-            dict.Add(item.Addr, new IndexStorageReadBufferItem(item));
+            cache.Add(segment.Addr, new IndexStorageReadBufferItem(segment));
         }
 
         /// <summary>
@@ -56,7 +57,7 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         public void ReduceLifetimeAndRemoveExpiredSegments()
         {
-            var items = new List<KeyValuePair<ulong, IndexStorageReadBufferItem>>(dict);
+            var items = new List<KeyValuePair<ulong, IndexStorageReadBufferItem>>(cache);
 
             foreach (var item in items)
             {
@@ -64,9 +65,18 @@ namespace WebExpress.WebIndex.Storage
 
                 if (item.Value.Counter <= 0)
                 {
-                    dict.Remove(item.Key);
+                    cache.Remove(item.Key);
                 }
             }
+        }
+
+        /// <summary>
+        /// Performs cache invalidation for a specific IndexStorageSegment object.
+        /// </summary>
+        /// <param name="segment">The segment object to be invalidated.</param>
+        public void Invalidation(IIndexStorageSegment segment)
+        {
+            cache.Remove(segment.Addr);
         }
 
         /// <summary>
@@ -74,9 +84,9 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         /// <param name="item">The segment.</param>
         /// <returns>True if the segment has already been stored in the buffer, false otherwise.</returns>
-        public bool Contains(IIndexStorageSegment item)
+        public bool Contains(IIndexStorageSegment segment)
         {
-            return dict.ContainsKey(item.Addr);
+            return cache.ContainsKey(segment.Addr);
         }
 
         /// <summary>
@@ -86,7 +96,7 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>True if the segment has already been stored in the buffer, false otherwise.</returns>
         public bool Contains(ulong addr)
         {
-            return dict.ContainsKey(addr);
+            return cache.ContainsKey(addr);
         }
     }
 }

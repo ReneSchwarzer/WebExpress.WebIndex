@@ -146,6 +146,11 @@ namespace WebExpress.WebIndex.Storage
         {
             ReadBuffer.Add(segment);
 
+            if (WriteBuffer.Contains(segment))
+            {
+                return;
+            }
+
             lock (WriteBuffer)
             {
                 WriteBuffer.Enqueue(segment);
@@ -176,6 +181,15 @@ namespace WebExpress.WebIndex.Storage
             FileStream.Flush();
             BufferedStream.Flush();
             Writer.Flush();
+        }
+
+        /// <summary>
+        /// Performs cache invalidation for a specific IndexStorageSegment object.
+        /// </summary>
+        /// <param name="segment">The IndexStorageSegment object to be invalidated.</param>
+        public void Invalidation(IIndexStorageSegment segment)
+        {
+            ReadBuffer.Invalidation(segment);
         }
 
         /// <summary>

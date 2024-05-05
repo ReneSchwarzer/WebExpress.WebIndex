@@ -102,10 +102,13 @@ namespace WebExpress.WebIndex.Storage
         {
             var item = new IndexStorageSegmentFree(Context, segment.Addr);
 
+            Context.IndexFile.Invalidation(segment);
+
             if (FreeListAddr == 0)
             {
                 FreeListAddr = segment.Addr;
                 Context.IndexFile.Write(this);
+                Context.IndexFile.Write(item);
             }
             else
             {

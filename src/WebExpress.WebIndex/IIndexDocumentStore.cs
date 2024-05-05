@@ -6,7 +6,7 @@ namespace WebExpress.WebIndex
     public interface IIndexDocumentStore<T> : IDisposable where T : IIndexItem
     {
         /// <summary>
-        /// Returns all items.
+        /// Returns all document items.
         /// </summary>
         IEnumerable<T> All { get; }
 

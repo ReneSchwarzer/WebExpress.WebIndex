@@ -126,6 +126,44 @@ namespace WebExpress.WebIndex.Storage
         }
 
         /// <summary>
+        /// Update an item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        public void Update(T item)
+        {
+            var list = HashMap.GetBucket(item.Id);
+
+            if (!list.Any())
+            {
+                Add(item);
+                
+                return;
+            }
+            
+            var segmnt = list.SkipWhile(x => x.Id != item.Id).FirstOrDefault();
+            var json = JsonSerializer.Serialize(item);
+            var bytes = CompressString(json);
+
+            if (segmnt.Length == bytes.Length)
+            {
+                segmnt.Data = bytes;
+
+                IndexFile.Write(segmnt);
+                return;
+            }
+            
+            HashMap.Remove(segmnt);
+
+            var newSegment = new IndexStorageSegmentItem(new IndexStorageContext(this), Allocator.Alloc((uint)(IndexStorageSegmentItem.SegmentSize + bytes.Length)))
+            {
+                Id = item.Id,
+                Data = bytes
+            };
+
+            HashMap.Add(newSegment);
+        }
+
+        /// <summary>
         /// Removed all data from the document store.
         /// </summary>
         public void Clear()
@@ -153,6 +191,12 @@ namespace WebExpress.WebIndex.Storage
         public void Remove(T item)
         {
             var list = HashMap.GetBucket(item.Id);
+
+            if (!list.Any())
+            {
+                throw new ArgumentException();
+            }
+            
             var segmnt = list.SkipWhile(x => x.Id != item.Id).FirstOrDefault();
 
             HashMap.Remove(segmnt);

@@ -10,7 +10,7 @@ using WebExpress.WebIndex.Wql;
 
 namespace WebExpress.WebIndex
 {
-    public abstract class IndexManager
+    public abstract class IndexManager : IDisposable
     {
         /// <summary>
         /// Returns an enumeration of the existing index documents.
@@ -178,6 +178,21 @@ namespace WebExpress.WebIndex
         }
 
         /// <summary>
+        /// Returns all documents from the index.
+        /// </summary>
+        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
+        /// <returns>An enumeration of the documents</returns>
+        public IEnumerable<T> All<T>() where T : IIndexItem
+        {
+            if (GetIndexDocument<T>() is IIndexDocument<T> document)
+            {
+                return document.All;
+            }
+
+            return [];
+        }
+
+        /// <summary>
         /// Executes a wql statement.
         /// </summary>
         /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
@@ -201,6 +216,19 @@ namespace WebExpress.WebIndex
         public IIndexDocument<T> GetIndexDocument<T>() where T : IIndexItem
         {
             return Documents.ContainsKey(typeof(T)) ? Documents[typeof(T)] as IIndexDocument<T> : null;
+        }
+
+        /// <summary>
+        /// Disposes of the resources used by the current instance.
+        /// </summary>
+        public void Dispose()
+        {
+            foreach (var document in Documents)
+            {
+                document.Value.Dispose();
+            }
+
+            Documents.Clear();
         }
     }
 }
