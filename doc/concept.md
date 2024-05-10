@@ -5,8 +5,9 @@ The index model provides a reverse index to enable fast and efficient searching.
 index can significantly speed up access to the data. However, creating and storing a 
 reverse index requires additional storage space and processing time. The storage requirement 
 increases, especially with large amounts of data can be important. Therefore, it is important 
-to weigh the pros and cons to achieve the best possible performance. The full-text search in `WebExpress` 
-supports the following search options:
+to weigh the pros and cons to achieve the best possible performance. The reverse index offers 
+the added value of a fast and resource-saving full-text search for the cost. The full-text 
+search in `WebExpress` supports the following search options:
 
 - Word search
 - Wildcard search
@@ -32,22 +33,22 @@ part is carried out in advance during the indexing process and the actual search
  │ document │──────────────┐
  └──────────┘              │
                            ▼
- ┌───────┐ searching ┌───────────┐       ┌────────────────────────────┐       ┌──────────────────┐       ╔══════════╗
- │ query │──────────>│ tokenizer │──────>│ stemming and lemmatization │──────>│ stoppword filter │──────>║ WebIndex ║
- └───────┘           └───────────┘       └────────────────────────────┘       └──────────────────┘       ╚══════════╝
-     ▲                                                                                                         │
-     └─────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+ ┌───────┐ searching ┌───────────┐       ┌─────────────────────────────────────────────────┐       ╔══════════╗
+ │ query │──────────>│ tokenizer │──────>│ stemming, lemmatization & stoppword filter pipe │──────>║ WebIndex ║
+ └───────┘           └───────────┘       └─────────────────────────────────────────────────┘       ╚══════════╝
+     ▲                                                                                                   │
+     └───────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 Stemming and lemmatization are text preprocessing techniques in natural language processing (NLP). They reduce the inflected forms of 
 words in a text dataset to a common root form or dictionary form, also known as a "lemma" in computational linguistics.
 
 Stemming usually refers to a crude heuristic process that trims the ends of words in the hope of achieving this goal mostly correctly, and 
-often involves removing derivational affixes2. Stemming algorithms attempt to find the common roots of different inflections by cutting 
+often involves removing derivational affixes. Stemming algorithms attempt to find the common roots of different inflections by cutting 
 off the endings or beginnings of the word.
 
 Lemmatization usually refers to doing things correctly, using a vocabulary and morphological analysis of words, usually with the aim of 
-removing only inflectional endings and returning the base or dictionary form of a word, known as a lemma2. Unlike stemming, which 
+removing only inflectional endings and returning the base or dictionary form of a word, known as a lemma. Unlike stemming, which 
 operates on a single word without knowledge of the context, lemmatization can distinguish between words that have different meanings 
 depending on the part of speech.
 
@@ -237,7 +238,7 @@ for managing the various `IndexDocuments` that are created in `WebIndex`. Each `
 index manager ensures that these documents are indexed correctly and efficiently. In addition, the index manager provides functions for adding, updating, and 
 deleting documents in the index. It also enables the execution of search queries on the index and returns the corresponding results. Finally, the index manager 
 provides high control over the indexing process by allowing certain fields to be excluded from indexing or determining whether the index should be created in 
-main memory or persistently in the file system. An `IndexDocument created in main memory enables faster indexing and searching. However, the number of objects it 
+main memory or persistently in the file system. An `IndexDocument` created in main memory enables faster indexing and searching. However, the number of objects it 
 can support is limited and depends on the size of the available main memory. Therefore, it is important to weigh the pros and cons and choose the best solution 
 for the specific requirements.
 
@@ -275,7 +276,7 @@ memory. These features contribute to efficient use of storage and improve the sy
          ╚~~~~~~~~~~~~~~~╝
 ```
 
-Unused memory areas in the file are represented by the “Free” segment, which is located in the Body-Area variable and forms a linked list. The `Allocator` points 
+Unused memory areas in the file are represented by the “Free” segment, which is located in the body area variable and forms a linked list. The `Allocator` points 
 to the first element of this list.
 
 ```
@@ -605,42 +606,42 @@ new postings (including positions) are created for terms that were not included 
 
 ```
   ┌──────────────────────────────┐
-  │ original O                   │
+  │ current                      │
   │                              │
   │ to delete =        ┌─────────┼─────────────────┐
-  │ difference set O\C │         │       changed C │
+  │ current\changed    │         │         changed │
   └────────────────────┼─────────┘                 │
                        │                  to add = │
-                       │        difference set C\O │
+                       │           changed\current │
                        └───────────────────────────┘
 ```
 This results in the following process:
 ```
-  ┌──────────────────────────────┐
-  │ start                        │
-  │ ┌────────────────────────────┤
-  │ │ deleteTerms := O\C         │
-  │ │ addTerms := C\O            │
-  │ │ ┌──────────────────────────┤
-  │ │ │ loop over deleteTerms    │
-  │ │ │ ┌────────────────────────┤
-  │ │ │ │ delete posting         │ remove all postings with the document id
-  │ │ │ │ ┌──────────────────────┤
-  │ │ │ │ │ delete position      │ remove all positions associated with the deleted postings
-  │ │ │ └─┴──────────────────────┤
-  │ │ │ end loop                 │
-  │ │ └──────────────────────────┤
-  │ │ ┌──────────────────────────┤
-  │ │ │ loop over addTerms       │
-  │ │ │ ┌────────────────────────┤
-  │ │ │ │ add posting            │ add posting with the document id
-  │ │ │ │ ┌──────────────────────┤
-  │ │ │ │ │ add position         │ add position associated with the posting
-  │ │ │ └─┴──────────────────────┤
-  │ │ │ end loop                 │
-  │ └─┴──────────────────────────┤
-  │ end                          │
-  └──────────────────────────────┘
+  ┌──────────────────────────────────┐
+  │ start                            │
+  │ ┌────────────────────────────────┤
+  │ │ deleteTerms := current\changed │
+  │ │ addTerms := changed\current    │
+  │ │ ┌──────────────────────────────┤
+  │ │ │ loop over deleteTerms        │
+  │ │ │ ┌────────────────────────────┤
+  │ │ │ │ delete posting             │ remove all postings with the document id
+  │ │ │ │ ┌──────────────────────────┤
+  │ │ │ │ │ delete position          │ remove all positions associated with the deleted postings
+  │ │ │ └─┴──────────────────────────┤
+  │ │ │ end loop                     │
+  │ │ └──────────────────────────────┤
+  │ │ ┌──────────────────────────────┤
+  │ │ │ loop over addTerms           │
+  │ │ │ ┌────────────────────────────┤
+  │ │ │ │ add posting                │ add posting with the document id
+  │ │ │ │ ┌──────────────────────────┤
+  │ │ │ │ │ add position             │ add position associated with the posting
+  │ │ │ └─┴──────────────────────────┤
+  │ │ │ end loop                     │
+  │ └─┴──────────────────────────────┤
+  │ end                              │
+  └──────────────────────────────────┘
 ```
 
 **Remove**: The removal of an IndexField from a reverse index is carried out according to the following procedure:

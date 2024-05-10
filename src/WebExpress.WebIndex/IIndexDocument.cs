@@ -32,6 +32,13 @@ namespace WebExpress.WebIndex
         void Add(T item);
 
         /// <summary>
+        /// Updates a item in the index.
+        /// </summary>
+        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
+        /// <param name="item">The data to be updated to the index.</param>
+        void Update(T item);
+
+        /// <summary>
         /// Removed all data from the index.
         /// </summary>
         void Clear();

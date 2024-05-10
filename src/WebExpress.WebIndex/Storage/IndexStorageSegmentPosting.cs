@@ -142,6 +142,67 @@ namespace WebExpress.WebIndex.Storage
         }
 
         /// <summary>
+        /// Remove a position segments.
+        /// </summary>
+        /// <param name="pos">The position of the term.</param>
+        /// <returns>The position segment.</returns>
+        public IndexStorageSegmentPosition RemovePosition(uint pos)
+        {
+            if (PositionAddr == 0)
+            {
+                return null;
+            }
+           
+            // check whether it exists
+            var last = default(IndexStorageSegmentPosition);
+            var position = default(IndexStorageSegmentPosition);
+            var count = 0U;
+
+            foreach (var i in Positions)
+            {
+                var compare = i.Position.CompareTo(pos);
+
+                if (compare > 0)
+                {
+                    break;
+                }
+                else if (compare == 0)
+                {
+                    position = i;
+                    break;
+                }
+
+                last = i;
+
+                count++;
+            }
+
+            if (position != null && last == null)
+            {
+                // remove at the beginning
+                PositionAddr = position.SuccessorAddr;
+
+                Context.IndexFile.Write(this);
+                Context.Allocator.Free(position);
+
+                return position;
+            }
+            else if (position != null && last != null)
+            {
+                // remove in place
+                last.SuccessorAddr = position.SuccessorAddr;
+
+                Context.IndexFile.Write(this);
+                Context.IndexFile.Write(last);
+                Context.Allocator.Free(position);
+
+                return position;
+            }
+
+            return null;
+        }
+        
+        /// <summary>
         /// Reads the record from the storage medium.
         /// </summary>
         /// <param name="reader">The reader for i/o operations.</param>

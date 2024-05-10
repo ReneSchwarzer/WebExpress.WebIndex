@@ -9,7 +9,7 @@ namespace WebExpress.WebIndex.Test.Fixture
         /// <summary>
         /// Returns the index manager.
         /// </summary>
-        public IndexManager IndexManager { get; } = new IndexManagerTest();
+        public WebIndex.IndexManager IndexManager { get; } = new IndexManagerTest();
 
         /// <summary>
         /// Returns the test data.

@@ -333,6 +333,68 @@ namespace WebExpress.WebIndex.Storage
         }
 
         /// <summary>
+        /// Remove a posting segments.
+        /// </summary>
+        /// <param name="id">The document id.</params>
+        /// <returns>The posting segment.</returns>
+        public IndexStorageSegmentPosting RemovePosting(Guid id)
+        {
+            if (PostingAddr == 0)
+            {
+                return null;
+            }
+
+            // check whether it exists
+            var last = default(IndexStorageSegmentPosting);
+            var posting = default(IndexStorageSegmentPosting);
+            var count = 0U;
+
+            foreach (var i in Postings)
+            {
+                var compare = i.DocumentID.CompareTo(id);
+
+                if (compare > 0)
+                {
+                    break;
+                }
+                else if (compare == 0)
+                {
+                    posting = i;
+
+                    break;
+                }
+
+                last = i;
+
+                count++;
+            }
+
+            if (posting != null && last == null)
+            {
+                // remove at the beginning
+                PostingAddr = posting.SuccessorAddr;
+                
+                Context.IndexFile.Write(this);
+                Context.Allocator.Free(posting);
+
+                return posting;
+            }
+            else if (posting != null && last != null)
+            {
+                // remove in place
+                last.SuccessorAddr = posting.SuccessorAddr;
+
+                Context.IndexFile.Write(this);
+                Context.IndexFile.Write(last);
+                Context.Allocator.Free(posting);
+
+                return posting;
+            }
+            
+            return null;
+        }
+
+        /// <summary>
         /// Add a child node.
         /// </summary>
         /// <returns>The child node.<returns>

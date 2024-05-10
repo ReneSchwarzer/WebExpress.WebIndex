@@ -32,7 +32,7 @@ namespace WebExpress.WebIndex.Memory
         /// <summary>
         /// Returns the index context.
         /// </summary>
-        public IIndexContext Context { get; private set; }
+        public IIndexDocumemntContext Context { get; private set; }
 
         /// <summary>
         /// Returns the culture.
@@ -50,7 +50,7 @@ namespace WebExpress.WebIndex.Memory
         /// <param name="context">The index context.</param>
         /// <param name="property">The property that makes up the index.</param>
         /// <param name="culture">The culture.</param>
-        public IndexMemoryReverse(IIndexContext context, PropertyInfo property, CultureInfo culture)
+        public IndexMemoryReverse(IIndexDocumemntContext context, PropertyInfo property, CultureInfo culture)
         {
             Context = context;
             Property = property;
@@ -59,17 +59,52 @@ namespace WebExpress.WebIndex.Memory
         }
 
         /// <summary>
-        /// Adds a item to the field.
+        /// Adds a item to the index.
         /// </summary>
         /// <param name="item">The data to be added to the index.</param>
         public void Add(T item)
         {
             var value = GetValueDelegate(item);
-            var terms = IndexAnalyzer.Analyze(value?.ToString(), Culture);
+            var terms = Context.TokenAnalyzer.Analyze(value?.ToString(), Culture);
 
+            Add(item, terms);
+        }
+
+        /// <summary>
+        /// Adds a item to the index.
+        /// </summary>
+        /// <param name="item">The data to be added to the index.</param>
+        /// <param name="terms">The terms to add to the reverse index for the given item.</param>
+        public void Add(T item, IEnumerable<IndexTermToken> terms)
+        {
             foreach (var term in terms)
             {
                 Root.Add(item, term.Value, term.Position);
+            }
+        }
+
+        /// <summary>
+        /// The data to be removed from the index.
+        /// </summary>
+        /// <param name="item">The data to be removed from the field.</param>
+        public void Remove(T item)
+        {
+            var value = GetValueDelegate(item);
+            var terms = Context.TokenAnalyzer.Analyze(value?.ToString(), Culture);
+
+            Remove(item, terms);
+        }
+
+        /// <summary>
+        /// The data to be removed from the index.
+        /// </summary>
+        /// <param name="item">The data to be removed from the field.</param>
+        /// <param name="terms">The terms to add to the reverse index for the given item.</param>
+        public void Remove(T item, IEnumerable<IndexTermToken> terms)
+        {
+            foreach (var term in terms)
+            {
+                Root.Remove(term.Value, item);
             }
         }
 
@@ -82,29 +117,13 @@ namespace WebExpress.WebIndex.Memory
         }
 
         /// <summary>
-        /// The data to be removed from the field.
-        /// </summary>
-        /// <typeparam name="T">The data type. This must have the IIndexData interface.</typeparam>
-        /// <param name="item">The data to be removed from the field.</param>
-        public void Remove(T item)
-        {
-            var value = GetValueDelegate(item);
-            var terms = IndexAnalyzer.Analyze(value?.ToString(), Culture);
-
-            foreach (var term in terms)
-            {
-                Root.Remove(term.Value, item);
-            }
-        }
-
-        /// <summary>
         /// Return all items for a given term.
         /// </summary>
         /// <param name="term">The term.</param>
         /// <returns>An enumeration of the data ids.</returns>
         public IEnumerable<Guid> Collect(object term)
         {
-            var terms = IndexAnalyzer.Analyze(term?.ToString(), Culture);
+            var terms = Context.TokenAnalyzer.Analyze(term?.ToString(), Culture);
 
             return terms.SelectMany(x => Root.Collect(x.Value)).Distinct();
         }

@@ -23,6 +23,12 @@ namespace WebExpress.WebIndex
         void Add(T item);
 
         /// <summary>
+        /// Update an item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        void Update(T item);
+
+        /// <summary>
         /// Removed all data from the document store.
         /// </summary>
         void Clear();

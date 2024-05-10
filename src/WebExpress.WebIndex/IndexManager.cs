@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
-using WebExpress.WebIndex.Term.Converter;
-using WebExpress.WebIndex.Term.Filter;
+using WebExpress.WebIndex.Term;
+using WebExpress.WebIndex.Term.Pipeline;
 using WebExpress.WebIndex.Wql;
 
 namespace WebExpress.WebIndex
@@ -23,6 +22,11 @@ namespace WebExpress.WebIndex
         public IIndexContext Context { get; private set; }
 
         /// <summary>
+        /// Returns the token analyzer.
+        /// </summary>
+        protected IndexTokenAnalyzer TokenAnalyzer { get; private set; }
+
+        /// <summary>
         /// Constructor
         /// </summary>
         public IndexManager()
@@ -36,50 +40,9 @@ namespace WebExpress.WebIndex
         /// <param name="context">The reference to the context.</param>
         public void Initialization(IIndexContext context)
         {
-            var assembly = typeof(IndexManager).Assembly;
-            string[] fileNames = ["IrregularWords.en", "IrregularWords.de", "MisspelledWords.en", "MisspelledWords.de", "RegularWords.en", "RegularWords.de", "StopWords.en", "StopWords.de"];
-
             Context = context;
-
             Directory.CreateDirectory(Context.IndexDirectory);
-
-            foreach (var fileName in fileNames)
-            {
-                var path = Path.Combine(Context.IndexDirectory, fileName.ToLower());
-                var resources = assembly.GetManifestResourceNames();
-                var resource = resources
-                    .Where(x => x.EndsWith($".{fileName}", StringComparison.OrdinalIgnoreCase))
-                    .FirstOrDefault();
-
-                if (resource == null)
-                {
-                    continue;
-                }
-
-                try
-                {
-
-                    if (!File.Exists(path))
-                    {
-                        using var sw = new StreamWriter(path, false, Encoding.UTF8);
-                        using var contentStream = assembly.GetManifestResourceStream(resource);
-                        using var sr = new StreamReader(contentStream, Encoding.UTF8);
-
-                        sw.Write(sr.ReadToEnd());
-                    }
-                }
-                catch
-                {
-                }
-            }
-
-            IndexTermConverterLowerCase.Initialization(context);
-            IndexTermConverterMisspelled.Initialization(context);
-            IndexTermConverterNormalizer.Initialization(context);
-            IndexTermConverterSingular.Initialization(context);
-            IndexTermConverterSynonym.Initialization(context);
-            IndexTermFilterEmpty.Initialization(context);
-            IndexTermFilterStopWord.Initialization(context);
+            TokenAnalyzer = new IndexTokenAnalyzer(context);
         }
 
         /// <summary>
@@ -92,8 +55,19 @@ namespace WebExpress.WebIndex
         {
             if (!Documents.ContainsKey(typeof(T)))
             {
-                Documents.Add(typeof(T), new IndexDocument<T>(Context, type, culture));
+                var context = new IndexDocumemntContext(Context, TokenAnalyzer); 
+                
+                Documents.Add(typeof(T), new IndexDocument<T>(context, type, culture));
             }
+        }
+
+        /// <summary>
+        /// Registers a pipe state for processing the tokens.
+        /// </summary>
+        /// <param name="pipeState">The pipe stage to add.</param>
+        public void Register(IIndexPipeStage pipeStage)
+        {
+            TokenAnalyzer.Register(pipeStage);
         }
 
         /// <summary>
@@ -134,8 +108,10 @@ namespace WebExpress.WebIndex
         /// <param name="item">The data to be updated to the index.</param>
         public void Update<T>(T item) where T : IIndexItem
         {
-            Remove(item);
-            Add(item);
+            if (GetIndexDocument<T>() is IIndexDocument<T> document)
+            {
+                document.Update(item);
+            }
         }
 
         /// <summary>
@@ -229,6 +205,7 @@ namespace WebExpress.WebIndex
             }
 
             Documents.Clear();
+            TokenAnalyzer?.Dispose();
         }
     }
 }

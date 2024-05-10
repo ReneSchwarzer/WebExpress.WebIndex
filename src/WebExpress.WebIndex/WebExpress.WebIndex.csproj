@@ -39,6 +39,8 @@
 		<None Remove="Asstes\RegularWords.en" />
 		<None Remove="Asstes\StopWords.de" />
 		<None Remove="Asstes\StopWords.en" />
+		<None Remove="Asstes\Synonyms.de" />
+		<None Remove="Asstes\Synonyms.en" />
 		<None Remove="Internationalization\de" />
 		<None Remove="Internationalization\en" />
 	</ItemGroup>
@@ -52,6 +54,8 @@
 		<EmbeddedResource Include="Asstes\IrregularWords.de" />
 		<EmbeddedResource Include="Asstes\StopWords.de" />
 		<EmbeddedResource Include="Asstes\StopWords.en" />
+		<EmbeddedResource Include="Asstes\Synonyms.de" />
+		<EmbeddedResource Include="Asstes\Synonyms.en" />
 		<EmbeddedResource Include="Internationalization\de" />
 		<EmbeddedResource Include="Internationalization\en" />
 	</ItemGroup>

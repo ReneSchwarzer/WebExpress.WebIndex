@@ -33,7 +33,7 @@ namespace WebExpress.WebIndex
         /// <summary>
         /// Returns the index context.
         /// </summary>
-        public IIndexContext Context { get; private set; }
+        public IIndexDocumemntContext Context { get; private set; }
 
         /// <summary>
         /// Returns the culture.
@@ -51,7 +51,7 @@ namespace WebExpress.WebIndex
         /// <param name="context">The index context.</param>
         /// <param name="indexType">The index type.</param>
         /// <param name="culture">The culture.</param>
-        public IndexDocument(IIndexContext context, IndexType indexType, CultureInfo culture)
+        public IndexDocument(IIndexDocumemntContext context, IndexType indexType, CultureInfo culture)
         {
             Context = context;
             IndexType = indexType;
@@ -132,6 +132,11 @@ namespace WebExpress.WebIndex
         /// <param name="item">The data to be added to the index.</param>
         public virtual void Add(T item)
         {
+            if (item == null)
+            {
+                return;
+            }
+
             foreach (var property in typeof(T).GetProperties().Where(x => x.GetCustomAttribute<IndexIgnoreAttribute>() == null))
             {
                 if (GetReverseIndex(property) is IIndexReverse<T> reverseIndex)
@@ -141,6 +146,41 @@ namespace WebExpress.WebIndex
             }
 
             DocumentStore.Add(item);
+        }
+
+        /// <summary>
+        /// Updates a item in the index.
+        /// </summary>
+        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
+        /// <param name="item">The data to be updated to the index.</param>
+        public void Update(T item)
+        {
+            if (item == null)
+            {
+                return;
+            }
+
+            var currentItem = DocumentStore.GetItem(item.Id);
+
+            foreach (var property in typeof(T).GetProperties().Where(x => x.GetCustomAttribute<IndexIgnoreAttribute>() == null))
+            {
+                var currentValue = property?.GetValue(currentItem)?.ToString();
+                var currentTerms = Context.TokenAnalyzer.Analyze(currentValue, Culture);
+
+                var changedValue = property?.GetValue(item)?.ToString();
+                var changedTerms = Context.TokenAnalyzer.Analyze(changedValue, Culture);
+
+                if (GetReverseIndex(property) is IIndexReverse<T> reverseIndex)
+                {
+                    var deleteTerms = currentTerms.Except(changedTerms);
+                    var addTerms = changedTerms.Except(currentTerms);
+
+                    reverseIndex.Remove(item, deleteTerms);
+                    reverseIndex.Add(item, addTerms);
+                }
+            }
+
+            DocumentStore.Update(item);
         }
 
         /// <summary>
@@ -165,6 +205,11 @@ namespace WebExpress.WebIndex
         /// <param name="item">The data to be removed from the index.</param>
         public virtual void Remove(T item)
         {
+            if (item == null)
+            {
+                return;
+            }
+
             foreach (var property in typeof(T).GetProperties())
             {
                 if (GetReverseIndex(property) is IIndexReverse<T> reverseIndex)

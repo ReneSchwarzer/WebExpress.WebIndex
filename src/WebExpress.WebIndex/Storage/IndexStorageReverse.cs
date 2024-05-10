@@ -52,7 +52,7 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Returns the index context.
         /// </summary>
-        public IIndexContext Context { get; private set; }
+        public IIndexDocumemntContext Context { get; private set; }
 
         /// <summary>
         /// Returns the culture.
@@ -65,7 +65,7 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="context">The index context.</param>
         /// <param name="property">The property that makes up the index.</param>
         /// <param name="culture">The culture.</param>
-        public IndexStorageReverse(IIndexContext context, PropertyInfo property, CultureInfo culture)
+        public IndexStorageReverse(IIndexDocumemntContext context, PropertyInfo property, CultureInfo culture)
         {
             Context = context;
             Property = property;
@@ -105,15 +105,25 @@ namespace WebExpress.WebIndex.Storage
         }
 
         /// <summary>
-        /// Adds a item to the field.
+        /// Adds a item to the index.
         /// </summary>
         /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
         /// <param name="item">The data to be added to the index.</param>
         public void Add(T item)
         {
             var value = Property?.GetValue(item)?.ToString();
-            var terms = IndexAnalyzer.Analyze(value, Culture);
+            var terms = Context.TokenAnalyzer.Analyze(value, Culture);
 
+            Add(item, terms);
+        }
+
+        /// <summary>
+        /// Adds a item to the index.
+        /// </summary>
+        /// <param name="item">The data to be added to the index.</param>
+        /// <param name="terms">The terms to add to the reverse index for the given item.</param>
+        public void Add(T item, IEnumerable<IndexTermToken> terms)
+        {
             foreach (var term in terms)
             {
                 Term.Add(term.Value)
@@ -122,6 +132,45 @@ namespace WebExpress.WebIndex.Storage
 
                 Statistic.Count++;
                 IndexFile.Write(Statistic);
+            }
+        }
+
+        /// <summary>
+        /// The data to be removed from the index.
+        /// </summary>
+        /// <typeparam name="T">The data type. This must have the IIndexData interface.</typeparam>
+        /// <param name="item">The data to be removed from the field.</param>
+        public void Remove(T item)
+        {
+            var value = Property?.GetValue(item)?.ToString();
+            var terms = Context.TokenAnalyzer.Analyze(value?.ToString(), Culture);
+
+            Remove(item, terms);
+        }
+
+        /// <summary>
+        /// The data to be removed from the index.
+        /// </summary>
+        /// <param name="item">The data to be removed from the field.</param>
+        /// <param name="terms">The terms to add to the reverse index for the given item.</param>
+        public void Remove(T item, IEnumerable<IndexTermToken> terms)
+        {
+            foreach (var term in terms)
+            {
+                var t = Term[term.Value];
+                var posting = t?.Postings
+                    .Where(x => x.DocumentID == item?.Id)
+                    .FirstOrDefault();
+
+                posting?.RemovePosition(term.Position);
+
+                if (!posting.Positions.Any())
+                {
+                    t.RemovePosting(item.Id);
+                    
+                    Statistic.Count--;
+                    IndexFile.Write(Statistic);
+                }
             }
         }
 
@@ -148,17 +197,6 @@ namespace WebExpress.WebIndex.Storage
         }
 
         /// <summary>
-        /// The data to be removed from the field.
-        /// </summary>
-        /// <typeparam name="T">The data type. This must have the IIndexData interface.</typeparam>
-        /// <param name="item">The data to be removed from the field.</param>
-        public void Remove(T item)
-        {
-            Statistic.Count--;
-            IndexFile.Write(Statistic);
-        }
-
-        /// <summary>
         /// Return all items for a given term.
         /// </summary>
         /// <param name="term">The term.</param>
@@ -166,7 +204,7 @@ namespace WebExpress.WebIndex.Storage
         public IEnumerable<Guid> Collect(object term)
         {
             var list = new List<Guid>();
-            var terms = IndexAnalyzer.Analyze(term?.ToString(), Culture);
+            var terms = Context.TokenAnalyzer.Analyze(term?.ToString(), Culture);
 
             foreach (var normalized in terms)
             {

@@ -1,14 +1,20 @@
 ﻿using System.Diagnostics;
 using System.Text;
+using WebExpress.WebIndex.Term;
 
 namespace WebExpress.WebIndex.Test.Fixture
 {
     public class UnitTestIndexFixtureToken : IDisposable
     {
         /// <summary>
-        /// Returns the index manager.
+        /// Returns the context.
         /// </summary>
-        public IndexManager IndexManager { get; } = new IndexManagerTest();
+        public IndexContext Context { get; private set; }
+
+        /// <summary>
+        /// Returns the token analyzer.
+        /// </summary>
+        public IndexTokenAnalyzer TokenAnalyzer { get; private set; }
 
         /// <summary>
         /// Constructor
@@ -16,7 +22,10 @@ namespace WebExpress.WebIndex.Test.Fixture
         public UnitTestIndexFixtureToken()
         {
             var context = new IndexContext();
-            IndexManager.Initialization(context);
+            context.IndexDirectory = Path.Combine(context.IndexDirectory, Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
+            Context = context;
+
+            TokenAnalyzer = new IndexTokenAnalyzer(Context);
         }
 
         /// <summary>
@@ -24,7 +33,7 @@ namespace WebExpress.WebIndex.Test.Fixture
         /// </summary>
         public virtual void Dispose()
         {
-            IndexManager.Dispose();
+            TokenAnalyzer.Dispose();
         }
 
         public long GetUsedMemory()

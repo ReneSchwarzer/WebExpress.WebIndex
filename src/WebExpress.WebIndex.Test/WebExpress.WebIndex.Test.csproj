@@ -35,4 +35,8 @@
     <ProjectReference Include="..\WebExpress.WebIndex\WebExpress.WebIndex.csproj" />
   </ItemGroup>
 
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="rmdir /S /Q &quot;$(TargetDir)index&quot;" />
+  </Target>
+
 </Project>
