@@ -1,13 +1,11 @@
-![WebExpress](https://raw.githubusercontent.com/ReneSchwarzer/WebExpress.Doc/main/assets/banner.png)
+﻿![WebExpress](https://raw.githubusercontent.com/ReneSchwarzer/WebExpress.Doc/main/assets/banner.png)
 
 # WebExpress.WebIndex
-The index model provides a reverse index to enable fast and efficient searching. A reverse 
-index can significantly speed up access to the data. However, creating and storing a 
-reverse index requires additional storage space and processing time. The storage requirement 
-increases, especially with large amounts of data can be important. Therefore, it is important 
-to weigh the pros and cons to achieve the best possible performance. The reverse index offers 
-the added value of a fast and resource-saving full-text search for the cost. The full-text 
-search in `WebExpress` supports the following search options:
+The index model provides a reverse index to enable fast and efficient searching. A reverse index can significantly speed up access 
+to the data. However, creating and storing a reverse index requires additional storage space and processing time. The storage 
+requirement increases, especially with large amounts of data, which can be important. Therefore, it is important to weigh the 
+pros and cons to achieve the best possible performance. The reverse index offers the added value of a fast and resource-saving 
+full-text search and accepts the costs mentioned. The full-text search in `WebExpress` supports the following search options:
 
 - Word search
 - Wildcard search
@@ -15,18 +13,19 @@ search in `WebExpress` supports the following search options:
 - Proximity search
 - Fuzzy search
 
-The indexing process begins with the analysis of documents, where the documents are broken down into smaller units, usually words or phrases. These 
-broken-down units are then converted into normalized tokens. Normalization can take various forms, such as converting all letters to lowercase, 
-removing punctuation, or reducing words to their stem. In addition, stop words are removed. Stop words are frequently occurring words like "and", 
-"is", "in", which typically do not provide added value for the search. These words are filtered out to improve efficiency and reduce storage 
-requirements. In many languages, words can appear in different forms that all refer to the same concept. Therefore, techniques such as stemming or 
-lemmatization are often applied to reduce different forms of a word to a common representation. These additional steps help improve the accuracy and 
-relevance of search results and help keep the index compact and manageable. The normalized tokens are stored in a reverse index. This index is 
-structured so that it lists the documents in which each token appears for each token. In addition to the tokens, more information is stored, such 
-as the frequency of the tokens or the position of the tokens in the document.
-During the search process, the search words are tokenized and normalized in the same way, and then each token is looked up in the reverse index. The 
-documents or positions found in the lists of all tokens are the search results. This method allows for a fast and efficient search, as the time-consuming 
-part is carried out in advance during the indexing process and the actual search consists only of quick lookup operations in the reverse index.
+The indexing process begins with the analysis of documents, where the documents are broken down into smaller units, usually words 
+or phrases. These broken-down units are then converted into normalized tokens. Normalization can take various forms, such as converting 
+all letters to lowercase, removing punctuation, or reducing words to their stem. In addition, stop words are removed. Stop words are 
+frequently occurring words like "and", "is", "in", which typically do not provide added value for the search. These words are filtered 
+out to improve efficiency and reduce storage requirements. In many languages, words can appear in different forms that all refer to the 
+same concept. Therefore, techniques such as stemming, or lemmatization are often applied to reduce different forms of a word to a common 
+representation. These additional steps help improve the accuracy and relevance of search results and help keep the index compact and 
+manageable. The normalized tokens are stored in a reverse index. This index is structured so that it lists the documents in which each 
+token appears for each token. In addition to the tokens, more information is stored, such as the frequency of the tokens or the position 
+of the tokens in the document. During the search process, the search words are tokenized and normalized in the same way, and then each 
+token is looked up in the reverse index. The documents or positions found in the lists of all tokens are the search results. This method 
+allows for a fast and efficient search, as the time-consuming part is carried out in advance during the indexing process and the actual 
+search consists only of quick lookup operations in the reverse index.
 
 ```
  ┌──────────┐       indexing
@@ -55,8 +54,8 @@ depending on the part of speech.
 These techniques are particularly useful in information search systems such as search engines, where users can submit a query using 
 one word (e.g., "meditate") but expect results that use any inflected form of the word (e.g. "meditated", "meditation", etc).
 
-In this particular instance, indexing is performed on two documents by executing a series of operations: tokenization, normalization, and stop-word removal. The outcome 
-of these operations is a multi-dimensional table, which serves as a representation of the reverse index.
+In this instance, indexing is performed on two documents by executing a series of operations: tokenization, normalization, and 
+stop-word removal. The outcome of these operations is a multi-dimensional table, which serves as a representation of the reverse index.
 ```
 
  ┌document a────────────────────────────────────────┐      ┌document b────────────────────────────────────────┐
@@ -169,7 +168,7 @@ of these operations is a multi-dimensional table, which serves as a representati
                                                   ▲
                                                   │
                                                   │
-                                     ┌stopword cleaned query───┐
+                                     ┌stop word cleaned query──┐
                                      │ marty play guitar       │
                                      └─────────────────────────┘
                                                   ▲
@@ -186,12 +185,14 @@ of these operations is a multi-dimensional table, which serves as a representati
                                      └──────────────────────────┘
 ```
 
-`WebIndex` is an efficient system that combines document store and reverse indices to support a variety of search options. The `IndexDocumentStore` stores all 
-instances of a document for quick access, regardless of other persistent storage forms such as databases. On the other hand, the reverse index is created for each 
-field `IndexField` of a document unless it is marked with `IndexIgnore`. The field contents are tokenized, normalized, and filtered to create the terms of the reverse 
-index. Each term in the reverse index is associated with a posting that contains the IDs of the document instances that contain the term. The position where the term was 
-found within the attribute value is stored in the position. There can be multiple positions for each posting. When searching for one or more terms, the IDs of 
-the instances and their positions within the attribute values can be determined.
+`WebIndex` is an efficient system that combines document store and reverse indices to support a variety of search options. The 
+`IndexDocumentStore` stores all instances of a document for quick access, regardless of other persistent storage forms such as 
+databases. On the other hand, the reverse index is created for each field `IndexField` of a document unless it is marked with 
+`IndexIgnore`. The field contents are tokenized, normalized, and filtered to create the terms of the reverse index. Each term 
+in the reverse index is associated with a posting that contains the IDs of the document instances that contain the term. The 
+position where the term was found within the attribute value is stored in the position. There can be multiple positions for each 
+posting. When searching for one or more terms, the IDs of the instances and their positions within the attribute values can be 
+determined.
 
 ```
  ╔═══════════════════════════════════════ IndexManager ═╗
@@ -233,35 +234,38 @@ the instances and their positions within the attribute values can be determined.
 ```
 
 # IndexManager
-The index manager is a central component of the `WebIndex` system and serves as the primary interface for interacting with the indexing functions. It is responsible 
-for managing the various `IndexDocuments` that are created in `WebIndex`. Each `IndexDocument` represents a collection of documents that need to be indexed, and the 
-index manager ensures that these documents are indexed correctly and efficiently. In addition, the index manager provides functions for adding, updating, and 
-deleting documents in the index. It also enables the execution of search queries on the index and returns the corresponding results. Finally, the index manager 
-provides high control over the indexing process by allowing certain fields to be excluded from indexing or determining whether the index should be created in 
-main memory or persistently in the file system. An `IndexDocument` created in main memory enables faster indexing and searching. However, the number of objects it 
-can support is limited and depends on the size of the available main memory. Therefore, it is important to weigh the pros and cons and choose the best solution 
-for the specific requirements.
+The index manager is a central component of the `WebIndex` system and serves as the primary interface for interacting with the indexing 
+functions. It is responsible for managing the various `IndexDocuments` that are created in `WebIndex`. Each `IndexDocument` represents 
+a collection of documents that need to be indexed, and the index manager ensures that these documents are indexed correctly and 
+efficiently. In addition, the index manager provides functions for adding, updating, and deleting documents in the index. It also enables 
+the execution of search queries on the index and returns the corresponding results. Finally, the index manager provides high control over 
+the indexing process by allowing certain fields to be excluded from indexing or determining whether the index should be created in main 
+memory or persistently in the file system. An `IndexDocument` created in main memory enables faster indexing and searching. However, the 
+number of objects it can support is limited and depends on the size of the available main memory. Therefore, it is important to weigh the 
+pros and cons and choose the best solution for the specific requirements.
 
 ## IndexDocument
-An IndexDocument representing a class that implements the `IIndexItem` interface. Each `IndexDocument` contains a collection of fields that hold the data to be 
-indexed. These fields can contain various types of data, such as text, numbers, or dates. During the indexing process, the data in these fields are analyzed and 
-tokenized, then stored in the reverse index. In addition to the reverse index, an `IndexDocument` also includes a document store for quick access to the existing 
-instances. When a search query is made for one or more terms, the IDs of the instances that match the terms are identified in the reverse index and supplemented 
-with the corresponding instances in the document store and returned to the searcher.
+An `IndexDocument` representing a class that implements the `IIndexItem` interface. Each `IndexDocument` contains a collection of fields 
+that hold the data to be indexed. These fields can contain various types of data, such as text, numbers, or dates. During the indexing 
+process, the data in these fields are analyzed and tokenized, then stored in the reverse index. In addition to the reverse index, an 
+`IndexDocument` also includes a document store for quick access to the existing instances. When a search query is made for one or more 
+terms, the IDs of the instances that match the terms are identified in the reverse index and supplemented with the corresponding instances 
+in the document store and returned to the searcher.
 
 ## IndexField
-An `IndexField` is a property (C# property) in an index document that can accommodate various types of values, such as text, numbers, or other data. Each field is 
-stored in a reverse index, which converts the field values into terms and associates them with document IDs and positional data in the reverse index. The name and 
-type of the field are essential pieces of information used during indexing and searching. If a field is marked with the IndexIgnore attribute, it will be excluded 
-from the indexing process.
+An `IndexField` is a property (C# property) in an index document that can accommodate various types of values, such as text, numbers, or 
+other data. Each field is stored in a reverse index, which converts the field values into terms and associates them with document IDs and 
+positional data in the reverse index. The name and type of the field are essential pieces of information used during indexing and searching. 
+If a field is marked with the IndexIgnore attribute, it will be excluded from the indexing process.
 
 ## IndexStore
-In a filesystem where the WebIndex is stored, a process is carried out where an inverted index is created for each field. These indexes are stored as files with 
-the `<document name><field name>.wri` extension. In parallel, a special storage area known as the document store `<document name>.wds` is set up for each document. In 
-this storage area, the document’s data is redundantly stored to enable quick access.
-The structure of these files follows a uniform format that is divided into various segments. Each of these segments is identifiable by a unique address and has a specific 
-length. There is the option to specify whether a particular segment should be stored in the cache. If a segment is no longer needed, it can be removed from the main 
-memory. These features contribute to efficient use of storage and improve the system performance.
+In a filesystem where the `WebIndex` is stored, a process is carried out where an inverted index is created for each field. These indexes are 
+stored as files with the `<document name><field name>.wri` extension. In parallel, a special storage area known as the document store 
+`<document name>.wds` is set up for each document. In this storage area, the document’s data is redundantly stored to enable quick access.
+The structure of these files follows a uniform format that is divided into various segments. Each of these segments is identifiable by a 
+unique address and has a specific length. There is the option to specify whether a particular segment should be stored in the cache. If a 
+segment is no longer needed, it can be removed from the main memory. These features contribute to efficient use of storage and improve 
+the system performance.
 
 ```
          ╔Header═════════╗
@@ -276,8 +280,8 @@ memory. These features contribute to efficient use of storage and improve the sy
          ╚~~~~~~~~~~~~~~~╝
 ```
 
-Unused memory areas in the file are represented by the “Free” segment, which is located in the body area variable and forms a linked list. The `Allocator` points 
-to the first element of this list.
+Unused memory areas in the file are represented by the `Free` segment, which is located in the body area variable and forms a linked list. The 
+`Allocator` points to the first element of this list.
 
 ```
          ╔Free═══════════╗
@@ -286,11 +290,11 @@ to the first element of this list.
          ╚═══════════════╝
 ```
 
-When new documents are indexed, the new segments are accommodated in a free storage area in the file. Initially, this is the end of the file. In fragmented files, where segments 
-have already been deleted, the freed storage areas are reused. The `Allocator` in the header always points to the next free storage space with `NextFreeAddr`.
+When new documents are indexed, the new segments are accommodated in a free storage area in the file. Initially, this is the end of the 
+file. In fragmented files, where segments have already been deleted, the freed storage areas are reused. The `Allocator` in the header always 
+points to the next free storage space with `NextFreeAddr`.
 
 ### Example alloc
-
 In this example, segments 2 and 3 are successively added. It is important to note that segment 1 already exists.
 
 ```
@@ -316,12 +320,11 @@ In this example, segments 2 and 3 are successively added. It is important to not
                                                      ╚═══════════════╝
 ```
 
-Free memory slots are stored in a linked list, which represents the free segments in the file. These can be reused for storing new data. Unused segments are replaced with 
-the `Free`-Segment, and neighboring free segments are merged. This process creates room for larger segments but may lead to the formation of dead memory spaces too small 
-for reuse. Reindexing can eliminate these dead spaces, enhancing memory usage efficiency.
+Free memory slots are stored in a linked list, which represents the free segments in the file. These can be reused for storing new data. Unused 
+segments are replaced with the `Free` segment, and neighboring free segments are merged. This process creates room for larger segments but may 
+lead to the formation of dead memory spaces too small for reuse. Reindexing can eliminate these dead spaces, enhancing memory usage efficiency.
 
 ### Example Free
-
 In this example, segments 2, 1 and 4 are sequentially released and consolidated.
 
 ```
@@ -350,16 +353,15 @@ In this example, segments 2, 1 and 4 are sequentially released and consolidated.
    ╚═══════════════╝        ╚═══════════════╝        ╚═══════════════╝        ╚═══════════════╝
 ```
 
-The repurposing of unused segments reduces the space requirements of files, particularly for highly fluctuating index files. This practice not only optimizes storage 
-but also enhances the overall performance and efficiency of data management systems. It is especially beneficial in environments where data is frequently updated or 
-deleted, leading to a high turnover of index files. By reusing these segments, the system can maintain optimal performance while minimizing the need for additional 
-storage space.
+The repurposing of unused segments reduces the space requirements of files, particularly for highly fluctuating index files. This practice 
+not only optimizes storage but also enhances the overall performance and efficiency of data management systems. It is especially beneficial 
+in environments where data is frequently updated or deleted, leading to a high turnover of index files. By reusing these segments, the system 
+can maintain optimal performance while minimizing the need for additional storage space.
 
 ### Example realloc
-
 In this example, a new segment 1 is added, utilizing the available free memory space. The free memory space is divided in such a way that the 
-Free-Segment is split into two segments. This process allows for the efficient use of memory by allocating only the necessary space for the new segment, while 
-preserving the remaining free space for future use.
+Free-Segment is split into two segments. This process allows for the efficient use of memory by allocating only the necessary space for the 
+new segment, while preserving the remaining free space for future use.
 
 ```
        initial          split 1 into 1&2 and add to 1
@@ -388,21 +390,23 @@ preserving the remaining free space for future use.
 ```
 
 ### Caching
-Caching is an efficient technique for optimizing data access by enabling fast access to frequently used data and simultaneously reducing the load on 
-the file system. It stores frequently used data in memory, which speeds up access to this data as it does not have to be retrieved from the hard drive 
-again. For write accesses, the data is first written to the read cache. They are then queued before being written to a disk by a thread. This process, 
-also known as write delay, can improve system performance by decoupling write operations and writing them to the disk at a more favorable time. The 
-read cache uses a hash map to allow random access to the cached segments. Each cached segment has a defined lifetime. If this has expired, the segments 
-are removed from the read cache, unless they have been marked as immortal via the `SegmentCached` attribute.
+Caching is an efficient technique for optimizing data access by enabling fast access to frequently used data and simultaneously reducing
+the load on the file system. It stores frequently used data in memory, which speeds up access to this data as it does not have to be 
+retrieved from the hard drive again. For write accesses, the data is first written to the read cache. They are then queued before being 
+written to a disk by a thread. This process, also known as write delay, can improve system performance by decoupling write operations and 
+writing them to the disk at a more favorable time. The read cache uses a hash map to allow random access to the cached segments. Each cached 
+segment has a defined lifetime. If this has expired, the segments are removed from the read cache, unless they have been marked as immortal 
+via the `SegmentCached` attribute.
 
 ## IndexDocumentStore
-A `IndexDocumentStore` is a data structure in which each key is associated with a value. This allows efficient retrieval and retrieval of data based on the key. The 
-document store plays a crucial role in improving the efficiency of queries by enabling direct access to the document instances that contain the desired terms. Access 
-to the document instances is done via a HashMap, where the ID serves as the key. The internal structure of the document store:
+A `IndexDocumentStore` is a data structure in which each key is associated with a value. This allows efficient retrieval and retrieval of data 
+based on the key. The document store plays a crucial role in improving the efficiency of queries by enabling direct access to the document 
+instances that contain the desired terms. Access to the document instances is done via a HashMap, where the ID serves as the key. The internal 
+structure of the document store:
 
 ```
          ╔Body═══════════╗
-         ║ HashMap       ║ a hashmap in which the data is stored
+         ║ HashMap       ║ a hash map in which the data is stored
          ╚~~~~~~~~~~~~~~~╝
 ```
 
@@ -420,7 +424,7 @@ to the document instances is done via a HashMap, where the ID serves as the key.
 ```
 
 The document instances are stored in a segment. The size of the segment is variable and is determined by the size of the 
-compressed document instance. The segment are stored in the variable memory area.
+compressed document instance. The segment is stored in the variable memory area.
 ```
          ╔Item═══════════╗
  16 Byte ║ Id            ║ guid of the document item
@@ -439,7 +443,7 @@ original data can be obtained at any time through decompression and deserializat
   ┌──────────────────────────────┐
   │ start                        │
   │ ┌────────────────────────────┤
-  │ │ if !contains(id)           │ look up document id in hashmap
+  │ │ if !contains(id)           │ look up document id in hash map
   │ │ ┌──────────────────────────┤
   │ │ │ gzip(data)               │ gzip the data
   │ │ │ add item                 │ adding an items segment
@@ -462,7 +466,7 @@ system efficiency by avoiding unnecessary storage allocations.
   ┌──────────────────────────────┐
   │ start                        │
   │ ┌────────────────────────────┤
-  │ │ if contains(id)            │ look up document id in hashmap
+  │ │ if contains(id)            │ look up document id in hash map
   │ │ ┌──────────────────────────┤
   │ │ │ delete                   │ delete item
   │ │ │ gzip(data)               │ gzip the data
@@ -486,7 +490,7 @@ ensures efficient use of storage and keeps the document storage tidy and well-or
   ┌──────────────────────────────┐
   │ start                        │
   │ ┌────────────────────────────┤
-  │ │ if !contains(id)           │ look up document id in hashmap
+  │ │ if !contains(id)           │ look up document id in hash map
   │ │ ┌──────────────────────────┤
   │ │ │ delete item              │ remove the existing item segment
   │ │ └──────────────────────────┤
@@ -501,9 +505,9 @@ ensures efficient use of storage and keeps the document storage tidy and well-or
 ```
 
 ### IndexReverse
-A reverse index is a specialized type of index that allows access to data in reverse order. In the context of the `WebIndex`, the reverse index is used for efficient 
-searching of terms. These terms are derived from the associated fields, and their values are broken down into tokens, normalized, filtered, and stored in a search 
-tree for fast retrieval.
+A reverse index is a specialized type of index that allows access to data in reverse order. In the context of the `WebIndex`, the reverse 
+index is used for efficient searching of terms. These terms are derived from the associated fields, and their values are broken down 
+into tokens, normalized, filtered, and stored in a search tree for fast retrieval.
 
 ```
          ╔Body═══════════╗
@@ -520,9 +524,10 @@ tree for fast retrieval.
          ╚~~~~~~~~~~~~~~~╝
 ```
 
-The tree structure enables efficient search and retrieval of terms. Each node in the tree represents a character of the term, and the sequence of characters along the 
-path from the root node to a specific node forms the corresponding term. The `TermNode` segments in the data area of the reverse index are organized in such a way that 
-they enable a fast and accurate search. A term segment contains important metadata. This includes the frequency of the term’s occurrence and a reference to a linked list. This list contains the 
+The tree structure enables efficient search and retrieval of terms. Each node in the tree represents a character of the term, and the 
+sequence of characters along the path from the root node to a specific node forms the corresponding term. The `TermNode` segments in 
+the data area of the reverse index is organized in such a way that they enable a fast and accurate search. A term segment contains 
+important metadata. This includes the frequency of the term’s occurrence and a reference to a linked list. This list contains the 
 documents in which the term appears.
 
 ```
@@ -667,7 +672,6 @@ This results in the following process:
 ```
 
 ## Indexing
-
 Indexing is a crucial process that enables quick information retrieval. The index is created from the values of the document 
 fields. This index is stored on the file system and is updated whenever a document value is added or changed. Sometimes it 
 is necessary to manually regenerate the index, for example, when a new document field is added or when the index is lost or 
@@ -734,12 +738,10 @@ IndexManager.ReIndex(greetings);
                                                                                                        └────────┘
 ```
 
-## Searching
-
 # WQL
-The WebExpress Query Language (WQL) is a query language that filters and sorts a given amount of data from the reverse index. A statement of the query language 
-is usually sent from the client to the server, which collects, filters and sorts the data in the reverse index and sends it back to the client.
-The following BNF is used to illustrate the grammar:
+The WebExpress Query Language (WQL) is a query language that filters and sorts of a given amount of data from the reverse index. A statement 
+of the query language is usually sent from the client to the server, which collects, filters and sorts the data in the reverse index and 
+sends it back to the client. The following BNF is used to illustrate the grammar:
 
 ```
 <WQL>                  ::= <Filter> <Order> <Partitioning> | ε
@@ -764,36 +766,39 @@ The following BNF is used to illustrate the grammar:
 ```
 
 ## Term modifiers
-Term modifiers in WQL are special characters or combinations of characters that serve to modify search terms, thus offering a wide range of search 
-possibilities. The use of term modifiers can contribute to improving the efficiency and accuracy of the search. They can be used to find exact matches 
-for phrases, to search for terms that match a certain pattern, to search for terms that are similar to a certain value, and to search for terms that are 
-near another term. Term modifiers are an essential part of WQL and contribute to increasing the power and flexibility of the search. They allow users to 
-create customized search queries tailored to their specific requirements. It is important to note that all queries are case-insensitive. This means that 
-the case is not taken into account in the search, which simplifies the search and improves user-friendliness.
+Term modifiers in WQL are special characters or combinations of characters that serve to modify search terms, thus offering a wide 
+range of search possibilities. The use of term modifiers can contribute to improving the efficiency and accuracy of the search. They 
+can be used to find exact matches for phrases, to search for terms that match a certain pattern, to search for terms that are similar 
+to a certain value, and to search for terms that are near another term. Term modifiers are an essential part of WQL and contribute to 
+increasing the power and flexibility of the search. They allow users to create customized search queries tailored to their specific 
+requirements. It is important to note that all queries are case-insensitive. This means that the case is not considered in the 
+search, which simplifies the search and improves user-friendliness.
 
 **Phrase search (exact word sequence)**
 
-Phrase search allows users to retrieve content from documents that contain a specific order and combination of words defined by the user. With phrase 
-search, only records that contain the expression in exactly the searched order are returned. For this, the position information of the reverse index is used.
+Phrase search allows users to retrieve content from documents that contain a specific order and combination of words defined by the 
+user. With phrase search, only records that contain the expression in exactly the searched order are returned. For this, the position 
+information of the reverse index is used.
 
 `Description = 'lorem ipsum'`
 
 **Proximity search**
 
-A proximity search looks for documents where two or more separately matching terms occur within a certain distance of each other. The distance is determined by 
-the number of intervening words. Proximity search goes beyond simple word matching by adding the constraint of proximity. By limiting proximity, search results can 
-be avoided where the words are scattered and do not cohere. The basic linguistic assumption of proximity search is that the proximity of words in a document implies 
-a relationship between the words.
+A proximity search looks for documents where two or more separately matching terms occur within a certain distance of each other. The 
+distance is determined by the number of intervening words. Proximity search goes beyond simple word matching by adding the constraint 
+of proximity. By limiting proximity, search results can be avoided where the words are scattered and do not cohere. The basic linguistic 
+assumption of proximity search is that the proximity of words in a document implies a relationship between the words.
 
 `Description ~2 'lorem ipsum'
 
 **Wildcard search**
 
-A wildcard search is an advanced search technique used to maximize search results. Wildcards are used in search terms to represent one or more other characters.
+A wildcard search is an advanced search technique used to maximize search results. Wildcards are used in search terms to represent 
+one or more other characters.
 
 - An asterisk `*` can be used to specify any number of characters.
-- A question mark `?` can be used to represent a single character anywhere in the word. It is most useful when there are variable spellings for a word and 
-  you want to search all variants at once.
+- A question mark `?` can be used to represent a single character anywhere in the word. It is most useful when there is variable 
+  spellings for a word and you want to search all variants at once.
 - A tilde `~` can be used to find strings that approximately match a given term."
 
 
@@ -803,7 +808,9 @@ A wildcard search is an advanced search technique used to maximize search result
 
 **Word search**
 
-Word search is the search for specific terms in a document, regardless of their capitalization or position. This concept is particularly useful when searching for 
-specific terms in a document without having to pay attention to their exact spelling or occurrence in the document. It enables efficient searches for specific terms.
+Word search is the search for specific terms in a document, regardless of their capitalization or position. This concept is particularly 
+useful when searching for specific terms in a document without having to pay attention to their exact spelling or occurrence in the 
+document. It enables efficient searches for specific terms.
 
 `Description ~ 'lorem ipsum'`
+
