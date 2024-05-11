@@ -189,7 +189,6 @@ namespace WebExpress.WebIndex.Storage
                 // remove in place
                 last.SuccessorAddr = position.SuccessorAddr;
 
-                Context.IndexFile.Write(this);
                 Context.IndexFile.Write(last);
                 Context.Allocator.Free(position);
 
@@ -241,7 +240,7 @@ namespace WebExpress.WebIndex.Storage
                 return DocumentID.CompareTo(posting.DocumentID);
             }
 
-            throw new System.ArgumentException();
+            throw new ArgumentException();
         }
     }
 }

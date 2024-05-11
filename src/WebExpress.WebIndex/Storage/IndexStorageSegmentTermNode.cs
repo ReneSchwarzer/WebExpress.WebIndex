@@ -382,7 +382,6 @@ namespace WebExpress.WebIndex.Storage
                 // remove in place
                 last.SuccessorAddr = posting.SuccessorAddr;
 
-                Context.IndexFile.Write(this);
                 Context.IndexFile.Write(last);
                 Context.Allocator.Free(posting);
 
@@ -445,7 +444,6 @@ namespace WebExpress.WebIndex.Storage
                     last.SiblingAddr = node.Addr;
                     node.SiblingAddr = tempAddr;
 
-                    Context.IndexFile.Write(this);
                     Context.IndexFile.Write(last);
                     Context.IndexFile.Write(node);
                 }

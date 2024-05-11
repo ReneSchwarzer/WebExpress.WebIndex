@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using WebExpress.WebIndex.WebAttribute;
 
 namespace WebExpress.WebIndex.Storage
@@ -15,7 +16,7 @@ namespace WebExpress.WebIndex.Storage
         /// Returns or sets the size of free space.
         /// </summary>
         public uint Lenght { get; set; }
-        
+
         /// <summary>
         /// Returns or sets the address of the following free segment or 0 if the last.
         /// </summary>
@@ -85,7 +86,7 @@ namespace WebExpress.WebIndex.Storage
                 return Addr.CompareTo(free.Addr);
             }
 
-            throw new System.ArgumentException();
+            throw new ArgumentException();
         }
     }
 }
