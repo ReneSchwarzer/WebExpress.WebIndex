@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
+using System.Linq;
 
 namespace WebExpress.WebIndex.Storage
 {
@@ -8,9 +9,14 @@ namespace WebExpress.WebIndex.Storage
     public class IndexStorageReadBuffer
     {
         /// <summary>
+        /// Returns the maximum upper limit of the cached segments
+        /// </summary>
+        public uint MaxCachedSegments = 50000;
+
+        /// <summary>
         /// Buffer for random access.
         /// </summary>
-        private readonly Dictionary<ulong, IndexStorageReadBufferItem> cache;
+        private ConcurrentDictionary<ulong, IndexStorageReadBufferItem> cache;
 
         /// <summary>
         /// Returns a segment if sored.
@@ -30,10 +36,11 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="capacity">The number of elements to be stored in the ring buffer.</param>
-        public IndexStorageReadBuffer(uint capacity)
+        /// <param name="maxCachedSegments">The number of elements to be stored in the ring buffer.</param>
+        public IndexStorageReadBuffer(uint maxCachedSegments)
         {
-            cache = new Dictionary<ulong, IndexStorageReadBufferItem>((int)capacity);
+            MaxCachedSegments = maxCachedSegments;
+            cache = new ConcurrentDictionary<ulong, IndexStorageReadBufferItem>();
         }
 
         /// <summary>
@@ -49,7 +56,7 @@ namespace WebExpress.WebIndex.Storage
                 return;
             }
 
-            cache.Add(segment.Addr, new IndexStorageReadBufferItem(segment));
+            cache.TryAdd(segment.Addr, new IndexStorageReadBufferItem(segment));
         }
 
         /// <summary>
@@ -57,15 +64,28 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         public void ReduceLifetimeAndRemoveExpiredSegments()
         {
-            var items = new List<KeyValuePair<ulong, IndexStorageReadBufferItem>>(cache);
-
-            foreach (var item in items)
+            if (cache.Count < 0.8 * MaxCachedSegments)
             {
-                item.Value.Counter--;
-
-                if (item.Value.Counter <= 0)
+                // under 80% remove as needed
+                foreach (var item in cache)
                 {
-                    cache.Remove(item.Key);
+                    item.Value.Counter--;
+
+                    if (item.Value.Counter <= 0)
+                    {
+                        cache.TryRemove(item.Key, out _);
+                    }
+                }
+            }
+            else
+            {
+                // over 80% remove below average
+                var average = cache.Where(x => x.Value.Counter < uint.MaxValue).Average(x => x.Value.Counter);
+
+                foreach (var item in cache.Where(x => x.Value.Counter < average))
+                {
+                    item.Value.Counter = 0;
+                    cache.TryRemove(item.Key, out _);
                 }
             }
         }
@@ -76,7 +96,7 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="segment">The segment object to be invalidated.</param>
         public void Invalidation(IIndexStorageSegment segment)
         {
-            cache.Remove(segment.Addr);
+            cache.TryRemove(segment.Addr, out _);
         }
 
         /// <summary>
@@ -97,6 +117,26 @@ namespace WebExpress.WebIndex.Storage
         public bool Contains(ulong addr)
         {
             return cache.ContainsKey(addr);
+        }
+
+        /// <summary>
+        /// Returns the segment with the given address, if available.
+        /// </summary>
+        /// <param name="addr">The adress of the segment.</param>
+        /// <param name="segment">The segment or null.</param>
+        /// <returns>The segment if cached or null.</returns>
+        public bool GetSegment(ulong addr, out IIndexStorageSegment segment)
+        {
+            if (cache.TryGetValue(addr, out IndexStorageReadBufferItem res))
+            {
+                res.Refresh();
+                segment = res.Segment;
+
+                return true;
+            }
+
+            segment = null;
+            return false;
         }
     }
 }

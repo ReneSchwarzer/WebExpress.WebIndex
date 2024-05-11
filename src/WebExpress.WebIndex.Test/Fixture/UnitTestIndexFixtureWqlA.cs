@@ -22,6 +22,7 @@ namespace WebExpress.WebIndex.Test.Fixture
         public UnitTestIndexFixtureWqlA()
         {
             var context = new IndexContext();
+            context.IndexDirectory = Path.Combine(context.IndexDirectory, Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
             IndexManager.Initialization(context);
             IndexManager.Register<UnitTestIndexTestDocumentA>(CultureInfo.GetCultureInfo("en"), IndexType.Memory);
             IndexManager.ReIndex(TestDataA);
@@ -33,6 +34,7 @@ namespace WebExpress.WebIndex.Test.Fixture
         public virtual void Dispose()
         {
             IndexManager.Dispose();
+            Directory.Delete(IndexManager.Context.IndexDirectory, true);
         }
 
         /// <summary>

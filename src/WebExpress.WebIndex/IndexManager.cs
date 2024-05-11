@@ -55,8 +55,8 @@ namespace WebExpress.WebIndex
         {
             if (!Documents.ContainsKey(typeof(T)))
             {
-                var context = new IndexDocumemntContext(Context, TokenAnalyzer); 
-                
+                var context = new IndexDocumemntContext(Context, TokenAnalyzer);
+
                 Documents.Add(typeof(T), new IndexDocument<T>(context, type, culture));
             }
         }
@@ -85,6 +85,8 @@ namespace WebExpress.WebIndex
                 {
                     document.Add(item);
                 };
+
+                //Parallel.ForEach(items, document.Add);
             }
         }
 

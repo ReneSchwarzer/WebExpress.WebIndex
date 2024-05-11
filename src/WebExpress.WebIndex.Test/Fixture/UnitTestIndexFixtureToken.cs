@@ -34,6 +34,7 @@ namespace WebExpress.WebIndex.Test.Fixture
         public virtual void Dispose()
         {
             TokenAnalyzer.Dispose();
+            Directory.Delete(Context.IndexDirectory, true);
         }
 
         public long GetUsedMemory()

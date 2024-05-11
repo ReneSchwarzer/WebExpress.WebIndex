@@ -85,6 +85,7 @@ namespace WebExpress.WebIndex
                 }
             }
 
+            //Parallel.ForEach(typeof(T).GetProperties().Where(x => x.GetCustomAttribute<IndexIgnoreAttribute>() == null), Add);
             foreach (var property in typeof(T).GetProperties())
             {
                 Add(property);
@@ -137,13 +138,14 @@ namespace WebExpress.WebIndex
                 return;
             }
 
-            foreach (var property in typeof(T).GetProperties().Where(x => x.GetCustomAttribute<IndexIgnoreAttribute>() == null))
+            //Parallel.ForEach(typeof(T).GetProperties().Where(x => x.GetCustomAttribute<IndexIgnoreAttribute>() == null), property =>
+            foreach (var property in typeof(T).GetProperties())
             {
                 if (GetReverseIndex(property) is IIndexReverse<T> reverseIndex)
                 {
                     reverseIndex.Add(item);
                 }
-            }
+            }//);
 
             DocumentStore.Add(item);
         }
@@ -162,7 +164,8 @@ namespace WebExpress.WebIndex
 
             var currentItem = DocumentStore.GetItem(item.Id);
 
-            foreach (var property in typeof(T).GetProperties().Where(x => x.GetCustomAttribute<IndexIgnoreAttribute>() == null))
+            //Parallel.ForEach(typeof(T).GetProperties().Where(x => x.GetCustomAttribute<IndexIgnoreAttribute>() == null), property =>
+            foreach (var property in typeof(T).GetProperties())
             {
                 var currentValue = property?.GetValue(currentItem)?.ToString();
                 var currentTerms = Context.TokenAnalyzer.Analyze(currentValue, Culture);
@@ -178,7 +181,7 @@ namespace WebExpress.WebIndex
                     reverseIndex.Remove(item, deleteTerms);
                     reverseIndex.Add(item, addTerms);
                 }
-            }
+            }//);
 
             DocumentStore.Update(item);
         }
@@ -188,13 +191,14 @@ namespace WebExpress.WebIndex
         /// </summary>
         public virtual new void Clear()
         {
-            foreach (var property in typeof(T).GetProperties().Where(x => x.GetCustomAttribute<IndexIgnoreAttribute>() == null))
+            //Parallel.ForEach(typeof(T).GetProperties().Where(x => x.GetCustomAttribute<IndexIgnoreAttribute>() == null), property =>
+            foreach (var property in typeof(T).GetProperties())
             {
                 if (GetReverseIndex(property) is IIndexReverse<T> reverseIndex)
                 {
                     reverseIndex.Clear();
                 }
-            }
+            }//);
 
             DocumentStore.Clear();
         }
@@ -210,13 +214,14 @@ namespace WebExpress.WebIndex
                 return;
             }
 
+            //Parallel.ForEach(typeof(T).GetProperties().Where(x => x.GetCustomAttribute<IndexIgnoreAttribute>() == null), property =>
             foreach (var property in typeof(T).GetProperties())
             {
                 if (GetReverseIndex(property) is IIndexReverse<T> reverseIndex)
                 {
                     reverseIndex.Remove(item);
                 }
-            }
+            }//);
 
             DocumentStore.Remove(item);
         }
@@ -239,13 +244,14 @@ namespace WebExpress.WebIndex
         {
             DocumentStore.Dispose();
 
+            //Parallel.ForEach(typeof(T).GetProperties().Where(x => x.GetCustomAttribute<IndexIgnoreAttribute>() == null), property =>
             foreach (var property in typeof(T).GetProperties())
             {
                 if (GetReverseIndex(property) is IIndexReverse<T> reverseIndex)
                 {
                     reverseIndex.Dispose();
                 }
-            }
+            }//);
         }
     }
 }

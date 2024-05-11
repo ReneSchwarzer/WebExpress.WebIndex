@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using System.Reflection;
+﻿using System.Reflection;
 using WebExpress.WebIndex.WebAttribute;
 
 namespace WebExpress.WebIndex.Storage
@@ -22,15 +21,15 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// The lifetime counter is for deletion from the buffer.
         /// </summary>
-        public uint Counter 
-        { 
-            get => _counter; 
-            set 
-            { 
+        public uint Counter
+        {
+            get => _counter;
+            set
+            {
                 if (_counter < uint.MaxValue)
                 {
                     _counter = value;
-                } 
+                }
             }
         }
 
@@ -51,8 +50,10 @@ namespace WebExpress.WebIndex.Storage
             {
                 _counter = uint.MaxValue;
             }
-
-            Refresh();
+            else
+            {
+                Refresh();
+            }
         }
 
         /// <summary>

@@ -26,7 +26,7 @@ namespace WebExpress.WebIndex.Storage
         /// Returns or sets the character of the node.
         /// </summary>
         public char Character { get; set; }
-        
+
         /// <summary>
         /// Returns or sets the address of the siblings.
         /// </summary>
@@ -52,7 +52,7 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         public IEnumerable<IndexStorageSegmentTermNode> Siblings
         {
-            get 
+            get
             {
                 if (SiblingAddr == 0)
                 {
@@ -76,7 +76,7 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         public IEnumerable<IndexStorageSegmentTermNode> Children
         {
-            get 
+            get
             {
                 if (ChildAddr == 0)
                 {
@@ -159,9 +159,9 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Returns the a sorted list of the postings or no element.
         /// </summary>
-        public IEnumerable<IndexStorageSegmentPosting> Postings 
+        public IEnumerable<IndexStorageSegmentPosting> Postings
         {
-            get 
+            get
             {
                 if (PostingAddr == 0)
                 {
@@ -300,7 +300,6 @@ namespace WebExpress.WebIndex.Storage
                     count++;
                 }
 
-                
                 item = new IndexStorageSegmentPosting(Context, Context.Allocator.Alloc(IndexStorageSegmentPosting.SegmentSize))
                 {
                     DocumentID = id
@@ -323,7 +322,6 @@ namespace WebExpress.WebIndex.Storage
                     last.SuccessorAddr = item.Addr;
                     item.SuccessorAddr = tempAddr;
 
-                    Context.IndexFile.Write(this);
                     Context.IndexFile.Write(last);
                     Context.IndexFile.Write(item);
                 }
@@ -373,7 +371,7 @@ namespace WebExpress.WebIndex.Storage
             {
                 // remove at the beginning
                 PostingAddr = posting.SuccessorAddr;
-                
+
                 Context.IndexFile.Write(this);
                 Context.Allocator.Free(posting);
 
@@ -390,7 +388,7 @@ namespace WebExpress.WebIndex.Storage
 
                 return posting;
             }
-            
+
             return null;
         }
 

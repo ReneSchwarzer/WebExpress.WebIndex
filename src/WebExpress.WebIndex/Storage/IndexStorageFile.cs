@@ -5,6 +5,9 @@ using System.Threading;
 
 namespace WebExpress.WebIndex.Storage
 {
+    /// <summary>
+    /// Represents a reverse index or document storage at the file level.
+    /// </summary>
     public class IndexStorageFile : IDisposable
     {
         /// <summary>
@@ -55,7 +58,7 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Returns or sets the next free address.
         /// </summary>
-        public ulong NextFreeAddr  { get; internal set; } = 0ul;
+        public ulong NextFreeAddr { get; internal set; } = 0ul;
 
         /// <summary>
         /// Constructor
@@ -79,13 +82,13 @@ namespace WebExpress.WebIndex.Storage
             BufferedStream = new BufferedStream(FileStream);
             Reader = new BinaryReader(BufferedStream);
             Writer = new BinaryWriter(BufferedStream);
-            ReadBuffer = new IndexStorageReadBuffer(10000);
+            ReadBuffer = new IndexStorageReadBuffer(50000);
 
-            ReadTimer = new Timer((state) => ReadBuffer.ReduceLifetimeAndRemoveExpiredSegments(), null, 0, 1000 * 60);
+            ReadTimer = new Timer((state) => ReadBuffer.ReduceLifetimeAndRemoveExpiredSegments(), null, 0, 1000);
             WriteTimer = new Timer((state) => Flush(), null, 0, 100);
         }
 
-         /// <summary>
+        /// <summary>
         /// Allocate the memory.
         /// </summary>
         /// <param name="segment">The segment determines how much memory should be reserved.</param>
@@ -108,10 +111,15 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>The segment, how it was read by the storage medium.</returns>
         public T Read<T>(ulong addr, IndexStorageContext context) where T : IIndexStorageSegment
         {
-            if (ReadBuffer.Contains(addr))
+            if (ReadBuffer.GetSegment(addr, out IIndexStorageSegment cached))
             {
-                return (T)ReadBuffer[addr];
+                return (T)cached;
             }
+
+            //foreach (var seg in WriteBuffer.Where(x => x.Addr == addr))
+            //{
+            //    return (T)seg;
+            //}
 
             T segment = (T)Activator.CreateInstance(typeof(T), context, addr);
 
@@ -127,10 +135,15 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="segment">The segment.</param>
         public T Read<T>(T segment) where T : IIndexStorageSegment
         {
-            if (ReadBuffer.Contains(segment))
+            if (ReadBuffer.GetSegment(segment.Addr, out IIndexStorageSegment cached))
             {
-                return (T)ReadBuffer[segment.Addr];
+                return (T)cached;
             }
+
+            //foreach (var seg in WriteBuffer.Where(x => x.Addr == segment.Addr))
+            //{
+            //    return (T)seg;
+            //}
 
             Reader.BaseStream.Seek((long)segment.Addr, SeekOrigin.Begin);
             segment.Read(Reader);

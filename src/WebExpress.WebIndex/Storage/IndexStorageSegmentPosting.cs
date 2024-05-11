@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
-using System.Linq;
 
 namespace WebExpress.WebIndex.Storage
 {
@@ -30,14 +28,14 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Returns the amount of space required on the storage device.
         /// </summary>
-        public static uint SegmentSize =>  16 + sizeof(ulong) + sizeof(ulong);
+        public static uint SegmentSize => 16 + sizeof(ulong) + sizeof(ulong);
 
         /// <summary>
         /// Returns the a sorted list of the positions or no element.
         /// </summary>
-        public IEnumerable<IndexStorageSegmentPosition> Positions 
+        public IEnumerable<IndexStorageSegmentPosition> Positions
         {
-            get 
+            get
             {
                 if (PositionAddr == 0)
                 {
@@ -132,7 +130,6 @@ namespace WebExpress.WebIndex.Storage
                     last.SuccessorAddr = item.Addr;
                     item.SuccessorAddr = tempAddr;
 
-                    Context.IndexFile.Write(this);
                     Context.IndexFile.Write(last);
                     Context.IndexFile.Write(item);
                 }
@@ -152,7 +149,7 @@ namespace WebExpress.WebIndex.Storage
             {
                 return null;
             }
-           
+
             // check whether it exists
             var last = default(IndexStorageSegmentPosition);
             var position = default(IndexStorageSegmentPosition);
@@ -201,7 +198,7 @@ namespace WebExpress.WebIndex.Storage
 
             return null;
         }
-        
+
         /// <summary>
         /// Reads the record from the storage medium.
         /// </summary>
