@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using WebExpress.WebIndex.Memory;
 using WebExpress.WebIndex.Storage;
@@ -244,6 +246,61 @@ namespace WebExpress.WebIndex
             }
 
             DocumentStore.Update(item);
+        }
+
+        /// <summary>
+        /// Performs an asynchronous update of an item in the index.
+        /// </summary>
+        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
+        /// <param name="item">The data to be updated to the index.</param>
+        /// <param name="progress">An optional IProgress object that tracks the progress of the re-indexing.</param>
+        /// <param name="token">An optional CancellationToken that is used to cancel the re-indexing.</param>
+        /// <returns>A Task representing the asynchronous operation.</returns>
+        public async Task UpdateAsync(T item, IProgress<int> progress = null, CancellationToken token = default(CancellationToken))
+        {
+            if (item == null)
+            {
+                return;
+            }
+
+            var currentItem = DocumentStore.GetItem(item.Id);
+
+            var tasks = new List<Task>
+            {
+                Task.Run(() => DocumentStore.Add(item))
+            };
+
+            var properties = typeof(T).GetProperties();
+            var reverseIndexes = properties
+                .Select(property => new { Index = GetReverseIndex(property), Property = property })
+                .Where(x => x.Index != null);
+
+            tasks.AddRange(reverseIndexes.Select(async reverseIndex =>
+            {
+                var property = reverseIndex.Property;
+                var index = reverseIndex.Index;
+
+                await Task.Run(() =>
+                {
+                    var currentValue = property?.GetValue(currentItem)?.ToString();
+                    var currentTerms = Context.TokenAnalyzer.Analyze(currentValue, Culture);
+
+                    var changedValue = property?.GetValue(item)?.ToString();
+                    var changedTerms = Context.TokenAnalyzer.Analyze(changedValue, Culture);
+
+                    if (GetReverseIndex(property) is IIndexReverse<T> reverseIndex)
+                    {
+                        var deleteTerms = currentTerms.Except(changedTerms);
+                        var addTerms = changedTerms.Except(currentTerms);
+
+                        index.Remove(item, deleteTerms);
+                        index.Add(item, addTerms);
+                    }
+
+                });
+            }));
+
+            await Task.WhenAll(tasks);
         }
 
         /// <summary>

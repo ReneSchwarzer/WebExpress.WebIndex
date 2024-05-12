@@ -71,7 +71,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
             // preconditions
             Preconditions();
             var randomItem = Fixture.RandomItem;
-            IndexManager.Register<UnitTestIndexTestDocumentB>(CultureInfo.GetCultureInfo("en"), IndexType.Memory);
+            IndexManager.Register<UnitTestIndexTestDocumentB>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
 
             // test execution
             await IndexManager.ReIndexAsync(Fixture.TestData);
@@ -82,6 +82,40 @@ namespace WebExpress.WebIndex.Test.IndexManager
             var item = wql.Apply();
             Assert.NotEmpty(item);
             Assert.Equal(item.FirstOrDefault().Name, randomItem.Name);
+
+            // postconditions
+            Postconditions();
+        }
+
+        /// <summary>
+        /// Tests the reindex function from the index manager.
+        /// </summary>
+        [Fact]
+        public async void ReIndexAsyncCancel_En()
+        {
+            // preconditions
+            Preconditions();
+            var lastItem = Fixture.TestData.LastOrDefault();
+            IndexManager.Register<UnitTestIndexTestDocumentB>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
+            var cancellationTokenSource = new CancellationTokenSource();
+
+            var progress = new Progress<int>(percent =>
+            {
+                if (percent > 30)
+                {
+                    // cancel task
+                    cancellationTokenSource.Cancel();
+                }
+            });
+
+            // test execution
+            await IndexManager.ReIndexAsync(Fixture.TestData, progress, cancellationTokenSource.Token);
+
+            var wql = IndexManager.ExecuteWql<UnitTestIndexTestDocumentB>($"name = '{lastItem.Name}'");
+            Assert.NotNull(wql);
+
+            var item = wql.Apply();
+            Assert.Empty(item);
 
             // postconditions
             Postconditions();
@@ -232,6 +266,35 @@ namespace WebExpress.WebIndex.Test.IndexManager
 
             // test execution
             IndexManager.Update(new UnitTestIndexTestDocumentB()
+            {
+                Id = randomItem.Id,
+                Name = "Aurora"
+            });
+
+            var wql = IndexManager.ExecuteWql<UnitTestIndexTestDocumentB>("name = 'Aurora'");
+            Assert.NotNull(wql);
+
+            var item = wql.Apply();
+            Assert.Equal(1, item.Count());
+
+            // postconditions
+            Postconditions();
+        }
+
+        /// <summary>
+        /// Tests the update function of the index manager.
+        /// </summary>
+        [Fact]
+        public async void UpdateAsync()
+        {
+            // preconditions
+            Preconditions();
+            var randomItem = Fixture.RandomItem;
+            IndexManager.Register<UnitTestIndexTestDocumentB>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
+            await IndexManager.ReIndexAsync(Fixture.TestData);
+
+            // test execution
+            await IndexManager.UpdateAsync(new UnitTestIndexTestDocumentB()
             {
                 Id = randomItem.Id,
                 Name = "Aurora"

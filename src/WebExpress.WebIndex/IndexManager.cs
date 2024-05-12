@@ -114,7 +114,8 @@ namespace WebExpress.WebIndex
 
                     if (progress != null)
                     {
-                        progress.Report(i++ / count * 100);
+                        var percent = (i++ / (float)count) * 100;
+                        progress.Report((int)percent);
                     }
 
                     if (token.IsCancellationRequested)
@@ -165,6 +166,22 @@ namespace WebExpress.WebIndex
             if (GetIndexDocument<T>() is IIndexDocument<T> document)
             {
                 document.Update(item);
+            }
+        }
+
+        /// <summary>
+        /// Performs an asynchronous update of an item in the index.
+        /// </summary>
+        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
+        /// <param name="item">The data to be updated to the index.</param>
+        /// <param name="progress">An optional IProgress object that tracks the progress of the re-indexing.</param>
+        /// <param name="token">An optional CancellationToken that is used to cancel the re-indexing.</param>
+        /// <returns>A Task representing the asynchronous operation.</returns>
+        public async Task UpdateAsync<T>(T item, IProgress<int> progress = null, CancellationToken token = default(CancellationToken)) where T : IIndexItem
+        {
+            if (GetIndexDocument<T>() is IIndexDocument<T> document)
+            {
+                await document.UpdateAsync(item, progress, token);
             }
         }
 
@@ -245,7 +262,12 @@ namespace WebExpress.WebIndex
         /// <returns>The index type or null.</returns>
         public IIndexDocument<T> GetIndexDocument<T>() where T : IIndexItem
         {
-            return Documents.ContainsKey(typeof(T)) ? Documents[typeof(T)] as IIndexDocument<T> : null;
+            if (Documents.TryGetValue(typeof(T), out IIndexDocument res))
+            {
+                return res as IIndexDocument<T>;
+            }
+
+            return null;
         }
 
         /// <summary>

@@ -247,6 +247,35 @@ namespace WebExpress.WebIndex.Test.IndexManager
         }
 
         /// <summary>
+        /// Tests the update function of the index manager.
+        /// </summary>
+        [Fact]
+        public async void UpdateAsync()
+        {
+            // preconditions
+            Preconditions();
+            var randomItem = Fixture.RandomItem;
+            IndexManager.Register<UnitTestIndexTestDocumentE>(CultureInfo.GetCultureInfo("en"), IndexType.Memory);
+            await IndexManager.ReIndexAsync(Fixture.TestData);
+
+            // test execution
+            await IndexManager.UpdateAsync(new UnitTestIndexTestDocumentE()
+            {
+                Id = randomItem.Id,
+                Name = "Aurora"
+            });
+
+            var wql = IndexManager.ExecuteWql<UnitTestIndexTestDocumentE>("name = 'Aurora'");
+            Assert.NotNull(wql);
+
+            var item = wql.Apply();
+            Assert.Equal(1, item.Count());
+
+            // postconditions
+            Postconditions();
+        }
+
+        /// <summary>
         /// Tests removing a document on the index manager.
         /// </summary>
         [Fact]

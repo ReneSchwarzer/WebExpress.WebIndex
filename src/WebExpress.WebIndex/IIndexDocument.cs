@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace WebExpress.WebIndex
@@ -45,6 +46,16 @@ namespace WebExpress.WebIndex
         /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
         /// <param name="item">The data to be updated to the index.</param>
         void Update(T item);
+
+        /// <summary>
+        /// Performs an asynchronous update of an item in the index.
+        /// </summary>
+        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
+        /// <param name="item">The data to be updated to the index.</param>
+        /// <param name="progress">An optional IProgress object that tracks the progress of the re-indexing.</param>
+        /// <param name="token">An optional CancellationToken that is used to cancel the re-indexing.</param>
+        /// <returns>A Task representing the asynchronous operation.</returns>
+        Task UpdateAsync(T item, IProgress<int> progress = null, CancellationToken token = default(CancellationToken));
 
         /// <summary>
         /// Removed all data from the index.

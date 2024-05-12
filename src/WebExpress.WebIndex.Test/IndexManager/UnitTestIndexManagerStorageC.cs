@@ -71,7 +71,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
             // preconditions
             Preconditions();
             var randomItem = Fixture.RandomItem;
-            IndexManager.Register<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo("en"), IndexType.Memory);
+            IndexManager.Register<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
 
             // test execution
             await IndexManager.ReIndexAsync(Fixture.TestData);
@@ -310,7 +310,35 @@ namespace WebExpress.WebIndex.Test.IndexManager
             Assert.NotNull(wql);
 
             var item = wql.Apply();
+            Assert.Equal(1, item.Count());
 
+            // postconditions
+            Postconditions();
+        }
+
+        /// <summary>
+        /// Tests the update function of the index manager.
+        /// </summary>
+        [Fact]
+        public async void UpdateAsync()
+        {
+            // preconditions
+            Preconditions();
+            var randomItem = Fixture.RandomItem;
+            IndexManager.Register<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
+            await IndexManager.ReIndexAsync(Fixture.TestData);
+
+            // test execution
+            await IndexManager.UpdateAsync(new UnitTestIndexTestDocumentC()
+            {
+                Id = randomItem.Id,
+                Text = "Aurora"
+            });
+
+            var wql = IndexManager.ExecuteWql<UnitTestIndexTestDocumentC>("text = 'Aurora'");
+            Assert.NotNull(wql);
+
+            var item = wql.Apply();
             Assert.Equal(1, item.Count());
 
             // postconditions
