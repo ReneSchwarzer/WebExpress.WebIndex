@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using WebExpress.WebIndex.Term;
 using WebExpress.WebIndex.Term.Pipeline;
 using WebExpress.WebIndex.Wql;
@@ -87,6 +89,56 @@ namespace WebExpress.WebIndex
                 };
 
                 //Parallel.ForEach(items, document.Add);
+            }
+        }
+
+        /// <summary>
+        /// Performs an asynchronous re-indexing of a collection of index items.</summary>
+        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
+        /// <param name="items">The collection of items to be re-indexed.</param>
+        /// <param name="progress">An optional IProgress object that tracks the progress of the re-indexing.</param>
+        /// <param name="token">An optional CancellationToken that is used to cancel the re-indexing.</param>
+        /// <returns>A Task representing the asynchronous operation.</returns>
+        public async Task ReIndexAsync<T>(IEnumerable<T> items, IProgress<int> progress = null, CancellationToken token = default(CancellationToken)) where T : IIndexItem
+        {
+            if (GetIndexDocument<T>() is IIndexDocument<T> document)
+            {
+                int i = 0;
+                var count = items.Count();
+
+                await document.ReBuildAsync((uint)count);
+
+                foreach (var item in items)
+                {
+                    await document.AddAsync(item);
+
+                    if (progress != null)
+                    {
+                        progress.Report(i++ / count * 100);
+                    }
+
+                    if (token.IsCancellationRequested)
+                    {
+                        return;
+                    }
+                };
+
+                //var tasks = items.Select(async (item, index) =>
+                //{
+                //    if (token.IsCancellationRequested)
+                //    {
+                //        return;
+                //    }
+
+                //    await document.AddAsync(item);
+
+                //    if (progress != null)
+                //    {
+                //        progress.Report((index + 1) / count * 100);
+                //    }
+                //});
+
+                //await Task.WhenAll(tasks);
             }
         }
 

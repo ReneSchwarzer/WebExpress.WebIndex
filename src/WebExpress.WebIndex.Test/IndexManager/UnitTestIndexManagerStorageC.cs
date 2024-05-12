@@ -66,6 +66,30 @@ namespace WebExpress.WebIndex.Test.IndexManager
         /// Tests the reindex function from the index manager.
         /// </summary>
         [Fact]
+        public async void ReIndexAsync_En()
+        {
+            // preconditions
+            Preconditions();
+            var randomItem = Fixture.RandomItem;
+            IndexManager.Register<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo("en"), IndexType.Memory);
+
+            // test execution
+            await IndexManager.ReIndexAsync(Fixture.TestData);
+
+            var wql = IndexManager.ExecuteWql<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text}'");
+            Assert.NotNull(wql);
+
+            var item = wql.Apply();
+            Assert.NotEmpty(item);
+
+            // postconditions
+            Postconditions();
+        }
+
+        /// <summary>
+        /// Tests the reindex function from the index manager.
+        /// </summary>
+        [Fact]
         public void ReIndex_De()
         {
             // preconditions
@@ -284,7 +308,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
 
             var wql = IndexManager.ExecuteWql<UnitTestIndexTestDocumentC>("text = 'Aurora'");
             Assert.NotNull(wql);
-            
+
             var item = wql.Apply();
 
             Assert.Equal(1, item.Count());

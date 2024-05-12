@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using WebExpress.WebIndex.Memory;
 using WebExpress.WebIndex.Storage;
 using WebExpress.WebIndex.WebAttribute;
@@ -61,7 +62,7 @@ namespace WebExpress.WebIndex
         }
 
         /// <summary>
-        /// Rebuilds the index.
+        /// Performs an asynchronous rebuild of the index.
         /// </summary>
         /// <param name="capacity">The predicted capacity (number of items to store) of the index.</param>
         public virtual void ReBuild(uint capacity)
@@ -85,11 +86,42 @@ namespace WebExpress.WebIndex
                 }
             }
 
-            //Parallel.ForEach(typeof(T).GetProperties().Where(x => x.GetCustomAttribute<IndexIgnoreAttribute>() == null), Add);
             foreach (var property in typeof(T).GetProperties())
             {
                 Add(property);
             }
+        }
+
+        /// <summary>
+        /// Rebuilds the index.
+        /// </summary>
+        /// <param name="capacity">The predicted capacity (number of items to store) of the index.</param>
+        /// <returns>A Task representing the asynchronous operation.</returns>
+        public virtual async Task ReBuildAsync(uint capacity)
+        {
+            if (DocumentStore == null || capacity > DocumentStore.Capacity)
+            {
+                switch (IndexType)
+                {
+                    case IndexType.Memory:
+                        {
+                            DocumentStore = new IndexMemoryDocumentStore<T>(Context, capacity);
+
+                            break;
+                        }
+                    default:
+                        {
+                            DocumentStore = new IndexStorageDocumentStore<T>(Context, capacity);
+
+                            break;
+                        }
+                }
+            }
+
+            var properties = typeof(T).GetProperties();
+            var tasks = properties.Select(property => Task.Run(() => Add(property)));
+
+            await Task.WhenAll(tasks);
         }
 
         /// <summary>
@@ -138,16 +170,45 @@ namespace WebExpress.WebIndex
                 return;
             }
 
-            //Parallel.ForEach(typeof(T).GetProperties().Where(x => x.GetCustomAttribute<IndexIgnoreAttribute>() == null), property =>
             foreach (var property in typeof(T).GetProperties())
             {
                 if (GetReverseIndex(property) is IIndexReverse<T> reverseIndex)
                 {
                     reverseIndex.Add(item);
                 }
-            }//);
+            }
 
             DocumentStore.Add(item);
+        }
+
+        /// <summary>
+        /// Performs an asynchronous adds a item to the index.
+        /// </summary>
+        /// <param name="item">The data to be added to the index.</param>
+        /// <returns>A Task representing the asynchronous operation.</returns>
+        public virtual async Task AddAsync(T item)
+        {
+            if (item == null)
+            {
+                return;
+            }
+
+            var tasks = new List<Task>
+            {
+                Task.Run(() => DocumentStore.Add(item))
+            };
+
+            var properties = typeof(T).GetProperties();
+            var reverseIndexes = properties
+                .Select(GetReverseIndex)
+                .Where(x => x != null);
+
+            tasks.AddRange(reverseIndexes.Select(async reverseIndex =>
+            {
+                await Task.Run(() => reverseIndex.Add(item));
+            }));
+
+            await Task.WhenAll(tasks);
         }
 
         /// <summary>
@@ -164,7 +225,6 @@ namespace WebExpress.WebIndex
 
             var currentItem = DocumentStore.GetItem(item.Id);
 
-            //Parallel.ForEach(typeof(T).GetProperties().Where(x => x.GetCustomAttribute<IndexIgnoreAttribute>() == null), property =>
             foreach (var property in typeof(T).GetProperties())
             {
                 var currentValue = property?.GetValue(currentItem)?.ToString();
@@ -181,7 +241,7 @@ namespace WebExpress.WebIndex
                     reverseIndex.Remove(item, deleteTerms);
                     reverseIndex.Add(item, addTerms);
                 }
-            }//);
+            }
 
             DocumentStore.Update(item);
         }
@@ -191,14 +251,13 @@ namespace WebExpress.WebIndex
         /// </summary>
         public virtual new void Clear()
         {
-            //Parallel.ForEach(typeof(T).GetProperties().Where(x => x.GetCustomAttribute<IndexIgnoreAttribute>() == null), property =>
             foreach (var property in typeof(T).GetProperties())
             {
                 if (GetReverseIndex(property) is IIndexReverse<T> reverseIndex)
                 {
                     reverseIndex.Clear();
                 }
-            }//);
+            }
 
             DocumentStore.Clear();
         }
@@ -214,14 +273,13 @@ namespace WebExpress.WebIndex
                 return;
             }
 
-            //Parallel.ForEach(typeof(T).GetProperties().Where(x => x.GetCustomAttribute<IndexIgnoreAttribute>() == null), property =>
             foreach (var property in typeof(T).GetProperties())
             {
                 if (GetReverseIndex(property) is IIndexReverse<T> reverseIndex)
                 {
                     reverseIndex.Remove(item);
                 }
-            }//);
+            }
 
             DocumentStore.Remove(item);
         }
@@ -233,7 +291,12 @@ namespace WebExpress.WebIndex
         /// <returns>The index field or null.</returns>
         public virtual IIndexReverse<T> GetReverseIndex(PropertyInfo property)
         {
-            return ContainsKey(property) ? this[property] : null;
+            if (TryGetValue(property, out var reverseIndex))
+            {
+                return reverseIndex;
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -244,14 +307,13 @@ namespace WebExpress.WebIndex
         {
             DocumentStore.Dispose();
 
-            //Parallel.ForEach(typeof(T).GetProperties().Where(x => x.GetCustomAttribute<IndexIgnoreAttribute>() == null), property =>
             foreach (var property in typeof(T).GetProperties())
             {
                 if (GetReverseIndex(property) is IIndexReverse<T> reverseIndex)
                 {
                     reverseIndex.Dispose();
                 }
-            }//);
+            }
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace WebExpress.WebIndex
 {
@@ -32,6 +33,13 @@ namespace WebExpress.WebIndex
         void Add(T item);
 
         /// <summary>
+        /// Performs an asynchronous adds a item to the index.
+        /// </summary>
+        /// <param name="item">The data to be added to the index.</param>
+        /// <returns>A Task representing the asynchronous operation.</returns>
+        Task AddAsync(T item);
+
+        /// <summary>
         /// Updates a item in the index.
         /// </summary>
         /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
@@ -54,6 +62,13 @@ namespace WebExpress.WebIndex
         /// </summary>
         /// <param name="capacity">The predicted capacity (number of items to store) of the index.</param>
         void ReBuild(uint capacity);
+
+        /// <summary>
+        /// Rebuilds the index.
+        /// </summary>
+        /// <param name="capacity">The predicted capacity (number of items to store) of the index.</param>
+        /// <returns>A Task representing the asynchronous operation.</returns>
+        Task ReBuildAsync(uint capacity);
 
         /// <summary>
         /// Returns an index field based on its name.

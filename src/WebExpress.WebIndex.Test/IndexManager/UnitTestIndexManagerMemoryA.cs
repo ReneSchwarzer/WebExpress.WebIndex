@@ -65,6 +65,29 @@ namespace WebExpress.WebIndex.Test.IndexManager
         /// Tests the reindex function from the index manager.
         /// </summary>
         [Fact]
+        public async void ReIndexAsync_En()
+        {
+            // preconditions
+            Preconditions();
+            IndexManager.Register<UnitTestIndexTestDocumentA>(CultureInfo.GetCultureInfo("en"), IndexType.Memory);
+
+            // test execution
+            await IndexManager.ReIndexAsync(Fixture.TestData);
+
+            var wql = IndexManager.ExecuteWql<UnitTestIndexTestDocumentA>("text = 'Helena'");
+            Assert.NotNull(wql);
+
+            var item = wql.Apply();
+            Assert.Equal(2, item.Count());
+
+            // postconditions
+            Postconditions();
+        }
+
+        /// <summary>
+        /// Tests the reindex function from the index manager.
+        /// </summary>
+        [Fact]
         public void ReIndex_De()
         {
             // preconditions
