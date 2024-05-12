@@ -12,7 +12,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
         /// <summary>
         /// Returns the index manager.
         /// </summary>
-        public WebIndex.IndexManager IndexManager { get; } = new IndexManagerTest();
+        public WebIndex.IndexManager IndexManager { get; private set; }
 
         /// <summary>
         /// Returns the log.
@@ -24,7 +24,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
         /// </summary>
         protected T Fixture { get; private set; } = fixture;
 
-    	/// <summary>
+        /// <summary>
         /// Returns the context.
         /// </summary>
         protected IIndexContext Context { get; private set; }
@@ -36,6 +36,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
         {
             var context = new IndexContext();
             context.IndexDirectory = Path.Combine(context.IndexDirectory, Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
+            IndexManager = new IndexManagerTest();
             IndexManager.Initialization(context);
 
             Context = context;
@@ -47,7 +48,11 @@ namespace WebExpress.WebIndex.Test.IndexManager
         protected void Postconditions()
         {
             IndexManager.Dispose();
-            Directory.Delete(Context.IndexDirectory, true);
+
+            if (Directory.Exists(Context.IndexDirectory))
+            {
+                Directory.Delete(Context.IndexDirectory, true);
+            }
         }
     }
 }

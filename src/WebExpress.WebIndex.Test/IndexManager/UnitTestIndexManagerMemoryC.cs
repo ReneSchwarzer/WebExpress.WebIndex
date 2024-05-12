@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics;
+using System.Globalization;
 using WebExpress.WebIndex.Test.Document;
 using WebExpress.WebIndex.Test.Fixture;
 using Xunit.Abstractions;
@@ -161,72 +162,82 @@ namespace WebExpress.WebIndex.Test.IndexManager
         /// <summary>
         /// Tests the reindex function in a series of tests from the index manager.
         /// </summary>
-        //[Fact]
-        //public void ReIndex_Series()
-        //{
-        //    // preconditions
-        //    var stopWatch = new Stopwatch();
-        //    var file = File.CreateText(Path.Combine(Environment.CurrentDirectory, "index-memory-reindexseries-c.csv"));
-        //    var indexDict = Path.Combine(Environment.CurrentDirectory, "index");
+        [Fact]
+        public async void ReIndexAsync_Series()
+        {
+            var stopWatch = new Stopwatch();
 
-        //    var itemCount = Enumerable.Range(1, 1).Select(x => x * 1000);
-        //    var wordCount = new int[] { 1000 };     // new int[] { 100, 1000 };
-        //    var vocabulary = new int[] { 40000 };   // new int[] { 10000, 20000, 30000, 40000, 50000, 60000, 70000 };
-        //    var wordLength = new int[] { 10 };      // new int[] { 10, 20, 30, 40, 50 };
+            var itemCount = Enumerable.Range(1, 10).Select(x => x * 1000);
+            var wordCount = Enumerable.Range(1, 1).Select(x => x * 1000);
+            var vocabulary = Enumerable.Range(1, 1).Select(x => x * 2000);
+            var wordLength = Enumerable.Range(1, 1).Select(x => x * 5);
 
-        //    var context = new IndexContext();
-        //    Fixture.IndexManager.Initialization(context);
+            Output.WriteLine("item count;wordCount;vocabulary;wordLength;elapsed reindex [hh:mm:ss];elapsed retrieval [ms];size of document store [MB];size of reverse index [MB]");
 
-        //    var heading = "item count;wordCount;vocabulary;wordLength;elapsed reindex;";
-        //    Output.WriteLine(heading);
-        //    file.WriteLine(heading);
+            foreach (var w in wordCount)
+            {
+                foreach (var i in itemCount)
+                {
+                    foreach (var v in vocabulary)
+                    {
+                        foreach (var l in wordLength)
+                        {
+                            // disabled due to long execution time. activate if necessary.
+                            /*
+                            // preconditions
+                            Preconditions();
+                            var output = "";
+                            var data = UnitTestIndexTestDocumentFactoryC.GenerateTestData(i, w, v, l);
+                            var randomItem = data.Skip(new Random().Next() % data.Count()).FirstOrDefault();
 
-        //    foreach (var w in wordCount)
-        //    {
-        //        foreach (var i in itemCount)
-        //        {
-        //            foreach (var v in vocabulary)
-        //            {
-        //                foreach (var l in wordLength)
-        //                {
-        //                    // remove the index files if exists
-        //                    if (Directory.Exists(indexDict))
-        //                    {
-        //                        Directory.Delete(indexDict, true);
-        //                    }
+                            IndexManager.Register<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo("en"), IndexType.Memory);
 
-        //                    var data = UnitTestIndexTestDocumentFactoryC.GenerateTestData(i, w, v, l);
+                            try
+                            {
+                                // preparing for a measurement
+                                stopWatch.Start();
 
-        //                    Fixture.IndexManager.Register<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo("en"), IndexType.Memory);
+                                // test execution
+                                await IndexManager.ReIndexAsync(data);
 
-        //                    // preparing for a measurement
-        //                    stopWatch.Start();
+                                // stop measurement
+                                var elapsedReindex = stopWatch.Elapsed;
+                                stopWatch.Reset();
 
-        //                    // test execution
-        //                    Fixture.IndexManager.ReIndex(data);
+                                var wql = IndexManager.ExecuteWql<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text.Split(' ').FirstOrDefault()}'");
+                                Assert.NotNull(wql);
 
-        //                    // stop measurement
-        //                    var elapsedReindex = stopWatch.Elapsed;
-        //                    stopWatch.Reset();
+                                // preparing for a measurement
+                                stopWatch.Start();
 
-        //                    var stat = Fixture
-        //                        .IndexManager
-        //                        .GetIndexDocument<UnitTestIndexTestDocumentC>()
-        //                        .GetReverseIndex(typeof(UnitTestIndexTestDocumentC).GetProperty("Text"));
+                                var item = wql.Apply();
+                                Assert.NotEmpty(item);
 
-        //                    var output = $"{i};{w};{v};{l};{elapsedReindex:hh\\:mm\\:ss};{stat}";
+                                // stop measurement
+                                var elapsedRetrieval = stopWatch.Elapsed;
+                                stopWatch.Reset();
 
-        //                    Output.WriteLine(output);
-        //                    file.WriteLine(output);
-        //                    file.Flush();
+                                var documentStoreSize = new DirectoryInfo(IndexManager.Context.IndexDirectory).GetFiles("*.wds", SearchOption.AllDirectories).Sum(file => file.Length);
+                                var reverseIndexSize = new DirectoryInfo(IndexManager.Context.IndexDirectory).GetFiles("*.wri", SearchOption.AllDirectories).Sum(file => file.Length);
 
-        //                    // postconditions
-        //                    Fixture.IndexManager.Dispose();
-        //                }
-        //            }
-        //        }
-        //    }
-        //}
+                                output = $"{i};{w};{v};{l};{elapsedReindex:hh\\:mm\\:ss};{elapsedRetrieval.TotalMilliseconds};{Math.Round((double)documentStoreSize / 1024 / 1024, 2)};{Math.Round((double)reverseIndexSize / 1024 / 1024, 2)}";
+                            }
+                            catch (Exception ex)
+                            {
+                                output += ex.Message;
+                            }
+                            finally
+                            {
+                                // postconditions
+                                Output.WriteLine(output);
+                                Postconditions();
+                            }
+                            /**/
+                        }
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// Tests the removal of a document from the index manager.

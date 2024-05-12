@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 
 namespace WebExpress.WebIndex.Storage
@@ -43,7 +45,7 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Unsaved entries queue.
         /// </summary>
-        private Queue<IIndexStorageSegment> WriteBuffer { get; } = new Queue<IIndexStorageSegment>();
+        private ConcurrentQueue<IIndexStorageSegment> WriteBuffer { get; } = new ConcurrentQueue<IIndexStorageSegment>();
 
         /// <summary>
         /// Returns the timer for sorting out segments from the read buffer.
@@ -59,6 +61,11 @@ namespace WebExpress.WebIndex.Storage
         /// Returns or sets the next free address.
         /// </summary>
         public ulong NextFreeAddr { get; internal set; } = 0ul;
+
+        /// <summary>
+        /// Returns a guard to protect against concurrent access.
+        /// </summary>
+        private object Guard { get; } = new object();
 
         /// <summary>
         /// Constructor
@@ -159,15 +166,12 @@ namespace WebExpress.WebIndex.Storage
         {
             ReadBuffer.Add(segment);
 
-            if (WriteBuffer.Contains(segment))
+            if (WriteBuffer.Where(x => x.Addr == segment.Addr).Any())
             {
                 return;
             }
 
-            lock (WriteBuffer)
-            {
-                WriteBuffer.Enqueue(segment);
-            }
+            WriteBuffer.Enqueue(segment);
         }
 
         /// <summary>
@@ -175,25 +179,30 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         public void Flush()
         {
-            var list = new List<IIndexStorageSegment>();
-
             // lock queue before concurrent access
-            lock (WriteBuffer)
+            lock (Guard)
             {
+                if (!FileStream.CanWrite)
+                {
+                    return;
+                }
+
+                var list = new List<IIndexStorageSegment>();
+
                 list.AddRange(WriteBuffer);
                 WriteBuffer.Clear();
-            }
 
-            // protect file writing from concurrent access
-            foreach (var segment in list)
-            {
-                Writer.BaseStream.Seek((long)segment.Addr, SeekOrigin.Begin);
-                segment.Write(Writer);
-            }
+                // protect file writing from concurrent access
+                foreach (var segment in list)
+                {
+                    Writer.BaseStream.Seek((long)segment.Addr, SeekOrigin.Begin);
+                    segment.Write(Writer);
+                }
 
-            FileStream.Flush();
-            BufferedStream.Flush();
-            Writer.Flush();
+                FileStream.Flush();
+                BufferedStream.Flush();
+                Writer.Flush();
+            }
         }
 
         /// <summary>
@@ -212,13 +221,17 @@ namespace WebExpress.WebIndex.Storage
         {
             Flush();
 
-            ReadTimer.Dispose();
-            WriteTimer.Dispose();
+            // lock queue before concurrent access
+            lock (Guard)
+            {
+                ReadTimer.Dispose();
+                WriteTimer.Dispose();
 
-            Reader.Close();
-            Writer.Close();
-            BufferedStream.Close();
-            FileStream.Close();
+                Reader.Close();
+                Writer.Close();
+                BufferedStream.Close();
+                FileStream.Close();
+            }
         }
     }
 }
