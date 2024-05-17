@@ -64,10 +64,10 @@ namespace WebExpress.WebIndex
         }
 
         /// <summary>
-        /// Performs an asynchronous rebuild of the index.
+        /// Rebuilds the index.
         /// </summary>
         /// <param name="capacity">The predicted capacity (number of items to store) of the index.</param>
-        public virtual void ReBuild(uint capacity)
+        protected virtual void ReBuild(uint capacity)
         {
             if (DocumentStore == null || capacity > DocumentStore.Capacity)
             {
@@ -95,11 +95,11 @@ namespace WebExpress.WebIndex
         }
 
         /// <summary>
-        /// Rebuilds the index.
+        /// Performs an asynchronous rebuild of the index.
         /// </summary>
         /// <param name="capacity">The predicted capacity (number of items to store) of the index.</param>
-        /// <returns>A Task representing the asynchronous operation.</returns>
-        public virtual async Task ReBuildAsync(uint capacity)
+        /// <returns>A task representing the asynchronous operation.</returns>
+        protected virtual async Task ReBuildAsync(uint capacity)
         {
             if (DocumentStore == null || capacity > DocumentStore.Capacity)
             {
@@ -184,10 +184,10 @@ namespace WebExpress.WebIndex
         }
 
         /// <summary>
-        /// Performs an asynchronous adds a item to the index.
+        /// Performs an asynchronous addition of an item in the index.
         /// </summary>
         /// <param name="item">The data to be added to the index.</param>
-        /// <returns>A Task representing the asynchronous operation.</returns>
+        /// <returns>A task representing the asynchronous operation.</returns>
         public virtual async Task AddAsync(T item)
         {
             if (item == null)
@@ -218,7 +218,7 @@ namespace WebExpress.WebIndex
         /// </summary>
         /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
         /// <param name="item">The data to be updated to the index.</param>
-        public void Update(T item)
+        public virtual void Update(T item)
         {
             if (item == null)
             {
@@ -253,10 +253,8 @@ namespace WebExpress.WebIndex
         /// </summary>
         /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
         /// <param name="item">The data to be updated to the index.</param>
-        /// <param name="progress">An optional IProgress object that tracks the progress of the re-indexing.</param>
-        /// <param name="token">An optional CancellationToken that is used to cancel the re-indexing.</param>
-        /// <returns>A Task representing the asynchronous operation.</returns>
-        public async Task UpdateAsync(T item, IProgress<int> progress = null, CancellationToken token = default(CancellationToken))
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public virtual async Task UpdateAsync(T item)
         {
             if (item == null)
             {
@@ -304,22 +302,6 @@ namespace WebExpress.WebIndex
         }
 
         /// <summary>
-        /// Removed all data from the index.
-        /// </summary>
-        public virtual new void Clear()
-        {
-            foreach (var property in typeof(T).GetProperties())
-            {
-                if (GetReverseIndex(property) is IIndexReverse<T> reverseIndex)
-                {
-                    reverseIndex.Clear();
-                }
-            }
-
-            DocumentStore.Clear();
-        }
-
-        /// <summary>
         /// The data to be removed from the index.
         /// </summary>
         /// <param name="item">The data to be removed from the index.</param>
@@ -342,6 +324,33 @@ namespace WebExpress.WebIndex
         }
 
         /// <summary>
+        /// Removes an item from the index asynchronously.
+        /// </summary>
+        /// <param name="item">The data to be removed from the index.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public virtual async Task RemoveAsync(T item) 
+        {
+            if (item == null)
+            {
+                return;
+            }
+
+            var tasks = new List<Task>
+            {
+                Task.Run(() => DocumentStore.Remove(item))
+            };
+
+            foreach (var property in typeof(T).GetProperties())
+            {
+                if (GetReverseIndex(property) is IIndexReverse<T> reverseIndex)
+                {
+                    tasks.Add(Task.Run(() => reverseIndex.Remove(item)));
+                }
+            }
+
+            await Task.WhenAll(tasks);
+        }
+        /// <summary>
         /// Returns an index field based on its name.
         /// </summary>
         /// <param name="property">The property that makes up the index.</param>
@@ -354,6 +363,44 @@ namespace WebExpress.WebIndex
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Removed all data from the index.
+        /// </summary>
+        public virtual new void Clear()
+        {
+            foreach (var property in typeof(T).GetProperties())
+            {
+                if (GetReverseIndex(property) is IIndexReverse<T> reverseIndex)
+                {
+                    reverseIndex.Clear();
+                }
+            }
+
+            DocumentStore.Clear();
+        }
+
+        /// <summary>
+        /// Removed all data from the index asynchronously.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public virtual async Task ClearAsync()
+        {
+            var tasks = new List<Task>
+            {
+                Task.Run(() => DocumentStore.Clear())
+            };
+
+            foreach (var property in typeof(T).GetProperties())
+            {
+                if (GetReverseIndex(property) is IIndexReverse<T> reverseIndex)
+                {
+                    tasks.Add(Task.Run(() => reverseIndex.Clear()));
+                }
+            }
+
+            await Task.WhenAll(tasks);
         }
 
         /// <summary>

@@ -111,10 +111,11 @@ namespace WebExpress.WebIndex.Term
         /// </summary>
         /// <param name="input">The input.</param>
         /// <param name="culture">The culture.</param>
+        /// <param name="retrieval">Is set if the analysis is used for queries and the placeholders should not be treated as separators.</param>
         /// <returns>The terms.</returns>
-        public IEnumerable<IndexTermToken> Analyze(string input, CultureInfo culture)
+        public IEnumerable<IndexTermToken> Analyze(string input, CultureInfo culture, bool retrieval = false)
         {
-            var token = Tokenizer.Tokenize(input);
+            var token = Tokenizer.Tokenize(input, retrieval ? IndexTermTokenizer.Wildcards : null);
 
             foreach(var pipeStage in TextProcessingPipeline)   
             {

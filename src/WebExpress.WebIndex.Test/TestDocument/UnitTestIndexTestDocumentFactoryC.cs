@@ -10,7 +10,7 @@
         /// </returns>
         public static List<UnitTestIndexTestDocumentC> GenerateTestData()
         {
-            return GenerateTestData(10, 20, 30, 40).ToList();
+            return GenerateTestData(100, 10, 3000, 20).ToList();
         }
 
         /// <summary>
@@ -21,13 +21,22 @@
         /// </returns>
         public static IEnumerable<UnitTestIndexTestDocumentC> GenerateTestData(int itemCount, int wordCount, int vocabulary, int wordLength)
         {
-            // Add more test data here
+            var set = GenerateVocabulary(vocabulary, 3, wordLength);
+
             for (int i = 0; i < itemCount; i++)
             {
+                var words = new List<string>();
+                //for (int j = 0; j < Rand.Next(wordCount / 2, wordCount); j++)
+                for (int j = 0; j < wordCount; j++)
+                {
+                    words.Add(set.Skip(Rand.Next() % set.Count()).FirstOrDefault());
+                }
+
                 yield return new UnitTestIndexTestDocumentC
                 {
                     Id = Guid.NewGuid(),
-                    Text = GenerateWords(wordCount, vocabulary, wordLength),
+                    Text = string.Join(" ", words),
+                    Number = i
                 };
             }
 

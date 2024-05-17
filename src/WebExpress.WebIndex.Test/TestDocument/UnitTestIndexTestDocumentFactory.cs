@@ -3,9 +3,12 @@ using WebExpress.WebIndex.WebAttribute;
 
 namespace WebExpress.WebIndex.Test.Document
 {
-    public abstract class UnitTestIndexTestDocumentFactory : IIndexItem
+    public abstract class UnitTestIndexTestDocumentFactory 
     {
-        private static readonly string[] Words =
+        /// <summary>
+        /// The lorem ipsum vocabulary.
+        /// </summary>
+        private static readonly string[] LoremIpsumVocabulary =
         [
             "lorem",
             "ipsum",
@@ -57,17 +60,22 @@ namespace WebExpress.WebIndex.Test.Document
             "laoreet"
         ];
 
-        private static readonly Random Rand = new();
+        /// <summary>
+        /// The random number generator.
+        /// </summary>
+        protected static Random Rand { get; } = new(10);
 
-        [IndexIgnore]
-        public Guid Id { get; set; }
-
+        /// <summary>
+        /// Generate lorem ipsum sentence.
+        /// </summary>
+        /// <param name="numWords">The number of words.</param>
+        /// <returns>One orem ipsum sentence.</returns>
         protected static string GenerateLoremIpsum(int numWords)
         {
             var sb = new StringBuilder();
             for (int i = 0; i < numWords; i++)
             {
-                sb.Append(Words[Rand.Next(Words.Length)]);
+                sb.Append(LoremIpsumVocabulary[Rand.Next(LoremIpsumVocabulary.Length)]);
                 if (i < numWords - 1)
                 {
                     sb.Append(' ');
@@ -76,78 +84,37 @@ namespace WebExpress.WebIndex.Test.Document
             return sb.ToString();
         }
 
-        protected static string GenerateWord(int seed, int wordLength)
+        /// <summary>
+        /// Generate the vocabulary.
+        /// </summary>
+        /// <param name="vocabulary">The number of words in the vocabulary.</param>
+        /// <param name="wordLength">The minimum length of the words in the vocabulary.</param>
+        /// /// <param name="wordLength">The maximum length of the words in the vocabulary.</param>
+        /// <returns>The vocabulary.</returns>
+        protected static IEnumerable<string> GenerateVocabulary(int vocabulary, int minWordLength, int maxWordLength)
         {
-            var sb = new StringBuilder();
-            var characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            const string characters = "abcdefghijklmnopqrstuvwxyz";
+            var set = new HashSet<string>();
 
-            while (sb.Length < 10)
+            while (set.Count < vocabulary)
             {
-                var index = seed % characters.Length;
-                sb.Append(characters[index]);
-                seed /= characters.Length;
-                if (seed == 0)
+                var word = new string(Enumerable.Repeat(characters, /*Rand.Next(minWordLength, maxWordLength + 1)*/maxWordLength)
+                    .Select(s => s[Rand.Next(s.Length)]).ToArray());
+
+                if (!set.Contains(word))
                 {
-                    break;
+                    set.Add(word);
                 }
             }
-
-            // If the resulting word has less than count characters,
-            // we fill the rest with the first character of the character set
-            while (sb.Length < wordLength)
-            {
-                sb.Append(characters[0]);
-            }
-
-            return sb.ToString();
+            
+            return set;
         }
 
-        protected static string GenerateWord(int wordLength)
-        {
-            var sb = new StringBuilder();
-
-            for (int j = 0; j < wordLength; j++)
-            {
-                sb.Append((char)('a' + Rand.Next() % ('z' - 'a')));
-            }
-
-            return sb.ToString();
-        }
-
-        protected static string GenerateWords(int numWords, int vocabulary, int wordLength)
-        {
-            var sb = new StringBuilder();
-            var rand = new Random();
-
-            for (int i = 0; i < numWords; i++)
-            {
-                sb.Append(GenerateWord(rand.Next() % vocabulary, wordLength));
-
-                if (i < numWords - 1)
-                {
-                    sb.Append(' ');
-                }
-            }
-
-            return sb.ToString();
-        }
-
-        protected static string GenerateWords(int numWords, int wordLength)
-        {
-            var sb = new StringBuilder();
-            for (int i = 0; i < numWords; i++)
-            {
-                var word = GenerateWord(wordLength);
-                sb.Append(word);
-
-                if (i < numWords - 1)
-                {
-                    sb.Append(' ');
-                }
-            }
-            return sb.ToString();
-        }
-
+        /// <summary>
+        /// Generate street names.
+        /// </summary>
+        /// <param name="index">The house number.</param>
+        /// <returns>The street name including the house number.</returns>
         protected static string GenerateSreet(int index)
         {
             int rand = Rand.Next() % 5;

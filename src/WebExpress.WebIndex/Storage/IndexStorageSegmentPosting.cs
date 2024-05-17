@@ -31,6 +31,11 @@ namespace WebExpress.WebIndex.Storage
         public static uint SegmentSize => 16 + sizeof(ulong) + sizeof(ulong);
 
         /// <summary>
+        /// Returns a guard to protect against concurrent access.
+        /// </summary>
+        private object Guard { get; } = new object();
+
+        /// <summary>
         /// Returns the a sorted list of the positions or no element.
         /// </summary>
         public IEnumerable<IndexStorageSegmentPosition> Positions
@@ -73,65 +78,68 @@ namespace WebExpress.WebIndex.Storage
         {
             var item = default(IndexStorageSegmentPosition);
 
-            if (PositionAddr == 0)
+            lock (Guard)
             {
-                PositionAddr = Context.Allocator.Alloc(IndexStorageSegmentPosition.SegmentSize);
-                item = new IndexStorageSegmentPosition(Context, PositionAddr)
+                if (PositionAddr == 0)
                 {
-                    Position = pos
-                };
-
-                Context.IndexFile.Write(this);
-                Context.IndexFile.Write(item);
-            }
-            else
-            {
-                // check whether it exists
-                var last = default(IndexStorageSegmentPosition);
-                var count = 0U;
-
-                foreach (var i in Positions)
-                {
-                    var compare = i.Position.CompareTo(pos);
-
-                    if (compare > 0)
+                    PositionAddr = Context.Allocator.Alloc(IndexStorageSegmentPosition.SegmentSize);
+                    item = new IndexStorageSegmentPosition(Context, PositionAddr)
                     {
-                        break;
-                    }
-                    else if (compare == 0)
-                    {
-                        return i;
-                    }
-
-                    last = i;
-
-                    count++;
-                }
-
-                item = new IndexStorageSegmentPosition(Context, Context.Allocator.Alloc(IndexStorageSegmentPosition.SegmentSize))
-                {
-                    Position = pos
-                };
-
-                if (last == null)
-                {
-                    // insert at the beginning
-                    var tempAddr = PositionAddr;
-                    PositionAddr = item.Addr;
-                    item.SuccessorAddr = tempAddr;
+                        Position = pos
+                    };
 
                     Context.IndexFile.Write(this);
                     Context.IndexFile.Write(item);
                 }
                 else
                 {
-                    // insert in the correct place
-                    var tempAddr = last.SuccessorAddr;
-                    last.SuccessorAddr = item.Addr;
-                    item.SuccessorAddr = tempAddr;
+                    // check whether it exists
+                    var last = default(IndexStorageSegmentPosition);
+                    var count = 0U;
 
-                    Context.IndexFile.Write(last);
-                    Context.IndexFile.Write(item);
+                    foreach (var i in Positions)
+                    {
+                        var compare = i.Position.CompareTo(pos);
+
+                        if (compare > 0)
+                        {
+                            break;
+                        }
+                        else if (compare == 0)
+                        {
+                            return i;
+                        }
+
+                        last = i;
+
+                        count++;
+                    }
+
+                    item = new IndexStorageSegmentPosition(Context, Context.Allocator.Alloc(IndexStorageSegmentPosition.SegmentSize))
+                    {
+                        Position = pos
+                    };
+
+                    if (last == null)
+                    {
+                        // insert at the beginning
+                        var tempAddr = PositionAddr;
+                        PositionAddr = item.Addr;
+                        item.SuccessorAddr = tempAddr;
+
+                        Context.IndexFile.Write(this);
+                        Context.IndexFile.Write(item);
+                    }
+                    else
+                    {
+                        // insert in the correct place
+                        var tempAddr = last.SuccessorAddr;
+                        last.SuccessorAddr = item.Addr;
+                        item.SuccessorAddr = tempAddr;
+
+                        Context.IndexFile.Write(last);
+                        Context.IndexFile.Write(item);
+                    }
                 }
             }
 
@@ -150,49 +158,52 @@ namespace WebExpress.WebIndex.Storage
                 return null;
             }
 
-            // check whether it exists
-            var last = default(IndexStorageSegmentPosition);
-            var position = default(IndexStorageSegmentPosition);
-            var count = 0U;
-
-            foreach (var i in Positions)
+            lock (Guard)
             {
-                var compare = i.Position.CompareTo(pos);
+                // check whether it exists
+                var last = default(IndexStorageSegmentPosition);
+                var position = default(IndexStorageSegmentPosition);
+                var count = 0U;
 
-                if (compare > 0)
+                foreach (var i in Positions)
                 {
-                    break;
+                    var compare = i.Position.CompareTo(pos);
+
+                    if (compare > 0)
+                    {
+                        break;
+                    }
+                    else if (compare == 0)
+                    {
+                        position = i;
+                        break;
+                    }
+
+                    last = i;
+
+                    count++;
                 }
-                else if (compare == 0)
+
+                if (position != null && last == null)
                 {
-                    position = i;
-                    break;
+                    // remove at the beginning
+                    PositionAddr = position.SuccessorAddr;
+
+                    Context.IndexFile.Write(this);
+                    Context.Allocator.Free(position);
+
+                    return position;
                 }
+                else if (position != null && last != null)
+                {
+                    // remove in place
+                    last.SuccessorAddr = position.SuccessorAddr;
 
-                last = i;
+                    Context.IndexFile.Write(last);
+                    Context.Allocator.Free(position);
 
-                count++;
-            }
-
-            if (position != null && last == null)
-            {
-                // remove at the beginning
-                PositionAddr = position.SuccessorAddr;
-
-                Context.IndexFile.Write(this);
-                Context.Allocator.Free(position);
-
-                return position;
-            }
-            else if (position != null && last != null)
-            {
-                // remove in place
-                last.SuccessorAddr = position.SuccessorAddr;
-
-                Context.IndexFile.Write(last);
-                Context.Allocator.Free(position);
-
-                return position;
+                    return position;
+                }
             }
 
             return null;

@@ -71,11 +71,6 @@ namespace WebExpress.WebIndex.Storage
             FileName = Path.Combine(Context.IndexDirectory, $"{typeof(T).Name}.wds");
 
             var exists = File.Exists(FileName);
-            if (exists)
-            {
-                File.Delete(FileName);
-                exists = false;
-            }
             IndexFile = new IndexStorageFile(FileName);
             Header = new IndexStorageSegmentHeader(new IndexStorageContext(this)) { Identifier = "wds" };
             Allocator = new IndexStorageSegmentAllocator(new IndexStorageContext(this));

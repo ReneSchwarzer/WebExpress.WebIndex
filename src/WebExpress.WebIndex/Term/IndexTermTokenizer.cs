@@ -12,17 +12,24 @@ namespace WebExpress.WebIndex.Term
         /// <summary>
         /// Enumeration of separators.
         /// </summary>
-        private static readonly char[] delimiters = ['?', '!', ':', '<', '>', '=', '%', '(', ')', '\"', '“', '”', '\''];
+        private static char[] Delimiters { get; } = ['?', '!', ':', '<', '>', '=', '%', '(', ')', '\"', '“', '”', '\''];
+
+        /// <summary>
+        /// Enumeration of wildcards.
+        /// </summary>
+        public static char[] Wildcards { get; } = ['?', '*', '~'];
 
         /// <summary>
         /// Tokenize an input string into an enumeration of terms.
         /// </summary>
         /// <param name="input">The input string.</param>
+        /// <param name="wildcards">A enumeration of wildcards.</param>
         /// <returns>An enumeration of terms.</returns>
-        public IEnumerable<IndexTermToken> Tokenize(string input)
+        public IEnumerable<IndexTermToken> Tokenize(string input, char[] wildcards = null)
         {
             var currentToken = new StringBuilder();
             var position = (uint)0;
+            var except = Delimiters.Except(wildcards ?? []);
 
             if (input == null || input.Length == 0)
             {
@@ -31,7 +38,7 @@ namespace WebExpress.WebIndex.Term
 
             foreach (var c in input)
             {
-                if (char.IsWhiteSpace(c) || delimiters.Contains(c))
+                if (char.IsWhiteSpace(c) || except.Contains(c))
                 {
                     if (currentToken.Length > 0)
                     {

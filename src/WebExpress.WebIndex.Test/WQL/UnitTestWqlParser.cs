@@ -3,7 +3,7 @@ using Xunit.Abstractions;
 
 namespace WebExpress.WebIndex.Test.WQL
 {
-    public class UnitTestWqlParserD(UnitTestIndexFixtureWqlD fixture, ITestOutputHelper output) : IClassFixture<UnitTestIndexFixtureWqlD>
+    public class UnitTestWqlParser(UnitTestIndexFixtureWqlD fixture, ITestOutputHelper output) : IClassFixture<UnitTestIndexFixtureWqlD>
     {
         /// <summary>
         /// Returns the log.

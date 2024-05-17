@@ -36,5 +36,16 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         /// <param name="writer">The writer for i/o operations.</param>
         public abstract void Write(BinaryWriter writer);
+
+        /// <summary>
+        /// Convert the object into a string representation. 
+        /// </summary>
+        /// <returns>
+        /// A string that represents the current object.
+        /// </returns>
+        public override string ToString()
+        {
+            return $"{Addr}: {GetType().Name}";
+        }
     }
 }

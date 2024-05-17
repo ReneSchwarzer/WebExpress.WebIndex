@@ -25,6 +25,11 @@ namespace WebExpress.WebIndex.Storage
         public uint BucketCount { get; private set; }
 
         /// <summary>
+        /// Returns a guard to protect against concurrent access.
+        /// </summary>
+        private object Guard { get; } = new object();
+
+        /// <summary>
         /// Returns all items.
         /// </summary>
         public IEnumerable<IndexStorageSegmentItem> All
@@ -69,57 +74,59 @@ namespace WebExpress.WebIndex.Storage
             var hash = segment.Id.GetHashCode();
             var index = (uint)hash % BucketCount;
 
-            if (Buckets[index] == 0)
+            lock (Guard)
             {
-                Buckets[index] = segment.Addr;
-
-                Context.IndexFile.Write(this);
-                Context.IndexFile.Write(segment);
-            }
-            else
-            {
-                // check whether it exists
-                var last = default(IndexStorageSegmentItem);
-                var count = 0U;
-
-                foreach (var i in GetBucket(segment.Id))
+                if (Buckets[index] == 0)
                 {
-                    var compare = i.CompareTo(segment);
-
-                    if (compare > 0)
-                    {
-                        break;
-                    }
-                    else if (compare == 0)
-                    {
-                        return i;
-                    }
-
-                    last = i;
-
-                    count++;
-                }
-
-                if (last == null)
-                {
-                    // insert at the beginning
-                    var tempAddr = Buckets[index];
                     Buckets[index] = segment.Addr;
-                    segment.SuccessorAddr = tempAddr;
 
                     Context.IndexFile.Write(this);
                     Context.IndexFile.Write(segment);
                 }
                 else
                 {
-                    // insert in the correct place
-                    var tempAddr = last.SuccessorAddr;
-                    last.SuccessorAddr = segment.Addr;
-                    segment.SuccessorAddr = tempAddr;
+                    // check whether it exists
+                    var last = default(IndexStorageSegmentItem);
+                    var count = 0U;
 
-                    Context.IndexFile.Write(this);
-                    Context.IndexFile.Write(last);
-                    Context.IndexFile.Write(segment);
+                    foreach (var i in GetBucket(segment.Id))
+                    {
+                        var compare = i.CompareTo(segment);
+
+                        if (compare > 0)
+                        {
+                            break;
+                        }
+                        else if (compare == 0)
+                        {
+                            return i;
+                        }
+
+                        last = i;
+
+                        count++;
+                    }
+
+                    if (last == null)
+                    {
+                        // insert at the beginning
+                        var tempAddr = Buckets[index];
+                        Buckets[index] = segment.Addr;
+                        segment.SuccessorAddr = tempAddr;
+
+                        Context.IndexFile.Write(this);
+                        Context.IndexFile.Write(segment);
+                    }
+                    else
+                    {
+                        // insert in the correct place
+                        var tempAddr = last.SuccessorAddr;
+                        last.SuccessorAddr = segment.Addr;
+                        segment.SuccessorAddr = tempAddr;
+
+                        Context.IndexFile.Write(last);
+                        Context.IndexFile.Write(segment);
+                    }
                 }
             }
 
@@ -163,23 +170,27 @@ namespace WebExpress.WebIndex.Storage
         {
             var hash = segment.Id.GetHashCode();
             var index = (uint)hash % BucketCount;
-            var predecessor = GetPredecessor(segment, out _);
 
-            if (predecessor == null)
+            lock (Guard)
             {
-                Buckets[index] = segment.SuccessorAddr;
+                var predecessor = GetPredecessor(segment, out _);
 
-                Context.IndexFile.Write(this);
-                Context.IndexFile.Write(segment);
-            }
-            else
-            {
-                predecessor.SuccessorAddr = segment.SuccessorAddr;
-                Context.IndexFile.Write(predecessor);
-                segment.SuccessorAddr = 0;
-            }
+                if (predecessor == null)
+                {
+                    Buckets[index] = segment.SuccessorAddr;
 
-            Context.Allocator.Free(segment);
+                    Context.IndexFile.Write(this);
+                    Context.IndexFile.Write(segment);
+                }
+                else
+                {
+                    predecessor.SuccessorAddr = segment.SuccessorAddr;
+                    Context.IndexFile.Write(predecessor);
+                    segment.SuccessorAddr = 0;
+                }
+
+                Context.Allocator.Free(segment);
+            }
 
             return true;
         }

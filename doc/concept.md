@@ -1,5 +1,13 @@
 ﻿![WebExpress](https://raw.githubusercontent.com/ReneSchwarzer/WebExpress.Doc/main/assets/banner.png)
 
+# ToDos
+- Merging free storage areas
+- build in wql functions
+- Wildcard search
+- Phrase search (exact word sequence)
+- Proximity search
+- Fuzzy search
+
 # WebExpress.WebIndex
 The index model provides a reverse index to enable fast and efficient searching. A reverse index can significantly speed up access 
 to the data. However, creating and storing a reverse index requires additional storage space and processing time. The storage 
@@ -29,13 +37,13 @@ search consists only of quick lookup operations in the reverse index.
 
 ```
  ┌──────────┐       indexing
- │ document │──────────────┐
+ │ document ├──────────────┐
  └──────────┘              │
                            ▼
  ┌───────┐ searching ┌───────────┐       ┌─────────────────────────────────────────────────┐       ╔══════════╗
- │ query │──────────>│ tokenizer │──────>│ stemming, lemmatization & stoppword filter pipe │──────>║ WebIndex ║
+ │ query ├──────────>│ tokenizer ├──────>│ stemming, lemmatization & stoppword filter pipe ├──────>║ WebIndex ║
  └───────┘           └───────────┘       └─────────────────────────────────────────────────┘       ╚══════════╝
-     ▲                                                                                                   │
+     ▲                                           results                                                 │
      └───────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -56,6 +64,7 @@ one word (e.g., "meditate") but expect results that use any inflected form of th
 
 In this instance, indexing is performed on two documents by executing a series of operations: tokenization, normalization, and 
 stop-word removal. The outcome of these operations is a multi-dimensional table, which serves as a representation of the reverse index.
+
 ```
 
  ┌document a────────────────────────────────────────┐      ┌document b────────────────────────────────────────┐
@@ -64,7 +73,7 @@ stop-word removal. The outcome of these operations is a multi-dimensional table,
  │ man, the dance is over. Unless you know someone  │      │ him. Well, Marty, I want to thank you for all    │
  │ else who could play the guitar. Who's are these? │      │ your good advice, I'll never forget it. Doc,     │
  │ Maybe you were adopted.                          │      │ look, all we need is a little plutonium.         │
- └──────────────────────────────────────────────────┘      └──────────────────────────────────────────────────┘
+ └──────────────────────┬───────────────────────────┘      └──────────────────────┬───────────────────────────┘
                         │                                                         │
                         │                                                         │
                         ▼                                                         ▼
@@ -74,7 +83,7 @@ stop-word removal. The outcome of these operations is a multi-dimensional table,
  │ man the dance is over unless you know someone    │      │ him well marty i want to thank you for all       │
  │ else who could play the guitar who is are these  │      │ your good advice i will never forget it doc      │
  │ maybe you were adopted                           │      │ look all we need is a little plutonium           │
- └──────────────────────────────────────────────────┘      └──────────────────────────────────────────────────┘
+ └──────────────────────┬───────────────────────────┘      └──────────────────────┬───────────────────────────┘
                         │                                                         │
                         │                                                         │
                         ▼                                                         ▼
@@ -84,7 +93,7 @@ stop-word removal. The outcome of these operations is a multi-dimensional table,
  │ dance unless know someone                        │      │ well marty want thank                            │
  │ else could play guitar these                     │      │ good advice never forget doc                     │
  │ maybe adopted                                    │      │ look need little plutonium                       │
- └──────────────────────────────────────────────────┘      └──────────────────────────────────────────────────┘
+ └─────────────────────┬────────────────────────────┘      └─────────────────────┬────────────────────────────┘
                        │                                                         │
                        │                                                         │
                        └───────────────┐                       ┌─────────────────┘
@@ -180,7 +189,7 @@ stop-word removal. The outcome of these operations is a multi-dimensional table,
                                                   ▲
                                                   │
                                                   │
-                                     ┌query─────────────────────┐
+                                     ┌query───────┴─────────────┐
                                      │ 'Marty play the guitar.' │
                                      └──────────────────────────┘
 ```
@@ -198,35 +207,35 @@ determined.
  ╔═══════════════════════════════════════ IndexManager ═╗
  ║   ┌──────────┐                                       ║
  ║   │ WebIndex │                                       ║
- ║   └──────────┘                                       ║
+ ║   └────┬─────┘                                       ║
  ║        │ 1                                           ║
  ║        │            ╔══════ IndexDocumentStore ═╗    ║
  ║        │ *          ║                           ║    ║
- ║ ┌───────────────┐ 1 ║ * ┌──────┐                ║    ║
- ║ │ IndexDocument │───────│ Item │                ║    ║
- ║ └───────────────┘   ║   └──────┘                ║    ║
+ ║ ┌──────┴────────┐ 1 ║ * ┌──────┐                ║    ║
+ ║ │ IndexDocument ├───────┤ Item │                ║    ║
+ ║ └──────┬────────┘   ║   └──────┘                ║    ║
  ║        │ 1          ╚═══════════════════════════╝    ║
  ║        │                                             ║
  ║        │ *                                           ║
- ║  ┌────────────┐                                      ║
+ ║  ┌─────┴──────┐                                      ║
  ║  │ IndexField │                                      ║
- ║  └────────────┘                                      ║
+ ║  └─────┬──────┘                                      ║
  ║        │ 1                                           ║
  ║ ╔══════│═════ IndexReverse ═╗                        ║
  ║ ║      │ *                  ║                        ║
- ║ ║  ┌──────┐                 ║                        ║
+ ║ ║  ┌───┴──┐                 ║                        ║
  ║ ║  │ Term │                 ║                        ║
- ║ ║  └──────┘                 ║                        ║
+ ║ ║  └───┬──┘                 ║                        ║
  ║ ║      │ 1                  ║                        ║
  ║ ║      │                    ║                        ║
  ║ ║      │ *                  ║                        ║
- ║ ║ ┌─────────┐               ║                        ║
+ ║ ║ ┌────┴────┐               ║                        ║
  ║ ║ │ Posting │               ║                        ║
- ║ ║ └─────────┘               ║                        ║
+ ║ ║ └────┬────┘               ║                        ║
  ║ ║      │ 1                  ║                        ║
  ║ ║      │                    ║                        ║
  ║ ║      │ *                  ║                        ║
- ║ ║ ┌──────────┐              ║                        ║
+ ║ ║ ┌────┴─────┐              ║                        ║
  ║ ║ │ Position │              ║                        ║
  ║ ║ └──────────┘              ║                        ║
  ║ ╚═══════════════════════════╝                        ║
@@ -242,7 +251,94 @@ the execution of search queries on the index and returns the corresponding resul
 the indexing process by allowing certain fields to be excluded from indexing or determining whether the index should be created in main 
 memory or persistently in the file system. An `IndexDocument` created in main memory enables faster indexing and searching. However, the 
 number of objects it can support is limited and depends on the size of the available main memory. Therefore, it is important to weigh the 
-pros and cons and choose the best solution for the specific requirements.
+pros and cons and choose the best solution for the specific requirements. The following diagram serves as a guide to estimate the 
+performance and resources required when using the file-based approach: 
+
+```
+                                                             TIME CHART                                        >10:00
+  [h] ▲ [ms]                                                                                                        ░
+      │                                                                                                1:08         ≈
+ 1:00 ┼ 12                                                                                   0:59         ░         ░
+ 0:55 ┤                                                                            0:51         ░         ░         ░
+ 0:50 ┼ 10                                                                            ░         ░         ░         ░
+ 0:45 ┤                                                                  0:44         ░         ░         ░         ░
+ 0:40 ┼ 8                                                      0:37         ░         ░         ░         ░         ░
+ 0:35 ┤                                                           ░         ░         ░         ░         ░         ░
+ 0:30 ┼ 6                                            0:30         ░         ░         ░         ░         ░         ░
+ 0:25 ┤                                    0:23         ░         ░         ░         ░         ░         ░         ░
+ 0:20 ┼ 4                        0:17         ░         ░         ░         ░         ░         ░         ░         ░
+ 0:15 ┤          2     0:11         ░         ░         ░         ░         ░         ░         ░         ░         ░
+ 0:10 ┼ 2    0:05▓        ░1        ░1        ░1        ░1        ░1        ░1        ░1        ░1        ░1        ░1
+ 0:05 ┤         ░▓        ░▓        ░▓        ░▓        ░▓        ░▓        ░▓        ░▓        ░▓        ░▓        ░▓
+      └──────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬───~~~───┬─────►
+              10,000    20,000    30,000    40,000    50,000    60,000    70,000    80,000    90,000    100,000  1,000,000 [items]
+              
+        ░ - time required to reindex in [h]
+        ▓ - time required to retrieve in [ms]
+```
+
+```
+                                                         STORAGE SPACE CHART                                    >5,000
+ [MB] ▲                                                                                                              ▒
+      │                                                                                                              ≈
+  550 ┤                                                                                                    534       ▒
+      │                                                                                                    ▒         ▒
+  500 ┤                                                                                          482       ▒    1,525▒
+      │                                                                                          ▒         ▒        █▒
+  450 ┤                                                                                429       ▒         ▒        ≈▒
+      │                                                                                ▒         ▒         ▒        █▒
+  400 ┤                                                                                ▒         ▒         ▒        █▒
+      │                                                                      376       ▒         ▒         ▒        █▒
+  350 ┤                                                            324       ▒         ▒         ▒         ▒        █▒
+      │                                                            ▒         ▒         ▒         ▒         ▒        █▒
+  300 ┤                                                            ▒         ▒         ▒         ▒         ▒        █▒
+      │                                                  271       ▒         ▒         ▒         ▒         ▒        █▒
+  250 ┤                                                  ▒         ▒         ▒         ▒         ▒         ▒        █▒
+      │                                        218       ▒         ▒         ▒         ▒         ▒         ▒        █▒
+  200 ┤                                        ▒         ▒         ▒         ▒         ▒         ▒         ▒        █▒
+      │                              165       ▒         ▒         ▒         ▒         ▒         ▒         ▒        █▒
+  150 ┤                              ▒         ▒         ▒         ▒         ▒         ▒         ▒      152▒        █▒
+      │                    113       ▒         ▒         ▒         ▒         ▒      122▒      137▒        █▒        █▒
+  100 ┤                    ▒         ▒         ▒         ▒         ▒      107▒        █▒        █▒        █▒        █▒
+      │          60        ▒         ▒       61▒       76▒       91▒        █▒        █▒        █▒        █▒        █▒
+   50 ┤        15▒       30▒       45▒        █▒        █▒        █▒        █▒        █▒        █▒        █▒        █▒
+      │         █▒        █▒        █▒        █▒        █▒        █▒        █▒        █▒        █▒        █▒        █▒
+      └──────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬───~~~───┬─────►
+              10,000    20,000    30,000    40,000    50,000    60,000    70,000    80,000    90,000    100,000  1,000,000 [items]
+          
+        █ - payload in [MB]    calculation: payload = item count * (100 wrods * 15 character + 99 spaces) / 1024 / 1024
+        ▒ - storage space required in [MB]
+```
+
+It should be noted that the actual execution times and memory consumption depend heavily on the platform on which WebExpress-WebIndex 
+is operated. In addition, the vocabulary, the content of the documents and the number of IndexFields have a significant impact on 
+the performance of the system. The measured values apply to the following conditions: The document contains a field with 100 words 
+each consisting of 15 characters. The words come from a vocabulary of 20,000 words.
+The `IndexManager` class offers a variety of functions for managing and optimizing indexed data. Here are some of the main 
+methods and properties of this class:
+
+- `IIndexContext Context`: The context of the index.
+- `void Initialization(IIndexContext context)`: Initialization of the IndexManager.
+- `void Register(IIndexPipeStage pipeStage)`: Registers a pipe state for processing the tokens.
+- `void ReIndex<T>(IEnumerable<T> items)`: Reindexing of the index.
+- `Task ReIndexAsync<T>(IEnumerable<T> items, IProgress<int> progress, CancellationToken token)`: Performs an asynchronous reindexing 
+   of a collection of index items.
+- `void Create<T>(CultureInfo culture, IndexType type)`: Registers a data type in the index.
+- `void Drop<T>()`: Removes all index documents of type T.
+- `Task DropAsync<T>()`: Asynchronously removes all index documents of type T.
+- `void Insert<T>(T item)`: Adds an item to the index.
+- `Task InsertAsync<T>(T item)`: Performs an asynchronous addition of an item in the index.
+- `void Update<T>(T item)`: Updates an item in the index.
+- `Task UpdateAsync<T>(T item)`: Performs an asynchronous update of an item in the index.
+- `void Delete<T>(T item)`: Removes an item from the index.
+- `Task DeleteAsync<T>(T item)`: Removes an item from the index asynchronously.
+- `void Clear<T>()`: Removed all data from the index.
+- `Task ClearAsync<T>()`: Removed all data from the index asynchronously.
+- `IWqlStatement<T> ExecuteWql<T>(string wql)`: Executes a WQL statement.
+- `Task<IWqlStatement<T>> ExecuteWqlAsync<T>(string wql)`: Executes a wql statement asynchronously.
+- `IEnumerable<T> All<T>()`: Returns all documents from the index.
+- `IIndexDocument<T> GetIndexDocument<T>()`: Returns an index type based on its type.
+- `void Dispose()`: Disposes of the resources used by the current instance.
 
 ## IndexDocument
 An `IndexDocument` representing a class that implements the `IIndexItem` interface. Each `IndexDocument` contains a collection of fields 
@@ -258,6 +354,24 @@ other data. Each field is stored in a reverse index, which converts the field va
 positional data in the reverse index. The name and type of the field are essential pieces of information used during indexing and searching. 
 If a field is marked with the IndexIgnore attribute, it will be excluded from the indexing process.
 
+```
+                                                                                         ┌───────────────┐
+                                ┌───────────────┐       ┌────────────────────┐           │ <<interface>> │
+                                │ IndexDocument ├───────┤ IndexDocumentStore │           │ IIndexItem    │
+                                └──────┬────────┘       └────────────────────┘           └───────────────┘
+                                       │                                                         ▲
+          ┌──────────────────┬─────────┴────────┬──────────────────┐                             ¦
+          │ Property 1       │ Property 2       │ Property …       │ Property n           ┌─────────────┐
+   ┌──────┴───────┐   ┌──────┴───────┐   ┌──────┴───────┐   ┌──────┴───────┐              │ MyIndexItem │
+   │ IndexField 1 │   │ IndexField 2 │   │ IndexField … │   │ IndexField n │       <-->   ├─────────────┤
+   └──────┬───────┘   └──────┬───────┘   └──────┬───────┘   └──────┬───────┘              │ Property 1  │
+          │                  │                  │                  │                      │ Property 2  │
+  ┌───────┴────────┐ ┌───────┴────────┐ ┌───────┴────────┐ ┌───────┴────────┐             │ Property …  │
+  │ IndexReverse 1 │ │ IndexReverse 2 │ │ IndexReverse … │ │ IndexReverse n │             │ Property n  │
+  └────────────────┘ └────────────────┘ └────────────────┘ └────────────────┘             ├─────────────┤
+                                                                                          └─────────────┘
+```
+
 ## IndexStore
 In a filesystem where the `WebIndex` is stored, a process is carried out where an inverted index is created for each field. These indexes are 
 stored as files with the `<document name><field name>.wri` extension. In parallel, a special storage area known as the document store 
@@ -270,6 +384,7 @@ the system performance.
 ```
          ╔Header═════════╗
   3 Byte ║ "wds" | "wri" ║ identification (magic number) of the file `wds` for IndexDocumentStore and `wri` for IndexReverse
+  1 Byte ║ Version       ║ the file version
          ╠Allocator══════╣ 
   8 Byte ║ NextFreeAddr  ║ the next free address
   8 Byte ║ FreeListAddr  ║ the address to the list
@@ -392,11 +507,12 @@ new segment, while preserving the remaining free space for future use.
 ### Caching
 Caching is an efficient technique for optimizing data access by enabling fast access to frequently used data and simultaneously reducing
 the load on the file system. It stores frequently used data in memory, which speeds up access to this data as it does not have to be 
-retrieved from the hard drive again. For write accesses, the data is first written to the read cache. They are then queued before being 
-written to a disk by a thread. This process, also known as write delay, can improve system performance by decoupling write operations and 
-writing them to the disk at a more favorable time. The read cache uses a hash map to allow random access to the cached segments. Each cached 
-segment has a defined lifetime. If this has expired, the segments are removed from the read cache, unless they have been marked as immortal 
-via the `SegmentCached` attribute.
+retrieved from the hard drive again. For write accesses, the data is first written to the read cache. The read cache uses a hash map to 
+allow random access to the cached segments. Each cached segment has a defined lifetime. If this has expired, the segments are removed from 
+the read cache, unless they have been marked as immortal via the `SegmentCached` attribute. The maximum size of the read cache can be 
+determined using the `IndexStorageReadBuffer.MaxCachedSegments` parameter. The size influences all `IndexStore` files and can be changed 
+during operation. However, it should be noted that if the size of memory already allocated will not be released.
+
 
 ## IndexDocumentStore
 A `IndexDocumentStore` is a data structure in which each key is associated with a value. This allows efficient retrieval and retrieval of data 
@@ -789,7 +905,7 @@ distance is determined by the number of intervening words. Proximity search goes
 of proximity. By limiting proximity, search results can be avoided where the words are scattered and do not cohere. The basic linguistic 
 assumption of proximity search is that the proximity of words in a document implies a relationship between the words.
 
-`Description ~2 'lorem ipsum'
+`Description ~2 'lorem ipsum'`
 
 **Wildcard search**
 
@@ -802,9 +918,9 @@ one or more other characters.
 - A tilde `~` can be used to find strings that approximately match a given term."
 
 
-`Description = '?orem'`
-`Description = 'ips*'`
-`Description = 'ips~'`
+`Description ~ '?orem'`
+`Description ~ 'ips*'`
+`Description ~ 'ips~'`
 
 **Word search**
 

@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using WebExpress.WebIndex.Term;
+using WebExpress.WebIndex.Wql;
 
 namespace WebExpress.WebIndex.Storage
 {
@@ -197,14 +198,14 @@ namespace WebExpress.WebIndex.Storage
         }
 
         /// <summary>
-        /// Return all items for a given term.
+        ///  Return all items for a given string.
         /// </summary>
-        /// <param name="term">The term.</param>
+        /// <param name="term">The term string.</param>
         /// <returns>An enumeration of the data ids.</returns>
-        public IEnumerable<Guid> Collect(object term)
+        public IEnumerable<Guid> Collect(string term)
         {
             var list = new List<Guid>();
-            var terms = Context.TokenAnalyzer.Analyze(term?.ToString(), Culture);
+            var terms = Context.TokenAnalyzer.Analyze(term, Culture, true);
 
             foreach (var normalized in terms)
             {

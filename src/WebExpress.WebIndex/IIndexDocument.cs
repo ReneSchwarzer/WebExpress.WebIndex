@@ -34,10 +34,10 @@ namespace WebExpress.WebIndex
         void Add(T item);
 
         /// <summary>
-        /// Performs an asynchronous adds a item to the index.
+        /// Performs an asynchronous addition of an item in the index.
         /// </summary>
         /// <param name="item">The data to be added to the index.</param>
-        /// <returns>A Task representing the asynchronous operation.</returns>
+        /// <returns>A task representing the asynchronous operation.</returns>
         Task AddAsync(T item);
 
         /// <summary>
@@ -52,15 +52,8 @@ namespace WebExpress.WebIndex
         /// </summary>
         /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
         /// <param name="item">The data to be updated to the index.</param>
-        /// <param name="progress">An optional IProgress object that tracks the progress of the re-indexing.</param>
-        /// <param name="token">An optional CancellationToken that is used to cancel the re-indexing.</param>
-        /// <returns>A Task representing the asynchronous operation.</returns>
-        Task UpdateAsync(T item, IProgress<int> progress = null, CancellationToken token = default(CancellationToken));
-
-        /// <summary>
-        /// Removed all data from the index.
-        /// </summary>
-        void Clear();
+        /// <returns>A task representing the asynchronous operation.</returns>
+        Task UpdateAsync(T item);
 
         /// <summary>
         /// The data to be removed from the index.
@@ -69,17 +62,22 @@ namespace WebExpress.WebIndex
         void Remove(T item);
 
         /// <summary>
-        /// Rebuilds the index.
+        /// Removes an item from the index asynchronously.
         /// </summary>
-        /// <param name="capacity">The predicted capacity (number of items to store) of the index.</param>
-        void ReBuild(uint capacity);
+        /// <param name="item">The data to be removed from the index.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        Task RemoveAsync(T item);
 
         /// <summary>
-        /// Rebuilds the index.
+        /// Removed all data from the index.
         /// </summary>
-        /// <param name="capacity">The predicted capacity (number of items to store) of the index.</param>
-        /// <returns>A Task representing the asynchronous operation.</returns>
-        Task ReBuildAsync(uint capacity);
+        void Clear();
+        
+        /// <summary>
+        /// Removed all data from the index asynchronously.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        Task ClearAsync();
 
         /// <summary>
         /// Returns an index field based on its name.

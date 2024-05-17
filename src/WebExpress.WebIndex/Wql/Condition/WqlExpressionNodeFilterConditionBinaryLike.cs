@@ -20,15 +20,9 @@ namespace WebExpress.WebIndex.Wql.Condition
         /// <returns>The data ids from the index.</returns>
         public override IQueryable<Guid> Apply()
         {
-            var property = Attribute?.Property;
             var value = Parameter.GetValue();
 
-            //var filtered = unfiltered.Where
-            //(
-            //    x => property != null && property.GetValue(x).Equals(value)
-            //);
-
-            return null; //filtered.AsQueryable();
+            return Attribute.ReverseIndex?.Collect(value.ToString()).AsQueryable();
         }
 
         /// <summary>

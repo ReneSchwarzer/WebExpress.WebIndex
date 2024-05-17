@@ -4,7 +4,7 @@ using WebExpress.WebIndex.Wql;
 
 namespace WebExpress.WebIndex.Test.Fixture
 {
-    public class UnitTestIndexFixtureWqlD : IDisposable
+    public class UnitTestIndexFixtureWqlC : IDisposable
     {
         /// <summary>
         /// Returns the index manager.
@@ -14,18 +14,30 @@ namespace WebExpress.WebIndex.Test.Fixture
         /// <summary>
         /// Returns the test data.
         /// </summary>
-        public IEnumerable<UnitTestIndexTestDocumentD> TestData { get; } = UnitTestIndexTestDocumentFactoryD.GenerateTestData();
+        public IEnumerable<UnitTestIndexTestDocumentC> TestData { get; } = UnitTestIndexTestDocumentFactoryC.GenerateTestData();
+
+        /// <summary>
+        /// Returns a random document item.
+        /// </summary>
+        public UnitTestIndexTestDocumentC RandomItem { get; private set; }
+
+        /// <summary>
+        /// Returns a random term.
+        /// </summary>
+        public string Term { get; private set; }
 
         /// <summary>
         /// Constructor
         /// </summary>
-        public UnitTestIndexFixtureWqlD()
+        public UnitTestIndexFixtureWqlC()
         {
             var context = new IndexContext();
             context.IndexDirectory = Path.Combine(context.IndexDirectory, Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
             IndexManager.Initialization(context);
-            IndexManager.Create<UnitTestIndexTestDocumentD>(CultureInfo.GetCultureInfo("en"), IndexType.Memory);
+            IndexManager.Create<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
             IndexManager.ReIndex(TestData);
+            RandomItem = TestData.Skip(new Random().Next() % TestData.Count()).FirstOrDefault();
+            Term = RandomItem.Text.Split(' ').FirstOrDefault();
         }
 
         /// <summary>
@@ -42,9 +54,9 @@ namespace WebExpress.WebIndex.Test.Fixture
         /// </summary>
         /// <param name="wql">Tje wql statement.</param>
         /// <returns>The WQL parser.</returns>
-        public IWqlStatement<UnitTestIndexTestDocumentD> ExecuteWql(string wql)
+        public IWqlStatement<UnitTestIndexTestDocumentC> ExecuteWql(string wql)
         {
-            return IndexManager.Select<UnitTestIndexTestDocumentD>(wql);
+            return IndexManager.Select<UnitTestIndexTestDocumentC>(wql);
         }
     }
 }

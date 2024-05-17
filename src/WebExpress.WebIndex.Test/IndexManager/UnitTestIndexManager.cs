@@ -53,6 +53,9 @@ namespace WebExpress.WebIndex.Test.IndexManager
             {
                 Directory.Delete(Context.IndexDirectory, true);
             }
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
         }
     }
 }

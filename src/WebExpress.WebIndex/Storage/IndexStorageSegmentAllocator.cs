@@ -24,6 +24,11 @@ namespace WebExpress.WebIndex.Storage
         public static uint SegmentSize => sizeof(ulong) + sizeof(ulong);
 
         /// <summary>
+        /// Returns a guard to protect against concurrent access.
+        /// </summary>
+        private object Guard { get; } = new object();
+
+        /// <summary>
         /// Returns the a sorted list of the free segments.
         /// </summary>
         public IEnumerable<IndexStorageSegmentFree> FreeSegments
@@ -74,24 +79,27 @@ namespace WebExpress.WebIndex.Storage
         {
             var last = default(IndexStorageSegmentFree);
 
-            // find free space
-            foreach (var item in FreeSegments)
+            lock (Guard)
             {
-                if (item.Lenght == size)
+                // find free space
+                foreach (var item in FreeSegments)
                 {
-                    var freeAddr = Split(last, item, IndexStorageSegmentFree.SegmentSize);
-                    return freeAddr;
+                    if (item.Lenght == size)
+                    {
+                        var freeAddr = Split(last, item, IndexStorageSegmentFree.SegmentSize);
+                        return freeAddr;
+                    }
+
+                    last = item;
                 }
 
-                last = item;
+                var addr = NextFreeAddr;
+                NextFreeAddr += size;
+
+                Context.IndexFile.Write(this);
+                    
+                return addr;
             }
-
-            var addr = NextFreeAddr;
-            NextFreeAddr += size;
-
-            Context.IndexFile.Write(this);
-
-            return addr;
         }
 
         /// <summary>
@@ -104,56 +112,58 @@ namespace WebExpress.WebIndex.Storage
 
             Context.IndexFile.Invalidation(segment);
 
-            if (FreeListAddr == 0)
+            lock (Guard)
             {
-                FreeListAddr = segment.Addr;
-                Context.IndexFile.Write(this);
-                Context.IndexFile.Write(item);
-            }
-            else
-            {
-                // check whether it exists
-                var last = default(IndexStorageSegmentFree);
-                var count = 0U;
-
-                foreach (var i in FreeSegments)
+                if (FreeListAddr == 0)
                 {
-                    var compare = i.Addr.CompareTo(item.Addr);
-
-                    if (compare > 0)
-                    {
-                        break;
-                    }
-                    else if (compare == 0)
-                    {
-                        return;
-                    }
-
-                    last = i;
-
-                    count++;
-                }
-
-                if (last == null)
-                {
-                    // insert at the beginning
-                    var tempAddr = FreeListAddr;
-                    FreeListAddr = item.Addr;
-                    item.SuccessorAddr = tempAddr;
-
+                    FreeListAddr = segment.Addr;
                     Context.IndexFile.Write(this);
                     Context.IndexFile.Write(item);
                 }
                 else
                 {
-                    // insert in the correct place
-                    var tempAddr = last.SuccessorAddr;
-                    last.SuccessorAddr = item.Addr;
-                    item.SuccessorAddr = tempAddr;
+                    // check whether it exists
+                    var last = default(IndexStorageSegmentFree);
+                    var count = 0U;
 
-                    Context.IndexFile.Write(this);
-                    Context.IndexFile.Write(last);
-                    Context.IndexFile.Write(item);
+                    foreach (var i in FreeSegments)
+                    {
+                        var compare = i.Addr.CompareTo(item.Addr);
+
+                        if (compare > 0)
+                        {
+                            break;
+                        }
+                        else if (compare == 0)
+                        {
+                            return;
+                        }
+
+                        last = i;
+
+                        count++;
+                    }
+
+                    if (last == null)
+                    {
+                        // insert at the beginning
+                        var tempAddr = FreeListAddr;
+                        FreeListAddr = item.Addr;
+                        item.SuccessorAddr = tempAddr;
+
+                        Context.IndexFile.Write(this);
+                        Context.IndexFile.Write(item);
+                    }
+                    else
+                    {
+                        // insert in the correct place
+                        var tempAddr = last.SuccessorAddr;
+                        last.SuccessorAddr = item.Addr;
+                        item.SuccessorAddr = tempAddr;
+
+                        Context.IndexFile.Write(last);
+                        Context.IndexFile.Write(item);
+                    }
                 }
             }
         }

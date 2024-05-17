@@ -1,4 +1,5 @@
-﻿using WebExpress.WebIndex.Test.Document;
+﻿using System.Diagnostics;
+using WebExpress.WebIndex.Test.Document;
 
 namespace WebExpress.WebIndex.Test.Fixture
 {
@@ -26,6 +27,17 @@ namespace WebExpress.WebIndex.Test.Fixture
         /// </summary>
         public virtual void Dispose()
         {
+        }
+
+        /// <summary>
+        /// Returns the amount of memory used by the process.
+        /// </summary>
+        /// <returns>The memory used in MB.</returns>
+        public long GetUsedMemory()
+        {
+            long lngSessMemory = Process.GetCurrentProcess().WorkingSet64;
+
+            return lngSessMemory / (1024 * 1024);
         }
     }
 }

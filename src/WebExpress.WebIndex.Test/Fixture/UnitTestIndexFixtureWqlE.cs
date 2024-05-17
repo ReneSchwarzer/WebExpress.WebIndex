@@ -4,7 +4,7 @@ using WebExpress.WebIndex.Wql;
 
 namespace WebExpress.WebIndex.Test.Fixture
 {
-    public class UnitTestIndexFixtureWqlD : IDisposable
+    public class UnitTestIndexFixtureWqlE : IDisposable
     {
         /// <summary>
         /// Returns the index manager.
@@ -14,17 +14,17 @@ namespace WebExpress.WebIndex.Test.Fixture
         /// <summary>
         /// Returns the test data.
         /// </summary>
-        public IEnumerable<UnitTestIndexTestDocumentD> TestData { get; } = UnitTestIndexTestDocumentFactoryD.GenerateTestData();
+        public IEnumerable<UnitTestIndexTestDocumentE> TestData { get; } = UnitTestIndexTestDocumentFactoryE.GenerateTestData();
 
         /// <summary>
         /// Constructor
         /// </summary>
-        public UnitTestIndexFixtureWqlD()
+        public UnitTestIndexFixtureWqlE()
         {
             var context = new IndexContext();
             context.IndexDirectory = Path.Combine(context.IndexDirectory, Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
             IndexManager.Initialization(context);
-            IndexManager.Create<UnitTestIndexTestDocumentD>(CultureInfo.GetCultureInfo("en"), IndexType.Memory);
+            IndexManager.Create<UnitTestIndexTestDocumentE>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
             IndexManager.ReIndex(TestData);
         }
 
@@ -42,9 +42,9 @@ namespace WebExpress.WebIndex.Test.Fixture
         /// </summary>
         /// <param name="wql">Tje wql statement.</param>
         /// <returns>The WQL parser.</returns>
-        public IWqlStatement<UnitTestIndexTestDocumentD> ExecuteWql(string wql)
+        public IWqlStatement<UnitTestIndexTestDocumentE> ExecuteWql(string wql)
         {
-            return IndexManager.Select<UnitTestIndexTestDocumentD>(wql);
+            return IndexManager.Select<UnitTestIndexTestDocumentE>(wql);
         }
     }
 }

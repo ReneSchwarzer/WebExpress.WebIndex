@@ -1,12 +1,39 @@
 ﻿namespace WebExpress.WebIndex.Test.Document
 {
+
+    /// <summary>
+    /// Data class for unit testing.
+    /// </summary>
     public class UnitTestIndexTestDocumentB : UnitTestIndexTestDocument
     {
+        /// <summary>
+        /// Returns or sets the name.
+        /// </summary>
         public string Name { get; set; }
+
+        /// <summary>
+        /// Returns or sets the summary.
+        /// </summary>
         public string Summary { get; set; }
+
+        /// <summary>
+        /// Returns or sets the description.
+        /// </summary>
         public string Description { get; set; }
+
+        /// <summary>
+        /// Returns or sets the date.
+        /// </summary>
         public DateTime Date { get; set; }
+
+        /// <summary>
+        /// Returns or sets the price.
+        /// </summary>
         public double Price { get; set; }
+
+        /// <summary>
+        /// Returns or sets the new attribute.
+        /// </summary>
         public bool New { get; set; }
 
         /// <summary>

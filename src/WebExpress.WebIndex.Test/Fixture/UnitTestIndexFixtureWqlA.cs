@@ -14,7 +14,7 @@ namespace WebExpress.WebIndex.Test.Fixture
         /// <summary>
         /// Returns the test data.
         /// </summary>
-        public IEnumerable<UnitTestIndexTestDocumentA> TestDataA { get; } = UnitTestIndexTestDocumentFactoryA.GenerateTestData();
+        public IEnumerable<UnitTestIndexTestDocumentA> TestData { get; } = UnitTestIndexTestDocumentFactoryA.GenerateTestData();
 
         /// <summary>
         /// Constructor
@@ -24,8 +24,8 @@ namespace WebExpress.WebIndex.Test.Fixture
             var context = new IndexContext();
             context.IndexDirectory = Path.Combine(context.IndexDirectory, Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
             IndexManager.Initialization(context);
-            IndexManager.Register<UnitTestIndexTestDocumentA>(CultureInfo.GetCultureInfo("en"), IndexType.Memory);
-            IndexManager.ReIndex(TestDataA);
+            IndexManager.Create<UnitTestIndexTestDocumentA>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
+            IndexManager.ReIndex(TestData);
         }
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace WebExpress.WebIndex.Test.Fixture
         /// <returns>The WQL parser.</returns>
         public IWqlStatement<UnitTestIndexTestDocumentA> ExecuteWql(string wql)
         {
-            return IndexManager.ExecuteWql<UnitTestIndexTestDocumentA>(wql);
+            return IndexManager.Select<UnitTestIndexTestDocumentA>(wql);
         }
     }
 }

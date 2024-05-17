@@ -6,7 +6,7 @@ namespace WebExpress.WebIndex.Test.WQL
     /// <summary>
     /// Word search
     /// </summary>
-    public class UnitTestWqlParserWordSearchD(UnitTestIndexFixtureWqlD fixture, ITestOutputHelper output) : IClassFixture<UnitTestIndexFixtureWqlD>
+    public class UnitTestWqlWordSearchD(UnitTestIndexFixtureWqlD fixture, ITestOutputHelper output) : IClassFixture<UnitTestIndexFixtureWqlD>
     {
         /// <summary>
         /// Returns the log.
@@ -18,6 +18,9 @@ namespace WebExpress.WebIndex.Test.WQL
         /// </summary>
         protected UnitTestIndexFixtureWqlD Fixture { get; set; } = fixture;
 
+        /// <summary>
+        /// Tests word search, which searches for terms in a document regardless of their case or position.
+        /// </summary>
         [Fact]
         public void SingleWordFromQueryable()
         {
@@ -35,6 +38,9 @@ namespace WebExpress.WebIndex.Test.WQL
             Assert.Null(wql.Partitioning);
         }
 
+        /// <summary>
+        /// Tests word search, which searches for terms in a document regardless of their case or position.
+        /// </summary>
         [Fact]
         public void SingleWord()
         {
@@ -52,6 +58,9 @@ namespace WebExpress.WebIndex.Test.WQL
             Assert.Null(wql.Partitioning);
         }
 
+        /// <summary>
+        /// Tests word search, which searches for terms in a document regardless of their case or position.
+        /// </summary>
         [Fact]
         public void MultipleWords()
         {

@@ -11,7 +11,7 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Returns the maximum upper limit of the cached segments
         /// </summary>
-        public uint MaxCachedSegments = 50000;
+        public static uint MaxCachedSegments {get; set;} = 50000;
 
         /// <summary>
         /// Buffer for random access.
@@ -36,10 +36,8 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="maxCachedSegments">The number of elements to be stored in the ring buffer.</param>
-        public IndexStorageReadBuffer(uint maxCachedSegments)
+        public IndexStorageReadBuffer()
         {
-            MaxCachedSegments = maxCachedSegments;
             cache = new ConcurrentDictionary<ulong, IndexStorageReadBufferItem>();
         }
 

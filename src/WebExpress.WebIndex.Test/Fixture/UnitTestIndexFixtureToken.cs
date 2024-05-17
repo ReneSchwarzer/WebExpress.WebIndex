@@ -37,13 +37,6 @@ namespace WebExpress.WebIndex.Test.Fixture
             Directory.Delete(Context.IndexDirectory, true);
         }
 
-        public long GetUsedMemory()
-        {
-            long lngSessMemory = Process.GetCurrentProcess().WorkingSet64;
-
-            return lngSessMemory;
-        }
-
         public string GetRessource(string name)
         {
             var assembly = typeof(UnitTestIndexFixtureToken).Assembly;
