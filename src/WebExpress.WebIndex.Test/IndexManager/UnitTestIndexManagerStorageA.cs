@@ -51,7 +51,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
             // test execution
             IndexManager.ReIndex(Fixture.TestData);
 
-            var wql = IndexManager.Select<UnitTestIndexTestDocumentA>("name = 'Helena'");
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentA>("name = 'Helena'");
             Assert.NotNull(wql);
 
             var item = wql.Apply();
@@ -75,7 +75,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
             // test execution
             await IndexManager.ReIndexAsync(Fixture.TestData);
 
-            var wql = IndexManager.Select<UnitTestIndexTestDocumentA>($"text = '{randomItem.Text}'");
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentA>($"text = '{randomItem.Text}'");
             Assert.NotNull(wql);
 
             var item = wql.Apply();
@@ -98,7 +98,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
             // test execution
             IndexManager.ReIndex(Fixture.TestData);
 
-            var wql = IndexManager.Select<UnitTestIndexTestDocumentA>("name = 'Helena'");
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentA>("name = 'Helena'");
             Assert.NotNull(wql);
 
             var item = wql.Apply();
@@ -121,7 +121,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
             // test execution
             IndexManager.ReIndex(Fixture.TestData);
 
-            var wql = IndexManager.Select<UnitTestIndexTestDocumentA>("name = 'Helena'");
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentA>("name = 'Helena'");
             Assert.NotNull(wql);
 
             var item = wql.Apply();
@@ -144,7 +144,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
             // test execution
             IndexManager.ReIndex(Fixture.TestData);
 
-            var wql = IndexManager.Select<UnitTestIndexTestDocumentA>("name = 'Helena'");
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentA>("name = 'Helena'");
             Assert.NotNull(wql);
 
             var item = wql.Apply();
@@ -165,7 +165,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
             IndexManager.Create<UnitTestIndexTestDocumentA>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
             IndexManager.ReIndex(Fixture.TestData);
 
-            var wql = IndexManager.Select<UnitTestIndexTestDocumentA>("name = 'Helena'");
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentA>("name = 'Helena'");
             Assert.NotNull(wql);
 
             var item = wql.Apply();
@@ -174,7 +174,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
             // test execution
             IndexManager.Delete(Fixture.TestData[0]);
 
-            wql = IndexManager.Select<UnitTestIndexTestDocumentA>("name = 'Helena'");
+            wql = IndexManager.Retrieve<UnitTestIndexTestDocumentA>("name = 'Helena'");
             Assert.NotNull(wql);
 
             item = wql.Apply();
@@ -202,7 +202,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
                 Text = "Hello Aurora!"
             });
 
-            var wql = IndexManager.Select<UnitTestIndexTestDocumentA>("text = 'Aurora'");
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentA>("text = 'Aurora'");
             var item = wql.Apply();
 
             Assert.NotNull(wql);
@@ -230,13 +230,13 @@ namespace WebExpress.WebIndex.Test.IndexManager
                 Text = "Hello Helena, hello Aurora!"
             });
 
-            var wql = IndexManager.Select<UnitTestIndexTestDocumentA>("text = 'Aurora'");
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentA>("text = 'Aurora'");
             Assert.NotNull(wql);
 
             var item = wql.Apply();
             Assert.Equal(1, item.Count());
 
-            wql = IndexManager.Select<UnitTestIndexTestDocumentA>("text = 'Helge'");
+            wql = IndexManager.Retrieve<UnitTestIndexTestDocumentA>("text = 'Helge'");
             Assert.NotNull(wql);
 
             item = wql.Apply();
@@ -254,24 +254,23 @@ namespace WebExpress.WebIndex.Test.IndexManager
         {
             // preconditions
             Preconditions();
-            var randomItem = Fixture.RandomItem;
             IndexManager.Create<UnitTestIndexTestDocumentA>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
             await IndexManager.ReIndexAsync(Fixture.TestData);
 
             // test execution
             await IndexManager.UpdateAsync(new UnitTestIndexTestDocumentA()
             {
-                Id = randomItem.Id,
+                Id = new Guid("c7d8f9e0-3a2b-4c5d-8e6f-9a1b0c2d4e5f"),
                 Text = "Hello Helena, hello Aurora!"
             });
 
-            var wql = IndexManager.Select<UnitTestIndexTestDocumentA>("text = 'Aurora'");
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentA>("text = 'Aurora'");
             Assert.NotNull(wql);
 
             var item = wql.Apply();
             Assert.Equal(1, item.Count());
 
-            wql = IndexManager.Select<UnitTestIndexTestDocumentA>("text = 'Helge'");
+            wql = IndexManager.Retrieve<UnitTestIndexTestDocumentA>("text = 'Helge'");
             Assert.NotNull(wql);
 
             item = wql.Apply();

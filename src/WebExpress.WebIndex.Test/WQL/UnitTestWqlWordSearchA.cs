@@ -19,6 +19,86 @@ namespace WebExpress.WebIndex.Test.WQL
         protected UnitTestIndexFixtureWqlA Fixture { get; set; } = fixture;
 
         /// <summary>
+        /// Tests the parser.
+        /// </summary>
+        [Fact]
+        public void ParseValidWql1()
+        {
+            var wql = Fixture.ExecuteWql("text~'Helena'");
+            Assert.False(wql.HasErrors);
+        }
+
+        /// <summary>
+        /// Tests the parser.
+        /// </summary>
+        [Fact]
+        public void ParseValidWql2()
+        {
+            var wql = Fixture.ExecuteWql("text~\"Helena\"");
+            Assert.False(wql.HasErrors);
+        }
+
+        /// <summary>
+        /// Tests the parser.
+        /// </summary>
+        [Fact]
+        public void ParseValidWql3()
+        {
+            var wql = Fixture.ExecuteWql("text~Helena");
+            Assert.False(wql.HasErrors);
+        }
+
+        /// <summary>
+        /// Tests the parser.
+        /// </summary>
+        [Fact]
+        public void ParseValidWql4()
+        {
+            var wql = Fixture.ExecuteWql("text~'Helena Helge'");
+            Assert.False(wql.HasErrors);
+        }
+
+        /// <summary>
+        /// Tests the parser.
+        /// </summary>
+        [Fact]
+        public void ParseInvalidWql1()
+        {
+            var wql = Fixture.ExecuteWql("text~Helena Helge");
+            Assert.True(wql.HasErrors);
+        }
+
+        /// <summary>
+        /// Tests the parser.
+        /// </summary>
+        [Fact]
+        public void ParseInvalidWql2()
+        {
+            var wql = Fixture.ExecuteWql("text~'Helena Helge order by text");
+            Assert.True(wql.HasErrors);
+        }
+
+        /// <summary>
+        /// Tests the parser.
+        /// </summary>
+        [Fact]
+        public void ParseInvalidWql3()
+        {
+            var wql = Fixture.ExecuteWql("text~'Helena Helge\" order by text");
+            Assert.True(wql.HasErrors);
+        }
+
+        /// <summary>
+        /// Tests the parser.
+        /// </summary>
+        [Fact]
+        public void ParseInvalidWql4()
+        {
+            var wql = Fixture.ExecuteWql("~'Helena Helge\" order by text");
+            Assert.True(wql.HasErrors);
+        }
+
+        /// <summary>
         /// Tests word search, which searches for terms in a document regardless of their case or position.
         /// </summary>
         [Fact]
@@ -70,7 +150,7 @@ namespace WebExpress.WebIndex.Test.WQL
 
             Assert.NotNull(res);
             Assert.NotNull(item);
-            Assert.True(res.Count() > 2);
+            Assert.Equal(2, res.Count());
             Assert.Equal("Text ~ 'Helena Helge'", wql.ToString());
             Assert.Contains("Helena", item.Text);
             Assert.NotNull(wql.Filter);

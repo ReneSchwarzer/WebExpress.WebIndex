@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using WebExpress.WebIndex;
-using WebExpress.WebIndex.Wql.Function;
+﻿using WebExpress.WebIndex.Wql.Function;
 
 namespace WebExpress.WebIndex.Wql
 {
@@ -37,12 +34,12 @@ namespace WebExpress.WebIndex.Wql
         }
 
         /// <summary>
-        /// Converts the function expression to a string.
+        /// Converts the parameter expression to a string.
         /// </summary>
-        /// <returns>The function expression as a string.</returns>
+        /// <returns>The parameter expression as a string.</returns>
         public override string ToString()
         {
-            return string.Format("{0}", Value != null ? Value.ToString() : Function.ToString()).Trim();
+            return Value != null ? Value.ToString() : Function.ToString().Trim();
         }
     }
 }

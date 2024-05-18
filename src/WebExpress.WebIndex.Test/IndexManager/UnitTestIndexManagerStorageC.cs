@@ -9,18 +9,10 @@ namespace WebExpress.WebIndex.Test.IndexManager
     /// <summary>
     /// Test class for testing the storage-based index manager.
     /// </summary>
-    public class UnitTestIndexManagerStorageC : UnitTestIndexManager<UnitTestIndexFixtureIndexC>
+    /// <param name="fixture">The log.</param>
+    /// <param name="output">The test context.</param>
+    public class UnitTestIndexManagerStorageC(UnitTestIndexFixtureIndexC fixture, ITestOutputHelper output) : UnitTestIndexManager<UnitTestIndexFixtureIndexC>(fixture, output)
     {
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="fixture">The log.</param>
-        /// <param name="output">The test context.</param>
-        public UnitTestIndexManagerStorageC(UnitTestIndexFixtureIndexC fixture, ITestOutputHelper output)
-            : base(fixture, output)
-        {
-        }
-
         /// <summary>
         /// Tests registering a document in the index manager.
         /// </summary>
@@ -53,7 +45,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
             // test execution
             IndexManager.ReIndex(Fixture.TestData);
 
-            var wql = IndexManager.Select<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text.Split(' ').FirstOrDefault()}'");
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text.Split(' ').FirstOrDefault()}'");
             Assert.NotNull(wql);
 
             var item = wql.Apply();
@@ -77,7 +69,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
             // test execution
             await IndexManager.ReIndexAsync(Fixture.TestData);
 
-            var wql = IndexManager.Select<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text}'");
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text}'");
             Assert.NotNull(wql);
 
             var item = wql.Apply();
@@ -101,7 +93,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
             // test execution
             IndexManager.ReIndex(Fixture.TestData);
 
-            var wql = IndexManager.Select<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text.Split(' ').FirstOrDefault()}'");
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text.Split(' ').FirstOrDefault()}'");
             Assert.NotNull(wql);
 
             var item = wql.Apply();
@@ -125,7 +117,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
             // test execution
             IndexManager.ReIndex(Fixture.TestData);
 
-            var wql = IndexManager.Select<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text.Split(' ').FirstOrDefault()}'");
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text.Split(' ').FirstOrDefault()}'");
             Assert.NotNull(wql);
 
             var item = wql.Apply();
@@ -149,7 +141,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
             // test execution
             IndexManager.ReIndex(Fixture.TestData);
 
-            var wql = IndexManager.Select<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text.Split(' ').FirstOrDefault()}'");
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text.Split(' ').FirstOrDefault()}'");
             Assert.NotNull(wql);
 
             var item = wql.Apply();
@@ -167,7 +159,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
         {
             var stopWatch = new Stopwatch();
 
-            var itemCount = Enumerable.Range(1, 10).Select(x => x * 100000);
+            var itemCount = Enumerable.Range(3, 8).Select(x => x * 100000);
             var wordCount = Enumerable.Range(1, 1).Select(x => x * 100);
             var vocabulary = Enumerable.Range(1, 1).Select(x => x * 20000);
             var wordLength = Enumerable.Range(1, 1).Select(x => x * 15);
@@ -175,8 +167,8 @@ namespace WebExpress.WebIndex.Test.IndexManager
             var bufferSize = Enumerable.Range(12, 1).Select(x => Math.Pow(2, x));
             var file = await Task.Run(() => File.CreateText(Path.Combine(Environment.CurrentDirectory, "storage-reindexasync_series.csv")));
 
-            Output.WriteLine("item count;wordCount;vocabulary;wordLength;max cached segments;buffer size;elapsed reindex [hh:mm:ss];elapsed retrieval [ms];size of document store [MB];size of reverse index [MB];size of process mem [MB]");
-            file.WriteLine("item count;wordCount;vocabulary;wordLength;max cached segments;buffer size;elapsed reindex [hh:mm:ss];elapsed retrieval [ms];size of document store [MB];size of reverse index [MB];size of process mem [MB]");
+            Output.WriteLine("item count;wordCount;vocabulary;wordLength;max cached segments;buffer size;elapsed reindex [hh:mm:ss];elapsed retrieval [ms];size of document store [MB];size of reverse index [MB];∑ storage space [MB];size of process mem [MB]");
+            file.WriteLine("item count;wordCount;vocabulary;wordLength;max cached segments;buffer size;elapsed reindex [hh:mm:ss];elapsed retrieval [ms];size of document store [MB];size of reverse index [MB];∑ storage space [MB];size of process mem [MB]");
 
             foreach (var w in wordCount)
             {
@@ -204,7 +196,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
                                     var output = "";
 
                                     IndexManager.Create<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
-                                    IndexManager.Select<UnitTestIndexTestDocumentC>($"text = 'xyz'").Apply();
+                                    IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text = 'xyz'").Apply();
 
                                     try
                                     {
@@ -219,7 +211,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
                                         stopWatch.Reset();
 
                                         randomItem = randomItem ?? IndexManager.All<UnitTestIndexTestDocumentC>().Skip(new Random().Next() % data.Count()).FirstOrDefault();
-                                        var wql = IndexManager.Select<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text.Split(' ').FirstOrDefault()}'");
+                                        var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text.Split(' ').FirstOrDefault()}'");
                                         Assert.NotNull(wql);
 
                                         // preparing for a measurement
@@ -238,7 +230,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
                                         var documentStoreSize = new DirectoryInfo(IndexManager.Context.IndexDirectory).GetFiles("*.wds", SearchOption.AllDirectories).Sum(file => file.Length);
                                         var reverseIndexSize = new DirectoryInfo(IndexManager.Context.IndexDirectory).GetFiles("*.wri", SearchOption.AllDirectories).Sum(file => file.Length);
 
-                                        output = $"{i};{w};{v};{l};{m};{b};{elapsedReindex:hh\\:mm\\:ss};{(int)Math.Ceiling(elapsedRetrieval.TotalMilliseconds)};{Math.Round((double)documentStoreSize / 1024 / 1024, 2)};{Math.Round((double)reverseIndexSize / 1024 / 1024, 2)};{Fixture.GetUsedMemory() - mem}";
+                                        output = $"{i};{w};{v};{l};{m};{b};{elapsedReindex:hh\\:mm\\:ss};{(int)Math.Ceiling(elapsedRetrieval.TotalMilliseconds)};{Math.Round((double)documentStoreSize / 1024 / 1024, 2)};{Math.Round((double)reverseIndexSize / 1024 / 1024, 2)};{Math.Round((double)(documentStoreSize + reverseIndexSize) / 1024 / 1024, 2)};{Fixture.GetUsedMemory() - mem}";
                                     }
                                     catch (Exception ex)
                                     {
@@ -275,16 +267,16 @@ namespace WebExpress.WebIndex.Test.IndexManager
             IndexManager.Create<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
             IndexManager.ReIndex(Fixture.TestData);
 
-            var wql = IndexManager.Select<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text.Split(' ').FirstOrDefault()}'");
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text.Split(' ').FirstOrDefault()}'");
             Assert.NotNull(wql);
 
             var before = wql.Apply().ToList();
-            Assert.True(before.Any());
+            Assert.NotEmpty(before);
 
             // test execution
             IndexManager.Delete(randomItem);
 
-            wql = IndexManager.Select<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text.Split(' ').FirstOrDefault()}'");
+            wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text.Split(' ').FirstOrDefault()}'");
             Assert.NotNull(wql);
 
             var after = wql.Apply().ToList();
@@ -312,7 +304,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
                 Text = "Aurora"
             });
 
-            var wql = IndexManager.Select<UnitTestIndexTestDocumentC>("text = 'Aurora'");
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>("text = 'Aurora'");
             var item = wql.Apply();
 
             Assert.NotNull(wql);
@@ -341,7 +333,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
                 Text = "Aurora"
             });
 
-            var wql = IndexManager.Select<UnitTestIndexTestDocumentC>("text = 'Aurora'");
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>("text = 'Aurora'");
             Assert.NotNull(wql);
 
             var item = wql.Apply();
@@ -370,7 +362,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
                 Text = "Aurora"
             });
 
-            var wql = IndexManager.Select<UnitTestIndexTestDocumentC>("text = 'Aurora'");
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>("text = 'Aurora'");
             Assert.NotNull(wql);
 
             var item = wql.Apply();

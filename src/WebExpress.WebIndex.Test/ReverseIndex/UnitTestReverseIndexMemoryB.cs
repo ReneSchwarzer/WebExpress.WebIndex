@@ -10,22 +10,14 @@ namespace WebExpress.WebIndex.Test.ReverseIndex
     /// <summary>
     /// Test class for testing the memory-based reverse index.
     /// </summary>
-    public class UnitTestReverseIndexMemoryB : UnitTestReverseIndex<UnitTestIndexFixtureIndexB>
+    /// <param name="fixture">The log.</param>
+    /// <param name="output">The test context.</param>
+    public class UnitTestReverseIndexMemoryB(UnitTestIndexFixtureIndexB fixture, ITestOutputHelper output) : UnitTestReverseIndex<UnitTestIndexFixtureIndexB>(fixture, output)
     {
         /// <summary>
         /// Returns the property.
         /// </summary>
-        protected PropertyInfo Property => typeof(UnitTestIndexTestDocumentB).GetProperty("Name");
-
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="fixture">The log.</param>
-        /// <param name="output">The test context.</param>
-        public UnitTestReverseIndexMemoryB(UnitTestIndexFixtureIndexB fixture, ITestOutputHelper output)
-            : base(fixture, output)
-        {
-        }
+        protected static PropertyInfo Property => typeof(UnitTestIndexTestDocumentB).GetProperty("Name");
 
         /// <summary>
         /// Creates a reverse index.
@@ -89,9 +81,9 @@ namespace WebExpress.WebIndex.Test.ReverseIndex
 
             // test execution
             reverseIndex.Add(randomItem, token.TakeLast(1));
-            var all = reverseIndex.Collect("aurora");
+            var all = reverseIndex.Retrieve("aurora", new IndexRetrieveOptions());
 
-            Assert.Contains(randomItem.Id, all);    
+            Assert.Contains(randomItem.Id, all);
 
             // postconditions
             reverseIndex.Dispose();
@@ -116,13 +108,13 @@ namespace WebExpress.WebIndex.Test.ReverseIndex
                 reverseIndex.Add(item);
             }
 
-            var before = reverseIndex.Collect(randomItem.Name).ToList();
-            Assert.True(before.Any());
+            var before = reverseIndex.Retrieve(randomItem.Name, new IndexRetrieveOptions()).ToList();
+            Assert.NotEmpty(before);
 
             // test execution
             reverseIndex.Remove(randomItem);
 
-            var after = reverseIndex.Collect(randomItem.Name).ToList();
+            var after = reverseIndex.Retrieve(randomItem.Name, new IndexRetrieveOptions()).ToList();
             Assert.True(before.Count - 1 == after.Count);
 
             // postconditions
@@ -153,7 +145,7 @@ namespace WebExpress.WebIndex.Test.ReverseIndex
             // test execution
             reverseIndex.Remove(randomItem, token.TakeLast(1));
 
-            var items = reverseIndex.Collect("aurora");
+            var items = reverseIndex.Retrieve("aurora", new IndexRetrieveOptions());
             Assert.Empty(items);
 
             // postconditions
@@ -180,7 +172,7 @@ namespace WebExpress.WebIndex.Test.ReverseIndex
             }
 
             // test execution
-            var items = reverseIndex.Collect(randomItem.Name);
+            var items = reverseIndex.Retrieve(randomItem.Name, new IndexRetrieveOptions());
             Assert.True(items.Any());
 
             // postconditions
@@ -208,7 +200,7 @@ namespace WebExpress.WebIndex.Test.ReverseIndex
             // test execution
             //var all = reverseIndex.All;
 
-            //Assert.True(all.Select(x => x.Id).SequenceEqual(data.Select(x => x.Id)));
+            //Assert.True(all.Select(x => x.DocumentID).SequenceEqual(data.Select(x => x.DocumentID)));
 
             // postconditions
             reverseIndex.Dispose();

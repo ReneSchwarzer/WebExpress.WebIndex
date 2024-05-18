@@ -28,7 +28,7 @@ namespace WebExpress.WebIndex.Wql
         /// <returns>The data from the index.</returns>
         public virtual IEnumerable<Guid> Apply()
         {
-            return Condition?.Apply() ?? Enumerable.Empty<Guid>();
+            return Condition?.Apply() ?? [];
         }
 
         /// <summary>

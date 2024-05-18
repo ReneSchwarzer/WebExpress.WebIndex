@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace WebExpress.WebIndex.Memory
 {
@@ -15,14 +16,14 @@ namespace WebExpress.WebIndex.Memory
         public char Character { get; set; }
 
         /// <summary>
-        /// The child nodes of the tree.
+        /// Returns or sets the child nodes of the tree.
         /// </summary>
-        public IEnumerable<IndexMemoryReverseTerm<T>> Children { get; set; } = new List<IndexMemoryReverseTerm<T>>();
+        public List<IndexMemoryReverseTerm<T>> Children { get; set; } = [];
 
         /// <summary>
-        /// The item. This is always on the leaf of an term.
+        /// Returns or sets the postings. This is always on the leaf of an term.
         /// </summary>
-        public IEnumerable<IndexMemoryReversePosting<T>> Posting { get; set; }
+        public List<IndexMemoryReversePosting<T>> Postings { get; set; }
 
         /// <summary>
         /// Checks whether the current node is the root.
@@ -37,40 +38,44 @@ namespace WebExpress.WebIndex.Memory
         {
             get
             {
-                var list = new List<IndexMemoryReverseTerm<T>>
-                {
-                    this
-                };
+                yield return this;
 
                 foreach (var child in Children)
                 {
-                    list.AddRange(child.PreOrder);
+                    foreach (var preOrderChild in child.PreOrder)
+                    {
+                        yield return preOrderChild;
+                    }
                 }
-
-                return list;
             }
         }
 
         /// <summary>
         /// Returns all terms.
         /// </summary>
-        public IEnumerable<string> Terms
+        public IEnumerable<(string, Guid[])> Terms
         {
             get
             {
-                var list = new List<string>();
-
                 foreach (var child in Children)
                 {
-                    list.AddRange(child.Terms);
+                    foreach (var term in child.Terms)
+                    {
+                        yield return (Character + term.Item1, term.Item2);
+                    }
                 }
 
                 if (IsRoot)
                 {
-                    return list;
+                    yield break;
                 }
 
-                return list.Count > 0 ? list.Select(x => Character + x) : [Character.ToString()];
+                if (Children.Any())
+                {
+                    yield break;
+                }
+
+                yield return (Character.ToString(), Postings?.Select(x => x.DocumentID).ToArray());
             }
         }
 
@@ -92,14 +97,14 @@ namespace WebExpress.WebIndex.Memory
             if (subterm == null)
             {
                 // end of recursive descent reached
-                Posting ??= new List<IndexMemoryReversePosting<T>>();
-                var posting = Posting.FirstOrDefault(x => x.Id.Equals(item.Id));
+                Postings ??= [];
+                var posting = Postings.FirstOrDefault(x => x.DocumentID.Equals(item.Id));
 
                 if (posting == null)
                 {
-                    (Posting as List<IndexMemoryReversePosting<T>>).Add(new IndexMemoryReversePosting<T>(item, position));
+                    Postings.Add(new IndexMemoryReversePosting<T>(item, position));
                 }
-                else if (!posting.Contains<uint>(position)) 
+                else if (!posting.Contains<uint>(position))
                 {
                     posting.Add(position);
                 }
@@ -109,7 +114,7 @@ namespace WebExpress.WebIndex.Memory
 
             var children = Children as List<IndexMemoryReverseTerm<T>>;
             var first = subterm.FirstOrDefault();
-            var next = subterm.Length > 1 ? subterm.Substring(1) : null;
+            var next = subterm.Length > 1 ? subterm[1..] : null;
 
             // find existing nodes
             foreach (var child in children)
@@ -138,13 +143,13 @@ namespace WebExpress.WebIndex.Memory
         {
             if (subterm == null)
             {
-                Posting = Posting?.Where(X => !X.Id.Equals(item.Id));
+                Postings = Postings?.Where(X => !X.DocumentID.Equals(item.Id)).ToList();
 
                 return;
             }
 
             var first = subterm.FirstOrDefault();
-            var next = subterm.Length > 1 ? subterm.Substring(1) : null;
+            var next = subterm.Length > 1 ? subterm[1..] : null;
 
             // find nodes
             foreach (var child in Children)
@@ -161,28 +166,63 @@ namespace WebExpress.WebIndex.Memory
         /// Return all term items for a given term.
         /// </summary>
         /// <param name="term">The term.</param>
-        /// <returns>An enumeration of the data ids.</returns>
-        public IEnumerable<Guid> Collect(string term)
+        /// <param name="options">The retrieve options.</param>
+        /// <returns>An enumeration of tuples with data ids and the terms.</returns>
+        public virtual IEnumerable<Guid> Retrieve(string term, IndexRetrieveOptions options)
         {
             if (term == null)
             {
-                return Posting.Select(x => x.Id);
-            }
-
-            var first = term.FirstOrDefault();
-            var next = term.Length > 1 ? term.Substring(1) : null;
-
-            // find nodes
-            foreach (var child in Children)
-            {
-                if (first == child.Character)
+                foreach (var posting in Postings)
                 {
-                    // recursive descent
-                    return child.Collect(next);
+                    yield return posting.DocumentID;
                 }
             }
+            else
+            {
+                var first = term.FirstOrDefault();
+                var next = term.Length > 1 ? term[1..] : null;
 
-            return Enumerable.Empty<Guid>();
+                switch (first)
+                {
+                    case '?':
+                        // find nodes
+                        foreach (var child in Children)
+                        {
+                            foreach (var id in child.Retrieve(next, options))
+                            {
+                                yield return id;
+                            }
+                        }
+                        break;
+                    case '*':
+                        var pattern = next?.Replace("*", ".*").Replace("?", ".") ?? ".*";
+                        foreach (var termTuple in Terms)
+                        {
+                            if (Regex.IsMatch(termTuple.Item1, pattern))
+                            {
+                                foreach (var id in termTuple.Item2)
+                                {
+                                    yield return id;
+                                }
+                            }
+                        }
+                        break;
+                    default:
+                        // find nodes
+                        foreach (var child in Children)
+                        {
+                            if (first == child.Character)
+                            {
+                                // recursive descent
+                                foreach (var id in child.Retrieve(next, options))
+                                {
+                                    yield return id;
+                                }
+                            }
+                        }
+                        break;
+                }
+            }
         }
 
         /// <summary>
@@ -191,7 +231,7 @@ namespace WebExpress.WebIndex.Memory
         /// <returns>The order expression as a string.</returns>
         public override string ToString()
         {
-            return $"{Character} → {Posting?.ToString() ?? "null"}";
+            return $"{Character} → {Postings?.ToString() ?? "null"}";
         }
     }
 }

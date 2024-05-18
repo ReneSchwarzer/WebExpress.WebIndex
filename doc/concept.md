@@ -313,7 +313,15 @@ performance and resources required when using the file-based approach:
 It should be noted that the actual execution times and memory consumption depend heavily on the platform on which WebExpress-WebIndex 
 is operated. In addition, the vocabulary, the content of the documents and the number of IndexFields have a significant impact on 
 the performance of the system. The measured values apply to the following conditions: The document contains a field with 100 words 
-each consisting of 15 characters. The words come from a vocabulary of 20,000 words.
+each consisting of 15 characters. The words come from a vocabulary of 20,000 words. The series of measurements was created on the 
+following system: 
+
+- OS: Windows 11 64bit 
+- System: Intel NUC-13 
+- Processor: Intel i7-1360P 
+- RAM: 64,0 GB (SODIMM 3200 MHz) RAM
+- HDD: Samsung SSD 990 Pro 2TB
+
 The `IndexManager` class offers a variety of functions for managing and optimizing indexed data. Here are some of the main 
 methods and properties of this class:
 
@@ -334,8 +342,8 @@ methods and properties of this class:
 - `Task DeleteAsync<T>(T item)`: Removes an item from the index asynchronously.
 - `void Clear<T>()`: Removed all data from the index.
 - `Task ClearAsync<T>()`: Removed all data from the index asynchronously.
-- `IWqlStatement<T> ExecuteWql<T>(string wql)`: Executes a WQL statement.
-- `Task<IWqlStatement<T>> ExecuteWqlAsync<T>(string wql)`: Executes a wql statement asynchronously.
+- `IWqlStatement<T> Retrieve<T>(string wql)`: Executes a WQL statement.
+- `Task<IWqlStatement<T>> RetrieveAsync<T>(string wql)`: Executes a wql statement asynchronously.
 - `IEnumerable<T> All<T>()`: Returns all documents from the index.
 - `IIndexDocument<T> GetIndexDocument<T>()`: Returns an index type based on its type.
 - `void Dispose()`: Disposes of the resources used by the current instance.
@@ -860,25 +868,28 @@ of the query language is usually sent from the client to the server, which colle
 sends it back to the client. The following BNF is used to illustrate the grammar:
 
 ```
-<WQL>                  ::= <Filter> <Order> <Partitioning> | ε
-<Filter>               ::= "(" <Filter> ")" | <Filter> <LogicalOperator> <Filter> |<Condition> | ε
-<Condition>            ::= <Attribute> <BinaryOperator> <Parameter> | <Attribute> <SetOperator> "(" <Parameter> <ParameterNext> ")"
-<LogicalOperator>      ::= "and" | "or"
-<Attribute>            ::= <Name>
-<Function>             ::= <Name> "(" <Parameter> <ParameterNext> ")" | Name "(" ")"
-<Parameter>            ::= <Function> | <DoubleValue> | """ <StringValue> """ | "'" <StringValue> "'"  | <StringValue>
-<ParameterNext>        ::= "," <Parameter> <ParameterNext> | ε
-<BinaryOperator>       ::= "=" | ">" | "<" | ">=" | "<=" | "!=" | "~" | "is" | "is not"
-<SetOperator>          ::= "in" | "not in"
-<Order>                ::= "order" "by" <Attribute> <DescendingOrder> <OrderNext> | ε
-<OrderNext>            ::= "," <Attribute> <DescendingOrder> <OrderNext> | ε
-<DescendingOrder>      ::= "asc" | "desc" | ε
-<Partitioning>         ::= <Partitioning> <Partitioning> | <PartitioningOperator> <Number> | ε
-<PartitioningOperator> ::= "take" | "skip"
-<Name>                 ::= [A-Za-z_.][A-Za-z0-9_.]+
-<StringValue>          ::= [A-Za-z0-9_@<>=~$%/!+.,;:\-]+
-<DoubleValue>          ::= [+-]?[0-9]*[.]?[0-9]+
-<Number>               ::= [0-9]+
+<WQL>                      ::= <Filter> <Order> <Partitioning> | ε
+<Filter>                   ::= "(" <Filter> ")" | <Filter> <LogicalOperator> <Filter> |<Condition> | ε
+<Condition>                ::= <Attribute> <BinaryOperator> <Parameter> <ParameterOptions> | <Attribute> <SetOperator> "(" <Parameter> <ParameterNext> ")"
+<LogicalOperator>          ::= "and" | "or" | "&" | "||"
+<Attribute>                ::= <Name>
+<Parameter>                ::= <Function> | <DoubleValue> | """ <StringValue> """ | "'" <StringValue> "'"  | <StringValue>
+<ParameterOptions>         ::= <ParameterFuzzyOptions> | <ParameterDistanceOptions> | <ParameterFuzzyOptions> <ParameterDistanceOptions> | <ParameterDistanceOptions> <ParameterFuzzyOptions> | ε
+<ParameterFuzzyOptions>    ::= "~" <Number>
+<ParameterDistanceOptions> ::= ":" <Number>
+<Function>                 ::= <Name> "(" <Parameter> <ParameterNext> ")" | Name "(" ")"
+<ParameterNext>            ::= "," <Parameter> <ParameterNext> | ε
+<BinaryOperator>           ::= "=" | ">" | "<" | ">=" | "<=" | "!=" | "~" | "is" | "is not"
+<SetOperator>              ::= "in" | "not in"
+<Order>                    ::= "order" "by" <Attribute> <DescendingOrder> <OrderNext> | ε
+<OrderNext>                ::= "," <Attribute> <DescendingOrder> <OrderNext> | ε
+<DescendingOrder>          ::= "asc" | "desc" | ε
+<Partitioning>             ::= <Partitioning> <Partitioning> | <PartitioningOperator> <Number> | ε
+<PartitioningOperator>     ::= "take" | "skip"
+<Name>                     ::= [A-Za-z_.][A-Za-z0-9_.]+
+<StringValue>              ::= [A-Za-z0-9_@<>=~$%/!+.,;:\-]+
+<DoubleValue>              ::= [+-]?[0-9]*[.]?[0-9]+
+<Number>                   ::= [0-9]+
 ```
 
 ## Term modifiers
@@ -905,7 +916,7 @@ distance is determined by the number of intervening words. Proximity search goes
 of proximity. By limiting proximity, search results can be avoided where the words are scattered and do not cohere. The basic linguistic 
 assumption of proximity search is that the proximity of words in a document implies a relationship between the words.
 
-`Description ~2 'lorem ipsum'`
+`Description ~ 'lorem ipsum' :2`
 
 **Wildcard search**
 
@@ -915,12 +926,14 @@ one or more other characters.
 - An asterisk `*` can be used to specify any number of characters.
 - A question mark `?` can be used to represent a single character anywhere in the word. It is most useful when there is variable 
   spellings for a word and you want to search all variants at once.
-- A tilde `~` can be used to find strings that approximately match a given term."
-
 
 `Description ~ '?orem'`
 `Description ~ 'ips*'`
-`Description ~ 'ips~'`
+
+**Fuzzy search**
+Fuzzy search is used to find matches in texts that are not exact, but only approximate.
+
+`Description ~ 'house' ~80`
 
 **Word search**
 

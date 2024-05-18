@@ -19,7 +19,7 @@
                 new UnitTestIndexTestDocumentA { Id = new Guid("c7d8f9e0-3a2b-4c5d-8e6f-9a1b0c2d4e5f"), Text = "Hello Helena, Helge & Helena!"}
             };
 
-            return testDataList.ToList();
+            return [.. testDataList];
         }
     }
 }

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-
-namespace WebExpress.WebIndex.Storage
+﻿namespace WebExpress.WebIndex.Storage
 {
     /// <summary>
     /// Each term is broken down into individual characters and stored as separate nodes in a search tree. With the exception 
@@ -12,15 +7,8 @@ namespace WebExpress.WebIndex.Storage
     /// information about the term, such as its frequency, position in the document, and other relevant information that can be
     /// useful in search queries.
     /// </summary>
-    public class IndexStorageSegmentTerm : IndexStorageSegmentTermNode
+    /// <param name="context">The reference to the context of the index.</param>
+    public class IndexStorageSegmentTerm(IndexStorageContext context) : IndexStorageSegmentTermNode(context, context.IndexFile.Alloc(SegmentSize))
     {
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="context">The reference to the context of the index.</param>
-        public IndexStorageSegmentTerm(IndexStorageContext context)
-            : base(context, context.IndexFile.Alloc(SegmentSize))
-        {
-        }
     }
 }

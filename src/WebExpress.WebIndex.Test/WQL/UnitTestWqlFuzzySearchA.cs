@@ -4,9 +4,9 @@ using Xunit.Abstractions;
 namespace WebExpress.WebIndex.Test.WQL
 {
     /// <summary>
-    /// Proximity search
+    /// Wildcard search
     /// </summary>
-    public class UnitTestWqlProximitySearchA(UnitTestIndexFixtureWqlA fixture, ITestOutputHelper output) : IClassFixture<UnitTestIndexFixtureWqlA>
+    public class UnitTestWqlFuzzySearchA(UnitTestIndexFixtureWqlA fixture, ITestOutputHelper output) : IClassFixture<UnitTestIndexFixtureWqlA>
     {
         /// <summary>
         /// Returns the log.
@@ -24,7 +24,7 @@ namespace WebExpress.WebIndex.Test.WQL
         [Fact]
         public void ParseValidWql()
         {
-            var wql = Fixture.ExecuteWql("text~'Helena Helge' :2");
+            var wql = Fixture.ExecuteWql("text~'Hel' ~ 80");
             Assert.False(wql.HasErrors);
 
             Assert.NotNull(wql.Filter);
@@ -38,7 +38,7 @@ namespace WebExpress.WebIndex.Test.WQL
         [Fact]
         public void ParseValidWqlOrderBy()
         {
-            var wql = Fixture.ExecuteWql("text~'Helena Helge' :2 Order by text");
+            var wql = Fixture.ExecuteWql("text~'Hel' ~ 80 Order by text");
             Assert.False(wql.HasErrors);
 
             Assert.NotNull(wql.Filter);
@@ -50,16 +50,30 @@ namespace WebExpress.WebIndex.Test.WQL
         /// Tests the parser.
         /// </summary>
         [Fact]
-        public void ParseValidWqlAnd()
+        public void ParseValidWqlAnd1()
         {
-            var wql = Fixture.ExecuteWql("text~'Helena Helge' :2 And text = 'Helge' Order by text skip 1");
+            var wql = Fixture.ExecuteWql("text~'Hel' ~ 80 And text = 'Helge' Order by text skip 1");
             Assert.False(wql.HasErrors);
 
             Assert.NotNull(wql.Filter);
             Assert.NotNull(wql.Order);
             Assert.NotNull(wql.Partitioning);
 
-            wql = Fixture.ExecuteWql("text~'Helena Helge' :2 & text = 'Helge' Order by text take 10");
+            wql = Fixture.ExecuteWql("text~'Hel' ~ 80 & text = 'Helge' Order by text take 10");
+            Assert.False(wql.HasErrors);
+
+            Assert.NotNull(wql.Filter);
+            Assert.NotNull(wql.Order);
+            Assert.NotNull(wql.Partitioning);
+        }
+
+        /// <summary>
+        /// Tests the parser.
+        /// </summary>
+        [Fact]
+        public void ParseValidWqlAnd2()
+        {
+            var wql = Fixture.ExecuteWql("text~'Hel' ~ 80 & text = 'Helge' Order by text take 10");
             Assert.False(wql.HasErrors);
 
             Assert.NotNull(wql.Filter);
@@ -73,7 +87,7 @@ namespace WebExpress.WebIndex.Test.WQL
         [Fact]
         public void ParseInvalidWql()
         {
-            var wql = Fixture.ExecuteWql("text~'Helena Helge' :a");
+            var wql = Fixture.ExecuteWql("text~'Hel' ~a0");
             Assert.True(wql.HasErrors);
         }
 
@@ -83,26 +97,43 @@ namespace WebExpress.WebIndex.Test.WQL
         [Fact]
         public void ParseInvalidWqlIn()
         {
-            var wql = Fixture.ExecuteWql("text in ('Helena Helge' :2)");
+            var wql = Fixture.ExecuteWql("text in ('Hel' ~ 80)");
             Assert.True(wql.HasErrors);
         }
 
         /// <summary>
-        /// Tests proximity searches, in which two or more terms must appear at a certain distance from each other.
+        /// Tests the wildcard search.
         /// </summary>
         [Fact]
-        public void MultipleWords()
+        public void Fuzzy()
         {
-            var wql = Fixture.ExecuteWql("text~'Helena Helge':2");
+            var wql = Fixture.ExecuteWql("text~'Hel' ~50");
             var res = wql?.Apply();
-
             var item = res?.FirstOrDefault();
+
             Assert.NotNull(res);
             Assert.NotNull(item);
-            Assert.True(res.Count() > 2);
-            Assert.Equal("Text ~2 'Helena Helge' :2", wql.ToString());
-            Assert.Contains("Helena", item.Text);
-            Assert.Contains("Helge", item.Text);
+            Assert.Equal(3, res.Count());
+            Assert.Equal("Text = 'Hel' ~50", wql.ToString());
+            Assert.NotNull(wql.Filter);
+            Assert.Null(wql.Order);
+            Assert.Null(wql.Partitioning);
+        }
+
+        /// <summary>
+        /// Tests the wildcard search.
+        /// </summary>
+        [Fact]
+        public void FuzzyFromQueryable()
+        {
+            var wql = Fixture.ExecuteWql("text~'Hel' ~50");
+            var res = wql?.Apply(Fixture.TestData.AsQueryable());
+            var item = res?.FirstOrDefault();
+
+            Assert.NotNull(res);
+            Assert.NotNull(item);
+            Assert.Equal(3, res.Count());
+            Assert.Equal("Text = 'Hel~' ~50", wql.ToString());
             Assert.NotNull(wql.Filter);
             Assert.Null(wql.Order);
             Assert.Null(wql.Partitioning);

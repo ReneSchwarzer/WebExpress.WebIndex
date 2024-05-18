@@ -9,7 +9,9 @@ namespace WebExpress.WebIndex.Storage
     /// posting segment refers to the position information that indicates where the term is located in the document. The posting 
     /// segment is stored in the variable memory area of the inverted index.
     /// </summary>
-    public class IndexStorageSegmentPosting : IndexStorageSegment, IIndexStorageSegmentListItem
+    /// <param name="context">The reference to the context of the index.</param>
+    /// <param name="addr">The adress of the segment.</param>
+    public class IndexStorageSegmentPosting(IndexStorageContext context, ulong addr) : IndexStorageSegment(context, addr), IIndexStorageSegmentListItem
     {
         /// <summary>
         /// Returns or sets the document id.
@@ -57,16 +59,6 @@ namespace WebExpress.WebIndex.Storage
                     addr = item.SuccessorAddr;
                 }
             }
-        }
-
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="context">The reference to the context of the index.</param>
-        /// <param name="addr">The adress of the segment.</param>
-        public IndexStorageSegmentPosting(IndexStorageContext context, ulong addr)
-            : base(context, addr)
-        {
         }
 
         /// <summary>

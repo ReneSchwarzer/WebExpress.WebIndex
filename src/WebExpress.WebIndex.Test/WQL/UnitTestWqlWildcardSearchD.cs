@@ -97,25 +97,5 @@ namespace WebExpress.WebIndex.Test.WQL
             Assert.Null(wql.Order);
             Assert.Null(wql.Partitioning);
         }
-
-        /// <summary>
-        /// Tests the wildcard search.
-        /// </summary>
-        [Fact]
-        public void FuzzyEnd()
-        {
-            var wql = Fixture.ExecuteWql("firstname~'Olivi~'");
-            var res = wql?.Apply();
-            var item = res?.FirstOrDefault();
-
-            Assert.NotNull(res);
-            Assert.NotNull(item);
-            Assert.Equal(1, res.Count());
-            Assert.Equal("FirstName = 'Olivi~'", wql.ToString());
-            Assert.Equal("Olivia", item.FirstName);
-            Assert.NotNull(wql.Filter);
-            Assert.Null(wql.Order);
-            Assert.Null(wql.Partitioning);
-        }
     }
 }

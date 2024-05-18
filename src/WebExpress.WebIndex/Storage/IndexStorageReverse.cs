@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using WebExpress.WebIndex.Term;
-using WebExpress.WebIndex.Wql;
 
 namespace WebExpress.WebIndex.Storage
 {
@@ -168,7 +167,7 @@ namespace WebExpress.WebIndex.Storage
                 if (!posting.Positions.Any())
                 {
                     t.RemovePosting(item.Id);
-                    
+
                     Statistic.Count--;
                     IndexFile.Write(Statistic);
                 }
@@ -198,25 +197,34 @@ namespace WebExpress.WebIndex.Storage
         }
 
         /// <summary>
-        ///  Return all items for a given string.
+        /// Return all items for a given string.
         /// </summary>
         /// <param name="term">The term string.</param>
+        /// <param name="options">The retrieve options.</param>
         /// <returns>An enumeration of the data ids.</returns>
-        public IEnumerable<Guid> Collect(string term)
+        public IEnumerable<Guid> Retrieve(string term, IndexRetrieveOptions options)
         {
-            var list = new List<Guid>();
             var terms = Context.TokenAnalyzer.Analyze(term, Culture, true);
+            var distinct = new HashSet<Guid>((int)Math.Min(options.MaxResults, int.MaxValue / 2));
+            var count = 0u;
 
             foreach (var normalized in terms)
             {
-                var documents = Term[normalized.Value]
-                    ?.Postings
-                    .Select(x => x.DocumentID);
+                foreach (var document in Term.Retrieve(normalized.Value, options))
+                {
+                    if (distinct.Add(document))
+                    {
+                        yield return document;
 
-                list.AddRange(documents ?? Enumerable.Empty<Guid>());
+                        if (count++ >= options.MaxResults)
+                        {
+                            yield break;
+                        }
+                    }
+                }
             }
 
-            return list;
+            yield break;
         }
 
         /// <summary>

@@ -37,7 +37,7 @@ namespace WebExpress.WebIndex.Storage
 
         /// <summary>
         /// Returns the amount of space required on the storage device.
-        /// SuccessorAddr + Length + Fequency + Id + Data
+        /// SuccessorAddr + Length + Fequency + DocumentID + Data
         /// </summary>
         public uint Size => SegmentSize + Length;
 

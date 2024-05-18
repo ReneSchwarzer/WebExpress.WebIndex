@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using WebExpress.WebIndex.WebAttribute;
 
 namespace WebExpress.WebIndex.Storage
@@ -14,8 +15,10 @@ namespace WebExpress.WebIndex.Storage
     /// useful in search queries.
     /// </summary>
     /// <typeparam name="T">The data type. This must have the IIndexData interface.</typeparam>
+    /// <param name="context">The reference to the context of the index.</param>
+    /// <param name="addr">The adress of the segment.</param>
     [SegmentCached]
-    public class IndexStorageSegmentTermNode : IndexStorageSegment
+    public class IndexStorageSegmentTermNode(IndexStorageContext context, ulong addr) : IndexStorageSegment(context, addr)
     {
         /// <summary>
         /// Returns the amount of space required on the storage device.
@@ -113,17 +116,15 @@ namespace WebExpress.WebIndex.Storage
         {
             get
             {
-                var list = new List<IndexStorageSegmentTermNode>
-                {
-                    this
-                };
+                yield return this;
 
                 foreach (var child in Children)
                 {
-                    list.AddRange(child.PreOrder);
+                    foreach (var preOrderChild in child.PreOrder)
+                    {
+                        yield return preOrderChild;
+                    }
                 }
-
-                return list;
             }
         }
 
@@ -134,24 +135,25 @@ namespace WebExpress.WebIndex.Storage
         {
             get
             {
-                var list = new List<(string, Guid[])>();
-
                 foreach (var child in Children)
                 {
-                    list.AddRange(child.Terms);
+                    foreach (var term in child.Terms)
+                    {
+                        yield return (Character + term.Item1, term.Item2);
+                    }
                 }
 
                 if (IsRoot)
                 {
-                    return list;
+                    yield break;
                 }
 
-                if (list.Count > 0)
+                if (ChildAddr != 0)
                 {
-                    return list.Select(x => (Character + x.Item1, x.Item2));
+                    yield break;
                 }
 
-                return [(Character.ToString(), Postings?.Select(x => x.DocumentID).ToArray())];
+                yield return (Character.ToString(), Postings?.Select(x => x.DocumentID).ToArray());
             }
         }
 
@@ -200,7 +202,7 @@ namespace WebExpress.WebIndex.Storage
                 }
 
                 var first = subterm.FirstOrDefault();
-                var next = subterm.Length > 1 ? subterm.Substring(1) : null;
+                var next = subterm.Length > 1 ? subterm[1..] : null;
 
                 // find nodes
                 foreach (var child in Children)
@@ -214,16 +216,6 @@ namespace WebExpress.WebIndex.Storage
 
                 return null;
             }
-        }
-
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="context">The reference to the context of the index.</param>
-        /// <param name="addr">The adress of the segment.</param>
-        public IndexStorageSegmentTermNode(IndexStorageContext context, ulong addr)
-            : base(context, addr)
-        {
         }
 
         /// <summary>
@@ -463,7 +455,70 @@ namespace WebExpress.WebIndex.Storage
                 }
 
                 return node;
+            }
+        }
+
+        /// <summary>
+        /// Return all term items for a given term.
+        /// </summary>
+        /// <param name="term">The term.</param>
+        /// <param name="options">The retrieve options.</param>
+        /// <returns>An enumeration of tuples with data ids and the terms.</returns>
+        public virtual IEnumerable<Guid> Retrieve(string term, IndexRetrieveOptions options)
+        {
+            if (term == null)
+            {
+                foreach (var posting in Postings)
+                {
+                    yield return posting.DocumentID;
                 }
+            }
+            else
+            {
+                var first = term.FirstOrDefault();
+                var next = term.Length > 1 ? term[1..] : null;
+
+                switch (first)
+                {
+                    case '?':
+                        // find nodes
+                        foreach (var child in Children)
+                        {
+                            foreach (var id in child.Retrieve(next, options))
+                            {
+                                yield return id;
+                            }
+                        }
+                        break;
+                    case '*':
+                        var pattern = next?.Replace("*", ".*").Replace("?", ".") ?? ".*";
+                        foreach (var termTuple in Terms)
+                        {
+                            if (Regex.IsMatch(termTuple.Item1, pattern))
+                            {
+                                foreach (var id in termTuple.Item2)
+                                {
+                                    yield return id;
+                                }
+                            }
+                        }
+                        break;
+                    default:
+                        // find nodes
+                        foreach (var child in Children)
+                        {
+                            if (first == child.Character)
+                            {
+                                // recursive descent
+                                foreach (var id in child.Retrieve(next, options))
+                                {
+                                    yield return id;
+                                }
+                            }
+                        }
+                        break;
+                }
+            }
         }
 
         /// <summary>

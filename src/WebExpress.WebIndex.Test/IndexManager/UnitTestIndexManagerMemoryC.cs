@@ -53,7 +53,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
             // test execution
             IndexManager.ReIndex(Fixture.TestData);
 
-            var wql = IndexManager.Select<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text}'");
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text}'");
             Assert.NotNull(wql);
 
             var item = wql.Apply();
@@ -77,7 +77,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
             // test execution
             await IndexManager.ReIndexAsync(Fixture.TestData);
 
-            var wql = IndexManager.Select<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text}'");
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text}'");
             Assert.NotNull(wql);
 
             var item = wql.Apply();
@@ -101,7 +101,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
             // test execution
             IndexManager.ReIndex(Fixture.TestData);
 
-            var wql = IndexManager.Select<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text}'");
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text}'");
             Assert.NotNull(wql);
 
             var item = wql.Apply();
@@ -125,7 +125,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
             // test execution
             IndexManager.ReIndex(Fixture.TestData);
 
-            var wql = IndexManager.Select<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text}'");
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text}'");
             Assert.NotNull(wql);
 
             var item = wql.Apply();
@@ -149,7 +149,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
             // test execution
             IndexManager.ReIndex(Fixture.TestData);
 
-            var wql = IndexManager.Select<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text}'");
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text}'");
             Assert.NotNull(wql);
 
             var item = wql.Apply();
@@ -256,7 +256,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
             IndexManager.Create<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo("en"), IndexType.Memory);
             IndexManager.ReIndex(Fixture.TestData);
 
-            var wql = IndexManager.Select<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text}'");
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text}'");
             Assert.NotNull(wql);
 
             var before = wql.Apply().ToList();
@@ -265,7 +265,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
             // test execution
             IndexManager.Delete(randomItem);
 
-            wql = IndexManager.Select<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text}'");
+            wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text}'");
             Assert.NotNull(wql);
 
             var after = wql.Apply().ToList();
@@ -293,7 +293,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
                 Text = "Hello Aurora!"
             });
 
-            var wql = IndexManager.Select<UnitTestIndexTestDocumentC>("text = 'Aurora'");
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>("text = 'Aurora'");
             var item = wql.Apply();
 
             Assert.NotNull(wql);
@@ -322,7 +322,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
                 Text = "Aurora"
             });
 
-            var wql = IndexManager.Select<UnitTestIndexTestDocumentC>("text = 'Aurora'");
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>("text = 'Aurora'");
             var item = wql.Apply();
 
             Assert.NotNull(wql);
@@ -351,7 +351,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
                 Text = "Aurora"
             });
 
-            var wql = IndexManager.Select<UnitTestIndexTestDocumentC>("text = 'Aurora'");
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>("text = 'Aurora'");
             Assert.NotNull(wql);
 
             var item = wql.Apply();

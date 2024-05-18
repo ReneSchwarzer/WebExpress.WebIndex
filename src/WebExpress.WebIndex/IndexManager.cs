@@ -11,6 +11,9 @@ using WebExpress.WebIndex.Wql;
 
 namespace WebExpress.WebIndex
 {
+    /// <summary>
+    /// The IndexManager serves as the primary component for interacting with the indexing functions (CRUD).
+    /// </summary>
     public abstract class IndexManager : IDisposable
     {
         /// <summary>
@@ -264,7 +267,7 @@ namespace WebExpress.WebIndex
         /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
         /// <param name="wql">The wql statement.</param>
         /// <returns>The WQL statement.</returns>
-        public IWqlStatement<T> Select<T>(string wql) where T : IIndexItem
+        public IWqlStatement<T> Retrieve<T>(string wql) where T : IIndexItem
         {
             if (GetIndexDocument<T>() is IIndexDocument<T> document)
             {
@@ -281,7 +284,7 @@ namespace WebExpress.WebIndex
         /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
         /// <param name="wql">The wql statement.</param>
         /// <returns>A task that represents the asynchronous operation using the WQL statement.</returns>
-        public async Task<IWqlStatement<T>> SelectAsync<T>(string wql) where T : IIndexItem
+        public async Task<IWqlStatement<T>> RetrieveAsync<T>(string wql) where T : IIndexItem
         {
             if (GetIndexDocument<T>() is IIndexDocument<T> document)
             {

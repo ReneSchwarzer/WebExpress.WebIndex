@@ -15,31 +15,43 @@ namespace WebExpress.WebIndex.Wql
     /// contains the structure of the WQL query and can be used to evaluate or process the query.
     /// The parser implements the following bnf:
     /// <code>
-    /// WQL                  ::= Filter Order Partitioning | ε
-    /// Filter               ::= "(" Filter ")" | Filter LogicalOperator Filter | Condition | ε
-    /// Condition            ::= Attribute BinaryOperator Parameter | Attribute SetOperator "(" Parameter ParameterNext ")"
-    /// LogicalOperator      ::= "and" | "or"
-    /// Attribute            ::= Name
-    /// Function             ::= Name "(" Parameter ParameterNext ")" | Name "(" ")"
-    /// Parameter            ::= Function | DoubleValue | """ StringValue """ | "'" StringValue "'"  | StringValue
-    /// ParameterNext        ::= "," Parameter ParameterNext | ε
-    /// BinaryOperator       ::= "=" | ">" | "<![CDATA[<]]>" | ">=" | "<![CDATA[<=]]>" | "!=" | "~" | "is" | "is not" | "was"
-    /// SetOperator          ::= "in" | "not in" | "was in"
-    /// Order                ::= "order" "by" Attribute DescendingOrder OrderNext | ε
-    /// OrderNext            ::= "," Attribute DescendingOrder OrderNext | ε
-    /// DescendingOrder      ::= "asc" | "desc" | ε
-    /// Partitioning         ::= Partitioning Partitioning | PartitioningOperator Number | ε
-    /// PartitioningOperator ::= "take" | "skip"
-    /// Name                 ::= [A-Za-z_.][A-Za-z0-9_.]+
-    /// StringValue          ::= [A-Za-z0-9_@<>=~$%/!+.,;:\-]+
-    /// DoubleValue          ::= [+-]?[0-9]*[.]?[0-9]+
-    /// Number               ::= [0-9]+
+    /// WQL                       ::= Filter Order Partitioning | ε
+    /// Filter                   ::= "(" Filter ")" | Filter LogicalOperator Filter | Condition | ε
+    /// Condition                ::= Attribute BinaryOperator Parameter | Attribute SetOperator "(" Parameter ParameterNext ")"
+    /// LogicalOperator          ::= "and" | "or" | "&" | "||"
+    /// Attribute                ::= Name
+    /// Parameter                ::= Function> | DoubleValue | """ StringValue """ | "'" StringValue "'"  | StringValue
+    /// ParameterOptions         ::= ParameterFuzzyOptions | ParameterDistanceOptions | ParameterFuzzyOptions ParameterDistanceOptions | ParameterDistanceOptions ParameterFuzzyOptions | ε
+    /// ParameterFuzzyOptions    ::= "~" Number
+    /// ParameterDistanceOptions ::= ":" Number
+    /// Function                 ::= Name "(" Parameter ParameterNext ")" | Name "(" ")"
+    /// ParameterNext            ::= "," Parameter ParameterNext | ε
+    /// BinaryOperator           ::= "=" | ">" | "<![CDATA[<]]>" | ">=" | "<![CDATA[<=]]>" | "!=" | "~" | "is" | "is not" | "was"
+    /// SetOperator              ::= "in" | "not in" | "was in"
+    /// Order                    ::= "order" "by" Attribute DescendingOrder OrderNext | ε
+    /// OrderNext                ::= "," Attribute DescendingOrder OrderNext | ε
+    /// DescendingOrder          ::= "asc" | "desc" | ε
+    /// Partitioning             ::= Partitioning Partitioning | PartitioningOperator Number | ε
+    /// PartitioningOperator     ::= "take" | "skip"
+    /// Name                     ::= [A-Za-z_.][A-Za-z0-9_.]+
+    /// StringValue              ::= [A-Za-z0-9_@<>=~$%/!+.,;:\-]+
+    /// DoubleValue              ::= [+-]?[0-9]*[.]?[0-9]+
+    /// Number                   ::= [0-9]+
     /// </code>
     /// </summary>
-    public class WqlParser<T> : IWqlParser<T> where T : IIndexItem
+    public partial class WqlParser<T> : IWqlParser<T> where T : IIndexItem
     {
-        private static readonly Regex NumberRegex = new Regex("^[0-9]+$", RegexOptions.Compiled);
-        private static readonly Regex DoubleRegex = new Regex("^[+-]?[0-9]*[.]?[0-9]+$", RegexOptions.Compiled);
+        [GeneratedRegex("^[0-9]+$", RegexOptions.Compiled)]
+        private static partial Regex NumberRegex();
+
+        [GeneratedRegex("^[+-]?[0-9]*[.]?[0-9]+$", RegexOptions.Compiled)]
+        private static partial Regex DoubleRegex();
+
+        [GeneratedRegex("^[~]?[0-9]+$", RegexOptions.Compiled)]
+        private static partial Regex FuzzyRegex();
+
+        [GeneratedRegex("^[:]?[0-9]+$", RegexOptions.Compiled)]
+        private static partial Regex DistanceRegex();
 
         /// <summary>
         /// Returns an enumeration of the conditions.
@@ -105,25 +117,26 @@ namespace WebExpress.WebIndex.Wql
         /// <returns>A wql object that represents the structure of the query.</returns>
         public IWqlStatement<T> Parse(string input)
         {
-            var tokens = Tokenize(input);
             var wql = new WqlStatement<T>(input)
             {
                 Culture = Culture,
                 IndexDocument = IndexDocument
             };
 
-            if (string.IsNullOrWhiteSpace(input))
-            {
-                return wql;
-            }
-
             try
             {
+                var tokens = Tokenize(input);
+
+                if (string.IsNullOrWhiteSpace(input))
+                {
+                    return wql;
+                }
+
                 wql.Filter = ParseFilter(tokens);
                 wql.Order = ParseOrder(tokens);
                 wql.Partitioning = ParsePartitioning(tokens);
 
-                if (tokens.Any())
+                if (tokens.Count != 0)
                 {
                     throw new WqlParseException
                     (
@@ -164,7 +177,7 @@ namespace WebExpress.WebIndex.Wql
                 var filter = ParseFilter(tokenQueue);
                 ReadToken(tokenQueue, ")");
 
-                if (PeekToken(tokenQueue, "and") || PeekToken(tokenQueue, "or"))
+                if (PeekToken(tokenQueue, "and") || PeekToken(tokenQueue, "&") || PeekToken(tokenQueue, "or") || PeekToken(tokenQueue, "||"))
                 {
                     var logicalOperator = ParseLogicalOperator(tokenQueue);
 
@@ -183,7 +196,7 @@ namespace WebExpress.WebIndex.Wql
 
             if (condition != null)
             {
-                if (PeekToken(tokenQueue, "and") || PeekToken(tokenQueue, "or"))
+                if (PeekToken(tokenQueue, "and") || PeekToken(tokenQueue, "&") || PeekToken(tokenQueue, "or") || PeekToken(tokenQueue, "||"))
                 {
                     var logicalOperator = ParseLogicalOperator(tokenQueue);
 
@@ -243,6 +256,7 @@ namespace WebExpress.WebIndex.Wql
                     binary.Attribute = attribute;
 
                     binary.Parameter = ParseParameter(tokenQueue);
+                    binary.Options = ParseParameterOptions(tokenQueue);
 
                     return binary;
                 }
@@ -297,7 +311,7 @@ namespace WebExpress.WebIndex.Wql
         /// </summary>
         /// <param name="tokenQueue">The token queue with the remaining tokens.</param>
         /// <returns>The logical operator.</returns>
-        private WqlExpressionLogicalOperator ParseLogicalOperator(Queue<WqlToken> tokenQueue)
+        private static WqlExpressionLogicalOperator ParseLogicalOperator(Queue<WqlToken> tokenQueue)
         {
             var logicalOperatorToken = PeekToken(tokenQueue);
 
@@ -307,9 +321,21 @@ namespace WebExpress.WebIndex.Wql
 
                 return WqlExpressionLogicalOperator.And;
             }
+            else if (logicalOperatorToken?.Value?.ToLower() == "&")
+            {
+                ReadToken(tokenQueue, "&");
+
+                return WqlExpressionLogicalOperator.And;
+            }
             else if (logicalOperatorToken?.Value.ToLower() == "or")
             {
                 ReadToken(tokenQueue, "or");
+
+                return WqlExpressionLogicalOperator.Or;
+            }
+            else if (logicalOperatorToken?.Value.ToLower() == "||")
+            {
+                ReadToken(tokenQueue, "||");
 
                 return WqlExpressionLogicalOperator.Or;
             }
@@ -353,60 +379,9 @@ namespace WebExpress.WebIndex.Wql
         }
 
         /// <summary>
-        /// Parses the function expression.
-        /// </summary>
-        /// <param name="tokenQueue">The token queue with the remaining tokens.</param>
-        /// <returns>The function.</returns>
-        private WqlExpressionNodeFilterFunction<T> ParseFunction(Queue<WqlToken> tokenQueue)
-        {
-            var parameters = new List<WqlExpressionNodeParameter<T>>();
-            var function = Functions
-                    .Where(x => PeekToken(tokenQueue, x.Key))
-                    .FirstOrDefault();
-            var name = ReadToken(tokenQueue);
-
-            try
-            {
-                var instance = Activator.CreateInstance(function.Value) as WqlExpressionNodeFilterFunction<T>;
-
-                ReadToken(tokenQueue, "(");
-
-                if (PeekToken(tokenQueue, ")"))
-                {
-                    ReadToken(tokenQueue, ")");
-                }
-                else
-                {
-                    parameters.Add(ParseParameter(tokenQueue));
-
-                    while (PeekToken(tokenQueue, ","))
-                    {
-                        ReadToken(tokenQueue, ",");
-                        parameters.Add(ParseParameter(tokenQueue));
-                    }
-
-                    ReadToken(tokenQueue, ")");
-                }
-
-                instance.Parameters = parameters;
-
-                return instance;
-            }
-            catch (Exception)
-            {
-                throw new WqlParseException
-                (
-                    "webexpress.webapp:wql.function_unknown",
-                    name
-                );
-            }
-        }
-
-        /// <summary>
         /// Parses the parameter expression.
         /// </summary>
         /// <param name="tokenQueue">The token queue with the remaining tokens.</param>
-        /// <param name="culture">The culture in which to run the wql.</param>
         /// <returns>The parameter.</returns>
         private WqlExpressionNodeParameter<T> ParseParameter(Queue<WqlToken> tokenQueue)
         {
@@ -422,7 +397,7 @@ namespace WebExpress.WebIndex.Wql
                     Function = ParseFunction(tokenQueue)
                 };
             }
-            else if (PeekToken(tokenQueue, DoubleRegex))
+            else if (PeekToken(tokenQueue, DoubleRegex()))
             {
                 return new WqlExpressionNodeParameter<T>
                 {
@@ -503,6 +478,113 @@ namespace WebExpress.WebIndex.Wql
         }
 
         /// <summary>
+        /// Returns the parameter options.
+        /// </summary>
+        /// <param name="tokenQueue">The token queue with the remaining tokens.</param>
+        /// <returns>The parameter options</returns>
+        private static WqlExpressionNodeParameterOption<T> ParseParameterOptions(Queue<WqlToken> tokenQueue)
+        {
+            var options = new WqlExpressionNodeParameterOption<T>();
+
+            if (PeekToken(tokenQueue, FuzzyRegex()))
+            {
+                options.Similarity = (uint)ParseFuzzyValue(tokenQueue);
+
+            }
+            else if (PeekToken(tokenQueue, "~"))
+            {
+                var token = ReadToken(tokenQueue);
+
+                if (PeekToken(tokenQueue, NumberRegex()))
+                {
+                    options.Similarity = (uint)ParseNumberValue(tokenQueue);
+                }
+                else
+                {
+                    throw new WqlParseException
+                    (
+                        "webexpress.webapp:wql.expected_similarity",
+                        token
+                    );
+                }
+            }
+            if (PeekToken(tokenQueue, DistanceRegex()))
+            {
+                options.Distance = (uint)ParseDistanceValue(tokenQueue);
+
+            }
+            else if (PeekToken(tokenQueue, ":"))
+            {
+                var token = ReadToken(tokenQueue);
+
+                if (PeekToken(tokenQueue, NumberRegex()))
+                {
+                    options.Distance = (uint)ParseNumberValue(tokenQueue);
+                }
+                else
+                {
+                    throw new WqlParseException
+                    (
+                        "webexpress.webapp:wql.expected_distance",
+                        token
+                    );
+                }
+            }
+
+            return options;
+        }
+
+        /// <summary>
+        /// Parses the function expression.
+        /// </summary>
+        /// <param name="tokenQueue">The token queue with the remaining tokens.</param>
+        /// <returns>The function.</returns>
+        private WqlExpressionNodeFilterFunction<T> ParseFunction(Queue<WqlToken> tokenQueue)
+        {
+            var parameters = new List<WqlExpressionNodeParameter<T>>();
+            var function = Functions
+                    .Where(x => PeekToken(tokenQueue, x.Key))
+                    .FirstOrDefault();
+            var name = ReadToken(tokenQueue);
+
+            try
+            {
+                var instance = Activator.CreateInstance(function.Value) as WqlExpressionNodeFilterFunction<T>;
+
+                ReadToken(tokenQueue, "(");
+
+                if (PeekToken(tokenQueue, ")"))
+                {
+                    ReadToken(tokenQueue, ")");
+                }
+                else
+                {
+                    parameters.Add(ParseParameter(tokenQueue));
+
+                    while (PeekToken(tokenQueue, ","))
+                    {
+                        ReadToken(tokenQueue, ",");
+                        parameters.Add(ParseParameter(tokenQueue));
+                    }
+
+                    ReadToken(tokenQueue, ")");
+                }
+
+                instance.Parameters = parameters;
+
+                return instance;
+            }
+            catch (Exception)
+            {
+                throw new WqlParseException
+                (
+                    "webexpress.webapp:wql.function_unknown",
+                    name
+                );
+            }
+        }
+
+        /// <summary>
         /// Parses the order expression.
         /// </summary>
         /// <param name="tokenQueue">The token queue with the remaining tokens.</param>
@@ -572,7 +654,7 @@ namespace WebExpress.WebIndex.Wql
         /// </summary>
         /// <param name="tokenQueue">The token queue with the remaining tokens.</param>
         /// <returns>The descending order.</returns>
-        private bool ParseDescendingOrder(Queue<WqlToken> tokenQueue)
+        private static bool ParseDescendingOrder(Queue<WqlToken> tokenQueue)
         {
             if (PeekToken(tokenQueue, "asc"))
             {
@@ -595,7 +677,7 @@ namespace WebExpress.WebIndex.Wql
         /// </summary>
         /// <param name="tokenQueue">The token queue with the remaining tokens.</param>
         /// <returns>The partitioning.</returns>
-        private WqlExpressionNodePartitioning<T> ParsePartitioning(Queue<WqlToken> tokenQueue)
+        private static WqlExpressionNodePartitioning<T> ParsePartitioning(Queue<WqlToken> tokenQueue)
         {
             var function = new List<WqlExpressionNodePartitioningFunction<T>>();
 
@@ -607,7 +689,7 @@ namespace WebExpress.WebIndex.Wql
             while (PeekToken(tokenQueue, "take") || PeekToken(tokenQueue, "skip"))
             {
                 var op = ParsePartitioningOperator(tokenQueue);
-                var number = ParseNumber(tokenQueue);
+                var number = ParseNumberValue(tokenQueue);
 
                 function.Add(new WqlExpressionNodePartitioningFunction<T>()
                 {
@@ -627,7 +709,7 @@ namespace WebExpress.WebIndex.Wql
         /// </summary>
         /// <param name="tokenQueue">The token queue with the remaining tokens.</param>
         /// <returns>The partitioning operator.</returns>
-        private WqlExpressionNodePartitioningOperator ParsePartitioningOperator(Queue<WqlToken> tokenQueue)
+        private static WqlExpressionNodePartitioningOperator ParsePartitioningOperator(Queue<WqlToken> tokenQueue)
         {
             var partitioningOperatorToken = PeekToken(tokenQueue);
 
@@ -654,7 +736,7 @@ namespace WebExpress.WebIndex.Wql
         /// </summary>
         /// <param name="tokenQueue">The token queue with the remaining tokens.</param>
         /// <returns>The value.</returns>
-        private string ParseStringValue(Queue<WqlToken> tokenQueue)
+        private static string ParseStringValue(Queue<WqlToken> tokenQueue)
         {
             var valueToken = ReadToken(tokenQueue);
 
@@ -668,7 +750,7 @@ namespace WebExpress.WebIndex.Wql
         /// <returns>The number.</returns>
         private double ParseDoubleValue(Queue<WqlToken> tokenQueue)
         {
-            var token = ReadToken(tokenQueue, DoubleRegex);
+            var token = ReadToken(tokenQueue, DoubleRegex());
 
             try
             {
@@ -689,11 +771,35 @@ namespace WebExpress.WebIndex.Wql
         /// </summary>
         /// <param name="tokenQueue">The token queue with the remaining tokens.</param>
         /// <returns>The number.</returns>
-        private int ParseNumber(Queue<WqlToken> tokenQueue)
+        private static int ParseNumberValue(Queue<WqlToken> tokenQueue)
         {
-            var token = ReadToken(tokenQueue, NumberRegex);
+            var token = ReadToken(tokenQueue, NumberRegex());
 
             return int.Parse(token?.Value);
+        }
+
+        /// <summary>
+        /// Parses the fuzzy similarity value.
+        /// </summary>
+        /// <param name="tokenQueue">The token queue with the remaining tokens.</param>
+        /// <returns>The number.</returns>
+        private static int ParseFuzzyValue(Queue<WqlToken> tokenQueue)
+        {
+            var token = ReadToken(tokenQueue, FuzzyRegex());
+
+            return int.Parse(token?.Value[1..]);
+        }
+
+        /// <summary>
+        /// Parses the distance value.
+        /// </summary>
+        /// <param name="tokenQueue">The token queue with the remaining tokens.</param>
+        /// <returns>The number.</returns>
+        private static int ParseDistanceValue(Queue<WqlToken> tokenQueue)
+        {
+            var token = ReadToken(tokenQueue, DistanceRegex());
+
+            return int.Parse(token?.Value[1..]);
         }
 
         /// <summary>
@@ -701,7 +807,7 @@ namespace WebExpress.WebIndex.Wql
         /// </summary>
         /// <param name="input">The input string.</param>
         /// <returns>The token queue.</returns>
-        private Queue<WqlToken> Tokenize(string input)
+        private static Queue<WqlToken> Tokenize(string input)
         {
             var tokens = new Queue<WqlToken>();
             var currentToken = new WqlToken();
@@ -790,12 +896,26 @@ namespace WebExpress.WebIndex.Wql
                         throw new WqlParseException
                         (
                             "webexpress.webapp:wql.unterminated_string",
-                            new WqlToken() { Value = input.Substring(i), Offset = i }
+                            new WqlToken() { Value = input[i..], Offset = i }
                         );
                     }
                 }
                 else
                 {
+                    var lastCharacter = currentToken.Value?.LastOrDefault();
+
+                    if (lastCharacter == '=' ||
+                        lastCharacter == '~' ||
+                        lastCharacter == '<' ||
+                        lastCharacter == '>' ||
+                        lastCharacter == '!' ||
+                        lastCharacter == '%')
+                    {
+                        tokens.Enqueue(currentToken);
+
+                        currentToken = new WqlToken() { Offset = i + 1 };
+                    }
+
                     currentToken.Append(c);
                 }
             }
@@ -814,7 +934,7 @@ namespace WebExpress.WebIndex.Wql
         /// <param name="tokenQueue">The token queue with the remaining tokens.</param>
         /// <param name="currentToken">The token to check.</param>
         /// <returns>True if the token is the current one, false otherwise.</returns>
-        private bool PeekToken(Queue<WqlToken> tokenQueue, string currentToken)
+        private static bool PeekToken(Queue<WqlToken> tokenQueue, string currentToken)
         {
             return tokenQueue.Count > 0 && tokenQueue.Peek()?.Value?.ToLower() == currentToken?.ToLower();
         }
@@ -825,16 +945,16 @@ namespace WebExpress.WebIndex.Wql
         /// <param name="tokenQueue">The token queue with the remaining tokens.</param>
         /// <param name="tokens">The tokens to check.</param>
         /// <returns>True if the token is the current and next one, false otherwise.</returns>
-        private bool PeekToken(Queue<WqlToken> tokenQueue, params string[] tokens)
+        private static bool PeekToken(Queue<WqlToken> tokenQueue, params string[] tokens)
         {
-            var elements = tokenQueue.Take(tokens.Count());
+            var elements = tokenQueue.Take(tokens.Length);
 
-            if (elements.Count() != tokens.Count())
+            if (elements.Count() != tokens.Length)
             {
                 return false;
             }
 
-            return !elements.Select(x => x.Value).Except(tokens).Any();
+            return !elements.Select(x => x.Value?.ToLower()).Except(tokens).Any();
         }
 
         /// <summary>
@@ -843,7 +963,7 @@ namespace WebExpress.WebIndex.Wql
         /// <param name="tokenQueue">The token queue with the remaining tokens.</param>
         /// <param name="regex">The token to check.</param>
         /// <returns>True if the token is the current one, false otherwise.</returns>
-        private bool PeekToken(Queue<WqlToken> tokenQueue, Regex regex)
+        private static bool PeekToken(Queue<WqlToken> tokenQueue, Regex regex)
         {
             return tokenQueue.Count > 0 && regex.IsMatch(tokenQueue.Peek()?.Value?.ToLower());
         }
@@ -853,9 +973,9 @@ namespace WebExpress.WebIndex.Wql
         /// </summary>
         /// <param name="tokenQueue">The token queue with the remaining tokens.</param>
         /// <returns>The next token or null.</returns>
-        private WqlToken PeekToken(Queue<WqlToken> tokenQueue)
+        private static WqlToken PeekToken(Queue<WqlToken> tokenQueue)
         {
-            return tokenQueue.Any() ? tokenQueue.Peek() : null;
+            return tokenQueue.Count != 0 ? tokenQueue.Peek() : null;
         }
 
         /// <summary>
@@ -863,9 +983,9 @@ namespace WebExpress.WebIndex.Wql
         /// </summary>
         /// <param name="tokenQueue">The token queue with the remaining tokens.</param>
         /// <returns>The value of the token.</returns>
-        private WqlToken ReadToken(Queue<WqlToken> tokenQueue)
+        private static WqlToken ReadToken(Queue<WqlToken> tokenQueue)
         {
-            return tokenQueue.Any() ? tokenQueue.Dequeue() : null;
+            return tokenQueue.Count != 0 ? tokenQueue.Dequeue() : null;
         }
 
         /// <summary>
@@ -874,7 +994,7 @@ namespace WebExpress.WebIndex.Wql
         /// <param name="tokenQueue">The token queue with the remaining tokens.</param>
         /// <param name="token">The token to be consumed.</param>
         /// <returns>The value of the token.</returns>
-        private WqlToken ReadToken(Queue<WqlToken> tokenQueue, string token)
+        private static WqlToken ReadToken(Queue<WqlToken> tokenQueue, string token)
         {
             if (PeekToken(tokenQueue, token))
             {
@@ -893,7 +1013,7 @@ namespace WebExpress.WebIndex.Wql
         /// </summary>
         /// <param name="tokenQueue">The token queue with the remaining tokens.</param>
         /// <param name="tokens">The tokens to be consumed.</param>
-        private void ReadToken(Queue<WqlToken> tokenQueue, params string[] tokens)
+        private static void ReadToken(Queue<WqlToken> tokenQueue, params string[] tokens)
         {
             foreach (var token in tokens)
             {
@@ -918,7 +1038,7 @@ namespace WebExpress.WebIndex.Wql
         /// <param name="tokenQueue">The token queue with the remaining tokens.</param>
         /// <param name="regex">The token to be consumed.</param>
         /// <returns>The value of the token.</returns>
-        private WqlToken ReadToken(Queue<WqlToken> tokenQueue, Regex regex)
+        private static WqlToken ReadToken(Queue<WqlToken> tokenQueue, Regex regex)
         {
             if (PeekToken(tokenQueue, regex))
             {

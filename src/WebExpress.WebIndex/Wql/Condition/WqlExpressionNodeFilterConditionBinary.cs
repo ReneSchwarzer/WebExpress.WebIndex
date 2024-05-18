@@ -1,11 +1,10 @@
-﻿using WebExpress.WebIndex;
-
-namespace WebExpress.WebIndex.Wql.Condition
+﻿namespace WebExpress.WebIndex.Wql.Condition
 {
     /// <summary>
     /// Describes the binary condition expression of a wql statement.
     /// </summary>
-    public abstract class WqlExpressionNodeFilterConditionBinary<T> : WqlExpressionNodeFilterCondition<T> where T : IIndexItem
+    /// <param name="token">One or more tokens that determine the operation. Multiple tokens are separated by spaces.</param>
+    public abstract class WqlExpressionNodeFilterConditionBinary<T>(string token) : WqlExpressionNodeFilterCondition<T>(token) where T : IIndexItem
     {
         /// <summary>
         /// Returns the parameter expression.
@@ -13,13 +12,9 @@ namespace WebExpress.WebIndex.Wql.Condition
         public WqlExpressionNodeParameter<T> Parameter { get; internal set; }
 
         /// <summary>
-        /// Constructor
+        /// Returns the parameter options expression.
         /// </summary>
-        /// <param name="token">One or more tokens that determine the operation. Multiple tokens are separated by spaces.</param>
-        protected WqlExpressionNodeFilterConditionBinary(string token)
-            : base(token)
-        {
-        }
+        public WqlExpressionNodeParameterOption<T> Options { get; internal set; } = new WqlExpressionNodeParameterOption<T>();
 
         /// <summary>
         /// Converts the condition expression to a string.
@@ -27,7 +22,7 @@ namespace WebExpress.WebIndex.Wql.Condition
         /// <returns>The condition expression as a string.</returns>
         public override string ToString()
         {
-            return string.Format("{0} {1} {2}", Attribute.ToString(), Operator.ToLower(), Parameter.ToString()).Trim();
+            return $"{Attribute} {Operator} {Parameter} {Options}".Trim();
         }
     }
 }

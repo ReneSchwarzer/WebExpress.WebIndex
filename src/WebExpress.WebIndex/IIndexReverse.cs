@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using WebExpress.WebIndex.Term;
-using WebExpress.WebIndex.Wql;
 
 namespace WebExpress.WebIndex
 {
@@ -45,7 +44,8 @@ namespace WebExpress.WebIndex
         /// Return all items for a given string.
         /// </summary>
         /// <param name="term">The term string.</param>
+        /// <param name="options">The retrieve options.</param>
         /// <returns>An enumeration of the data ids.</returns>
-        IEnumerable<Guid> Collect(string term);
+        IEnumerable<Guid> Retrieve(string term, IndexRetrieveOptions options);
     }
 }

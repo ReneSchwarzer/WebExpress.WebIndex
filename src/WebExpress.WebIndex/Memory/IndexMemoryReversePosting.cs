@@ -8,9 +8,9 @@ namespace WebExpress.WebIndex.Memory
     public class IndexMemoryReversePosting<T> : IndexMemoryReversePosition where T : IIndexItem
     {
         /// <summary>
-        /// Returns or sets the item id.
+        /// Returns or sets the document id.
         /// </summary>
-        public Guid Id { get; private set;}
+        public Guid DocumentID { get; private set; }
 
         /// <summary>
         /// Constructor
@@ -19,8 +19,8 @@ namespace WebExpress.WebIndex.Memory
         /// <param name="position">The position of the term in the input value.</param>
         public IndexMemoryReversePosting(T item, uint position)
         {
-            Id = item.Id;
-            
+            DocumentID = item.Id;
+
             Add(position);
         }
 
@@ -30,7 +30,7 @@ namespace WebExpress.WebIndex.Memory
         /// <returns>The order expression as a string.</returns>
         public override string ToString()
         {
-            return $"{Id} : {base.ToString()}";
+            return $"{DocumentID} : {base.ToString()}";
         }
     }
 }

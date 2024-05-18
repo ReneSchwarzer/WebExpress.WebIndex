@@ -17,7 +17,7 @@ namespace WebExpress.WebIndex.Term
         /// <summary>
         /// Enumeration of wildcards.
         /// </summary>
-        public static char[] Wildcards { get; } = ['?', '*', '~'];
+        public static char[] Wildcards { get; } = ['?', '*'];
 
         /// <summary>
         /// Tokenize an input string into an enumeration of terms.
