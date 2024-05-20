@@ -26,7 +26,6 @@ namespace WebExpress.WebIndex.Storage
         public IndexStorageSegmentHeader(IndexStorageContext context)
             : base(context, context.IndexFile.Alloc(SegmentSize))
         {
-
         }
 
         /// <summary>

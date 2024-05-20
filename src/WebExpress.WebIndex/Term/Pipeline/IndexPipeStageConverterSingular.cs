@@ -135,11 +135,13 @@ namespace WebExpress.WebIndex.Term.Pipeline
 
             foreach (var token in input)
             {
-                if (dict.ContainsKey(token.Value))
+                if (dict.TryGetValue(token.Value, out string value))
                 {
-                    token.Value = dict[token.Value];
-
-                    yield return token;
+                    yield return new IndexTermToken()
+                    {
+                        Value = value,
+                        Position = token.Position
+                    };
                 }
                 else
                 {
@@ -149,11 +151,14 @@ namespace WebExpress.WebIndex.Term.Pipeline
                     {
                         if (Regex.Match(token.Value, keyValue.Key).Success)
                         {
-                            token.Value = Regex.Replace(token.Value, keyValue.Key, keyValue.Value);
-
                             treated = true;
 
-                            yield return token;
+                            yield return new IndexTermToken()
+                            {
+                                Value = Regex.Replace(token.Value, keyValue.Key, keyValue.Value),
+                                Position = token.Position
+                            };
+
                             break;
                         }
                     }

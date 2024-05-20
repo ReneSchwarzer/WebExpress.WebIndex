@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Globalization;
+using WebExpress.WebIndex.Storage;
 using WebExpress.WebIndex.Test.Document;
 using WebExpress.WebIndex.Test.Fixture;
 using Xunit.Abstractions;
@@ -159,15 +160,15 @@ namespace WebExpress.WebIndex.Test.IndexManager
         {
             var stopWatch = new Stopwatch();
 
-            var itemCount = Enumerable.Range(3, 8).Select(x => x * 100000);
+            var itemCount = Enumerable.Range(2, 1).Select(x => x * 10000);
             var wordCount = Enumerable.Range(1, 1).Select(x => x * 100);
             var vocabulary = Enumerable.Range(1, 1).Select(x => x * 20000);
             var wordLength = Enumerable.Range(1, 1).Select(x => x * 15);
             var maxCachedSegments = Enumerable.Range(5, 1).Select(x => x * 10000);
             var bufferSize = Enumerable.Range(12, 1).Select(x => Math.Pow(2, x));
             var file = await Task.Run(() => File.CreateText(Path.Combine(Environment.CurrentDirectory, "storage-reindexasync_series.csv")));
+            var lastProgress = 0;
 
-            Output.WriteLine("item count;wordCount;vocabulary;wordLength;max cached segments;buffer size;elapsed reindex [hh:mm:ss];elapsed retrieval [ms];size of document store [MB];size of reverse index [MB];∑ storage space [MB];size of process mem [MB]");
             file.WriteLine("item count;wordCount;vocabulary;wordLength;max cached segments;buffer size;elapsed reindex [hh:mm:ss];elapsed retrieval [ms];size of document store [MB];size of reverse index [MB];∑ storage space [MB];size of process mem [MB]");
 
             foreach (var w in wordCount)
@@ -187,7 +188,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
                                 foreach (var b in bufferSize)
                                 {
                                     // disabled due to long execution time. activate if necessary.
-                                    /**
+                                    /**/
                                     // preconditions
                                     IndexStorageReadBuffer.MaxCachedSegments = (uint)m;
                                     IndexStorageFile.BufferSize = (uint)b;
@@ -204,13 +205,22 @@ namespace WebExpress.WebIndex.Test.IndexManager
                                         stopWatch.Start();
 
                                         // test execution
-                                        await IndexManager.ReIndexAsync(data);
+                                        await IndexManager.ReIndexAsync(data, new Progress<int>((i) =>
+                                        {
+                                            lastProgress = i;
+
+                                            if (i > lastProgress + 10)
+                                            {
+                                                Output.WriteLine($"progress: {i}");
+                                                lastProgress = i;
+                                            }
+                                        }));
 
                                         // stop measurement
                                         var elapsedReindex = stopWatch.Elapsed;
                                         stopWatch.Reset();
 
-                                        randomItem = randomItem ?? IndexManager.All<UnitTestIndexTestDocumentC>().Skip(new Random().Next() % data.Count()).FirstOrDefault();
+                                        randomItem ??= IndexManager.All<UnitTestIndexTestDocumentC>().Skip(new Random().Next() % data.Count()).FirstOrDefault();
                                         var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text.Split(' ').FirstOrDefault()}'");
                                         Assert.NotNull(wql);
 
@@ -234,16 +244,18 @@ namespace WebExpress.WebIndex.Test.IndexManager
                                     }
                                     catch (Exception ex)
                                     {
-                                        output += ex.Message + " " + ex.StackTrace;
+                                        Output.WriteLine(ex.Message + " " + ex.StackTrace);
+                                        throw;
                                     }
                                     finally
                                     {
                                         // postconditions
-                                        Output.WriteLine(output);
                                         file.WriteLine(output);
                                         file.Flush();
                                         Postconditions();
                                     }
+
+                                    Thread.Sleep(5000);
                                     /**/
                                 }
                             }

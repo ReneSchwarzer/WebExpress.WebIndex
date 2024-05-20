@@ -32,8 +32,11 @@ namespace WebExpress.WebIndex.Term.Pipeline
         {
             foreach (var token in input)
             {
-                token.Value = Normalize(token.Value);
-                yield return token;
+                yield return new IndexTermToken()
+                {
+                    Value = Normalize(token.Value),
+                    Position = token.Position
+                };
             }
         }
 

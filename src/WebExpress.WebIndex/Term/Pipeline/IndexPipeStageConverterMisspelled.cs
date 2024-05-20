@@ -33,7 +33,7 @@ namespace WebExpress.WebIndex.Term.Pipeline
                 FillMisspelledWordDictionary(context, CultureInfo.GetCultureInfo(extension));
             }
         }
-        
+
         /// <summary>
         /// Converts specific elements on the term enumeration.
         /// </summary>
@@ -56,8 +56,11 @@ namespace WebExpress.WebIndex.Term.Pipeline
             {
                 if (MisspelledWordDictionary[supportedCulture].ContainsKey(token.Value))
                 {
-                    token.Value = MisspelledWordDictionary[supportedCulture][token.Value];
-                    yield return token;
+                    yield return new IndexTermToken()
+                    {
+                        Value = MisspelledWordDictionary[supportedCulture][token.Value],
+                        Position = token.Position
+                    };
                 }
                 else
                 {
@@ -65,7 +68,7 @@ namespace WebExpress.WebIndex.Term.Pipeline
                 }
             }
         }
-        
+
         /// <summary>
         /// Fills the directory with misspelled words.
         /// </summary>

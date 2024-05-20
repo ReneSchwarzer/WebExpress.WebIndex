@@ -54,10 +54,13 @@ namespace WebExpress.WebIndex.Term.Pipeline
 
             foreach (var token in input)
             {
-                if (SynonymDictionary[supportedCulture].ContainsKey(token.Value))
+                if (SynonymDictionary[supportedCulture].TryGetValue(token.Value, out string value))
                 {
-                    token.Value = SynonymDictionary[supportedCulture][token.Value];
-                    yield return token;
+                    yield return new IndexTermToken()
+                    {
+                        Value = value,
+                        Position = token.Position
+                    };
                 }
                 else
                 {

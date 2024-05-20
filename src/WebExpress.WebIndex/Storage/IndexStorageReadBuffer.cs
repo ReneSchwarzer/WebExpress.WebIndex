@@ -11,7 +11,7 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Returns the maximum upper limit of the cached segments
         /// </summary>
-        public static uint MaxCachedSegments {get; set;} = 50000;
+        public static uint MaxCachedSegments { get; set; } = 50000;
 
         /// <summary>
         /// Buffer for random access.
@@ -67,7 +67,7 @@ namespace WebExpress.WebIndex.Storage
                 // under 80% remove as needed
                 foreach (var item in cache)
                 {
-                    item.Value.Counter--;
+                    item.Value.IncrementCounter();
 
                     if (item.Value.Counter <= 0)
                     {
@@ -82,7 +82,7 @@ namespace WebExpress.WebIndex.Storage
 
                 foreach (var item in cache.Where(x => x.Value.Counter < average))
                 {
-                    item.Value.Counter = 0;
+                    item.Value.IncrementCounter();
                     cache.TryRemove(item.Key, out _);
                 }
             }

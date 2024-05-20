@@ -21,22 +21,12 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// The lifetime counter is for deletion from the buffer.
         /// </summary>
-        public uint Counter
-        {
-            get => _counter;
-            set
-            {
-                if (_counter < uint.MaxValue)
-                {
-                    _counter = value;
-                }
-            }
-        }
+        public uint Counter => _counter;
 
         /// <summary>
-        /// The segment to be cached.
+        /// Returns the segment to be cached.
         /// </summary>
-        public IIndexStorageSegment Segment;
+        public IIndexStorageSegment Segment { get; private set; }
 
         /// <summary>
         /// Constructor
@@ -57,11 +47,22 @@ namespace WebExpress.WebIndex.Storage
         }
 
         /// <summary>
-        /// Refresh the lifetime
+        /// Increments the counter.
+        /// </summary>
+        public void IncrementCounter()
+        {
+            if (_counter < uint.MaxValue)
+            {
+                _counter--;
+            }
+        }
+
+        /// <summary>
+        /// Refresh the lifetime.
         /// </summary>
         public void Refresh()
         {
-            Counter = Lifetime;
+            _counter = Lifetime;
         }
     }
 }

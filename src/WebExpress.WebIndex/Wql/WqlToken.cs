@@ -1,5 +1,8 @@
 ﻿namespace WebExpress.WebIndex.Wql
 {
+    /// <summary>
+    /// Represents a token of the wql syntax.
+    /// </summary>
     public class WqlToken
     {
         /// <summary>
@@ -13,18 +16,15 @@
         public int Length { get { return Value?.Length ?? 0; } }
 
         /// <summary>
-        /// Returns the token value.
-        /// </summary>
-        public string Value { get; internal set; }
-
-        /// <summary>
         /// Checks if the token is empty.
         /// </summary>
         /// <returns>True if no value is stored, false otherwise.</returns>
-        public bool IsEmpty()
-        {
-            return Value == null || Value.Length == 0;
-        }
+        public bool IsEmpty => Value == null || Value.Length == 0;
+
+        /// <summary>
+        /// Returns the token value.
+        /// </summary>
+        public string Value { get; internal set; }
 
         /// <summary>
         /// Adds a character at the end.

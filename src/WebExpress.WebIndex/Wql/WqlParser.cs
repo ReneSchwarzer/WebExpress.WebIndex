@@ -151,8 +151,8 @@ namespace WebExpress.WebIndex.Wql
                 {
                     Culture = Culture,
                     Message = ex.Message,
-                    Position = ex.Token?.Offset ?? 0,
-                    Length = ex.Token?.Length ?? 0
+                    Position = ex.Token.Offset,
+                    Length = ex.Token.Length
                 };
             }
 
@@ -314,26 +314,27 @@ namespace WebExpress.WebIndex.Wql
         private static WqlExpressionLogicalOperator ParseLogicalOperator(Queue<WqlToken> tokenQueue)
         {
             var logicalOperatorToken = PeekToken(tokenQueue);
+            var value = logicalOperatorToken?.Value?.ToLower();
 
-            if (logicalOperatorToken?.Value?.ToLower() == "and")
+            if (value == "and")
             {
                 ReadToken(tokenQueue, "and");
 
                 return WqlExpressionLogicalOperator.And;
             }
-            else if (logicalOperatorToken?.Value?.ToLower() == "&")
+            else if (value == "&")
             {
                 ReadToken(tokenQueue, "&");
 
                 return WqlExpressionLogicalOperator.And;
             }
-            else if (logicalOperatorToken?.Value.ToLower() == "or")
+            else if (value == "or")
             {
                 ReadToken(tokenQueue, "or");
 
                 return WqlExpressionLogicalOperator.Or;
             }
-            else if (logicalOperatorToken?.Value.ToLower() == "||")
+            else if (value == "||")
             {
                 ReadToken(tokenQueue, "||");
 
@@ -740,7 +741,7 @@ namespace WebExpress.WebIndex.Wql
         {
             var valueToken = ReadToken(tokenQueue);
 
-            return valueToken.Value;
+            return valueToken?.Value;
         }
 
         /// <summary>
@@ -818,7 +819,7 @@ namespace WebExpress.WebIndex.Wql
 
                 if (char.IsWhiteSpace(c))
                 {
-                    if (!currentToken.IsEmpty())
+                    if (!currentToken.IsEmpty)
                     {
                         tokens.Enqueue(currentToken);
 
@@ -832,7 +833,7 @@ namespace WebExpress.WebIndex.Wql
                 }
                 else if (c == ',' || c == '(' || c == ')')
                 {
-                    if (!currentToken.IsEmpty())
+                    if (!currentToken.IsEmpty)
                     {
                         tokens.Enqueue(currentToken);
                     }
@@ -842,7 +843,7 @@ namespace WebExpress.WebIndex.Wql
                 }
                 else if (c == '=' || c == '~' || c == '<' || c == '>' || c == '!' || c == '%')
                 {
-                    if (!currentToken.IsEmpty())
+                    if (!currentToken.IsEmpty)
                     {
                         var lastCharacter = currentToken.Value.LastOrDefault();
 
@@ -866,7 +867,7 @@ namespace WebExpress.WebIndex.Wql
                     var startChar = c;
                     i++;
 
-                    if (!currentToken.IsEmpty())
+                    if (!currentToken.IsEmpty)
                     {
                         tokens.Enqueue(currentToken);
                         currentToken = new WqlToken() { Offset = i + 1 };
@@ -920,7 +921,7 @@ namespace WebExpress.WebIndex.Wql
                 }
             }
 
-            if (!currentToken.IsEmpty())
+            if (!currentToken.IsEmpty)
             {
                 tokens.Enqueue(currentToken);
             }
@@ -936,7 +937,7 @@ namespace WebExpress.WebIndex.Wql
         /// <returns>True if the token is the current one, false otherwise.</returns>
         private static bool PeekToken(Queue<WqlToken> tokenQueue, string currentToken)
         {
-            return tokenQueue.Count > 0 && tokenQueue.Peek()?.Value?.ToLower() == currentToken?.ToLower();
+            return tokenQueue.Count > 0 && tokenQueue.Peek().Value?.ToLower() == currentToken?.ToLower();
         }
 
         /// <summary>
@@ -965,7 +966,7 @@ namespace WebExpress.WebIndex.Wql
         /// <returns>True if the token is the current one, false otherwise.</returns>
         private static bool PeekToken(Queue<WqlToken> tokenQueue, Regex regex)
         {
-            return tokenQueue.Count > 0 && regex.IsMatch(tokenQueue.Peek()?.Value?.ToLower());
+            return tokenQueue.Count > 0 && regex.IsMatch(tokenQueue.Peek().Value?.ToLower());
         }
 
         /// <summary>

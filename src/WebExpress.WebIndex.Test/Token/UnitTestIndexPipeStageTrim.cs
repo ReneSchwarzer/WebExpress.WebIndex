@@ -46,8 +46,7 @@ namespace WebExpress.WebIndex.Test.Token
                 (".families", "families")
             ];
 
-            var tokenizer = new IndexTermTokenizer();
-            var res = pipeStage.Process(tokenizer.Tokenize(string.Join(" ",  words.Select(x => x.Item1))), culture)
+            var res = pipeStage.Process(IndexTermTokenizer.Tokenize(string.Join(" ", words.Select(x => x.Item1))), culture)
                 .Select(x => x.Value)
                 .ToList();
 

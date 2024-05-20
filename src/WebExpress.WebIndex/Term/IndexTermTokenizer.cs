@@ -7,12 +7,12 @@ namespace WebExpress.WebIndex.Term
     /// <summary>
     /// A whitespace tokinizer for breaking down a document into terms.
     /// </summary>
-    public class IndexTermTokenizer
+    public static class IndexTermTokenizer
     {
         /// <summary>
         /// Enumeration of separators.
         /// </summary>
-        private static char[] Delimiters { get; } = ['?', '!', ':', '<', '>', '=', '%', '(', ')', '\"', '“', '”', '\''];
+        private static char[] Delimiters { get; } = ['?', '!', ':', '<', '>', '=', '%', '(', ')', '"', '“', '”', '\''];
 
         /// <summary>
         /// Enumeration of wildcards.
@@ -25,7 +25,7 @@ namespace WebExpress.WebIndex.Term
         /// <param name="input">The input string.</param>
         /// <param name="wildcards">A enumeration of wildcards.</param>
         /// <returns>An enumeration of terms.</returns>
-        public IEnumerable<IndexTermToken> Tokenize(string input, char[] wildcards = null)
+        public static IEnumerable<IndexTermToken> Tokenize(string input, char[] wildcards = null)
         {
             var currentToken = new StringBuilder();
             var position = (uint)0;

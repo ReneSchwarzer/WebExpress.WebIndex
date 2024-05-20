@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Text;
 using System.Linq;
+using System.Text;
 using WebExpress.WebIndex.Term.Pipeline;
 
 namespace WebExpress.WebIndex.Term
@@ -17,11 +17,6 @@ namespace WebExpress.WebIndex.Term
         /// Returns or sets the index context.
         /// </summary>
         public IIndexContext Context { get; private set; }
-
-        /// <summary>
-        /// Returns the whitespace tokinizer.
-        /// </summary>
-        private static IndexTermTokenizer Tokenizer { get; } = new IndexTermTokenizer();
 
         /// <summary>
         /// Retruns the pipeline. The pipeline represents a sequence of processing stages. Each 'PipeStage' in this pipeline performs a 
@@ -47,11 +42,11 @@ namespace WebExpress.WebIndex.Term
         private void Initialization()
         {
             var assembly = typeof(IndexManager).Assembly;
-            string[] fileNames = 
+            string[] fileNames =
             [
-                "IrregularWords.en", "IrregularWords.de", 
-                "MisspelledWords.en", "MisspelledWords.de", 
-                "RegularWords.en", "RegularWords.de", 
+                "IrregularWords.en", "IrregularWords.de",
+                "MisspelledWords.en", "MisspelledWords.de",
+                "RegularWords.en", "RegularWords.de",
                 "StopWords.en", "StopWords.de",
                 "Synonyms.en", "Synonyms.de"
             ];
@@ -115,14 +110,15 @@ namespace WebExpress.WebIndex.Term
         /// <returns>The terms.</returns>
         public IEnumerable<IndexTermToken> Analyze(string input, CultureInfo culture, bool retrieval = false)
         {
-            var token = Tokenizer.Tokenize(input, retrieval ? IndexTermTokenizer.Wildcards : null);
+            var tokens = IndexTermTokenizer.Tokenize(input, retrieval ? IndexTermTokenizer.Wildcards : null);
 
-            foreach(var pipeStage in TextProcessingPipeline)   
+            foreach (var pipeStage in TextProcessingPipeline)
             {
-                token = pipeStage.Process(token, culture);
-            } 
-
-            return token;
+                foreach (var token in pipeStage.Process(tokens, culture))
+                {
+                    yield return token;
+                }
+            }
         }
 
         /// <summary>

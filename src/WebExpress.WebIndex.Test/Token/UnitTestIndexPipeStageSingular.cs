@@ -60,8 +60,7 @@ namespace WebExpress.WebIndex.Test.Token
             var pluralWords = words.Select(x => x.Item1);
             var singularWords = words.Select(x => x.Item2);
 
-            var tokenizer = new IndexTermTokenizer();
-            var res = pipeStage.Process(tokenizer.Tokenize(string.Join(" ",  pluralWords)), culture)
+            var res = pipeStage.Process(IndexTermTokenizer.Tokenize(string.Join(" ", pluralWords)), culture)
                 .Select(x => x.Value)
                 .ToList();
 
@@ -95,8 +94,7 @@ namespace WebExpress.WebIndex.Test.Token
             var pluralWords = words.Select(x => x.Item1);
             var singularWords = words.Select(x => x.Item2);
 
-            var tokenizer = new IndexTermTokenizer();
-            var res = pipeStage.Process(tokenizer.Tokenize(string.Join(" ",  pluralWords)), culture)
+            var res = pipeStage.Process(IndexTermTokenizer.Tokenize(string.Join(" ", pluralWords)), culture)
                 .Select(x => x.Value)
                 .ToList();
 
