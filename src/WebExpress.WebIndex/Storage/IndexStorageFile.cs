@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading;
 
 namespace WebExpress.WebIndex.Storage
 {
@@ -15,7 +11,7 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Returns the maximum upper limit of the cached segments
         /// </summary>
-        public static uint BufferSize {get; set;} = 4 * 1024; // 4096 Byte
+        public static uint BufferSize { get; set; } = 4 * 1024; // 4096 Byte
 
         /// <summary>
         /// Returns the file name.
@@ -25,17 +21,7 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Returns a stream for the index file.
         /// </summary>
-        private FileStream FileStream { get; set; }
-
-        /// <summary>
-        /// Returns a reader to read the stream.
-        /// </summary>
-        internal BinaryReader Reader { get; private set; }
-
-        /// <summary>
-        /// Returns a writer to write data to the stream.
-        /// </summary>
-        internal BinaryWriter Writer { get; private set; }
+        internal FileStream FileStream { get; private set; }
 
         /// <summary>
         /// Returns a buffer for caching segments.
@@ -43,9 +29,9 @@ namespace WebExpress.WebIndex.Storage
         private IndexStorageReadBuffer ReadBuffer { get; set; }
 
         /// <summary>
-        /// Returns the timer for sorting out segments from the read buffer.
+        /// Returns a buffer for caching segments.
         /// </summary>
-        private Timer ReadTimer { get; set; }
+        private IndexStorageWriteBuffer WriteBuffer { get; set; }
 
         /// <summary>
         /// Returns or sets the next free address.
@@ -55,7 +41,7 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Returns a guard to protect against concurrent access.
         /// </summary>
-        private object Guard { get; } = new object();
+        internal object Guard { get; } = new object();
 
         /// <summary>
         /// Constructor
@@ -66,19 +52,17 @@ namespace WebExpress.WebIndex.Storage
             FileName = fileName;
 
             Directory.CreateDirectory(Path.GetDirectoryName(FileName));
-            var options = new FileStreamOptions() 
-            { 
+            var options = new FileStreamOptions()
+            {
                 BufferSize = (int)BufferSize,
                 Mode = FileMode.OpenOrCreate,
                 Share = FileShare.None,
                 Access = FileAccess.ReadWrite
             };
-            
+
             FileStream = File.Open(FileName, options);
-            Reader = new BinaryReader(FileStream);
-            Writer = new BinaryWriter(FileStream);
-            ReadBuffer = new IndexStorageReadBuffer();
-            ReadTimer = new Timer((state) => ReadBuffer.ReduceLifetimeAndRemoveExpiredSegments(), null, 0, 1000);
+            ReadBuffer = new IndexStorageReadBuffer(this);
+            WriteBuffer = new IndexStorageWriteBuffer(this);
         }
 
         /// <summary>
@@ -104,21 +88,20 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>The segment, how it was read by the storage medium.</returns>
         public T Read<T>(ulong addr, IndexStorageContext context) where T : IIndexStorageSegment
         {
-            // lock before concurrent access
+            if (ReadBuffer.GetSegment<T>(addr, out IIndexStorageSegment readCached))
+            {
+                return (T)readCached;
+            }
+
             lock (Guard)
             {
-                if (ReadBuffer.GetSegment(addr, out IIndexStorageSegment cached))
+                if (WriteBuffer.GetSegment(addr, out IIndexStorageSegment writeCached))
                 {
-                    return (T)cached;
+                    return (T)writeCached;
                 }
 
-                T segment = (T)Activator.CreateInstance(typeof(T), context, addr);
-
-
-                Reader.BaseStream.Seek((long)segment.Addr, SeekOrigin.Begin);
-                segment.Read(Reader);
-            
-                ReadBuffer.Add(segment);
+                var segment = (T)Activator.CreateInstance(typeof(T), context, addr);
+                ReadBuffer.Read(segment);
 
                 return segment;
             }
@@ -130,19 +113,20 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="segment">The segment.</param>
         public T Read<T>(T segment) where T : IIndexStorageSegment
         {
-            if (ReadBuffer.GetSegment(segment.Addr, out IIndexStorageSegment cached))
+            if (ReadBuffer.GetSegment<T>(segment.Addr, out IIndexStorageSegment readCached))
             {
-                return (T)cached;
+                return (T)readCached;
             }
 
-            // lock before concurrent access
             lock (Guard)
             {
-                Reader.BaseStream.Seek((long)segment.Addr, SeekOrigin.Begin);
-                segment.Read(Reader);
-            }
+                if (WriteBuffer.GetSegment(segment.Addr, out IIndexStorageSegment writeCached))
+                {
+                    return (T)writeCached;
+                }
 
-            ReadBuffer.Add(segment);
+                ReadBuffer.Read(segment);
+            }
 
             return segment;
         }
@@ -153,14 +137,8 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="segment">The segment.</param>
         public void Write(IIndexStorageSegment segment)
         {
-            ReadBuffer.Add(segment);
-
-            // lock before concurrent access
-            lock (Guard)
-            {
-                Writer.BaseStream.Seek((long)segment.Addr, SeekOrigin.Begin);
-                segment.Write(Writer);
-            }
+            ReadBuffer.Cache(segment);
+            WriteBuffer.Cache(segment);
         }
 
         /// <summary>
@@ -173,7 +151,7 @@ namespace WebExpress.WebIndex.Storage
                 return;
             }
 
-            Writer.Flush();
+            WriteBuffer.Flush();
         }
 
         /// <summary>
@@ -190,9 +168,12 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         public void Dispose()
         {
-            ReadTimer.Dispose();
-            Reader.Close();
-            Writer.Close();
+            ReadBuffer.Dispose();
+            WriteBuffer.Dispose();
+
+            FileStream.Dispose();
+
+            GC.SuppressFinalize(this);
         }
     }
 }

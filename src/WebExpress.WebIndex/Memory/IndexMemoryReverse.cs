@@ -115,8 +115,35 @@ namespace WebExpress.WebIndex.Memory
         public IEnumerable<Guid> Retrieve(string term, IndexRetrieveOptions options)
         {
             var terms = Context.TokenAnalyzer.Analyze(term, Culture, true);
+            var distinct = new HashSet<Guid>((int)Math.Min(options.MaxResults, int.MaxValue / 2));
+            var count = 0u;
 
-            return terms.SelectMany(x => Root.Retrieve(x.Value, options)).Distinct();
+            foreach (var normalized in terms.Take(1))
+            {
+                foreach (var document in Root.Retrieve(normalized.Value, options))
+                {
+                    if (distinct.Add(document) && count++ >= options.MaxResults)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            foreach (var normalized in terms.Skip(1))
+            {
+                var temp = new HashSet<Guid>(distinct.Count);
+
+                foreach (var document in Root.Retrieve(normalized.Value, options))
+                {
+                    if (distinct.Contains(document) && temp.Add(document))
+                    {
+                    }
+                }
+
+                distinct = temp;
+            }
+
+            return distinct;
         }
 
         /// <summary>

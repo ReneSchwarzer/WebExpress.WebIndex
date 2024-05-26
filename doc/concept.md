@@ -3,10 +3,9 @@
 # ToDos
 - Merging free storage areas
 - build in wql functions
-- Wildcard search
-- Phrase search (exact word sequence)
 - Proximity search
 - Fuzzy search
+- performance improvements 
 
 # WebExpress.WebIndex
 The index model provides a reverse index to enable fast and efficient searching. A reverse index can significantly speed up access 
@@ -66,7 +65,6 @@ In this instance, indexing is performed on two documents by executing a series o
 stop-word removal. The outcome of these operations is a multi-dimensional table, which serves as a representation of the reverse index.
 
 ```
-
  ┌document a────────────────────────────────────────┐      ┌document b────────────────────────────────────────┐
  │ No, fine, no , good, fine, good. You know Marty, │      │ Thanks a lot, kid. Now, of course not, Biff, now,│
  │ you look so familiar, do I know your mother? Hey │      │ I wouldn't want that to happen. I'm gonna ram    │

@@ -11,6 +11,11 @@
         public uint MaxResults { get; internal set; } = 10000u;
 
         /// <summary>
+        /// Returns the methods for data retrieval.
+        /// </summary>
+        public IndexRetrieveMethod Method { get; internal set; }
+
+        /// <summary>
         /// Constructor
         /// </summary>
         public IndexRetrieveOptions()

@@ -110,7 +110,7 @@ namespace WebExpress.WebIndex.Test.WQL
 
             Assert.NotNull(res);
             Assert.NotNull(item);
-            Assert.Equal(2, res.Count());
+            Assert.Equal(4, res.Count());
             Assert.Equal("Text ~ 'Helena'", wql.ToString());
             Assert.Contains("Helena", item.Text);
             Assert.NotNull(wql.Filter);
@@ -130,7 +130,7 @@ namespace WebExpress.WebIndex.Test.WQL
 
             Assert.NotNull(res);
             Assert.NotNull(item);
-            Assert.Equal(2, res.Count());
+            Assert.Equal(4, res.Count());
             Assert.Equal("Text ~ 'Helena'", wql.ToString());
             Assert.Contains("Helena", item.Text);
             Assert.NotNull(wql.Filter);

@@ -1,5 +1,4 @@
-﻿using WebExpress.WebIndex.Test.Document;
-using WebExpress.WebIndex.Test.Fixture;
+﻿using WebExpress.WebIndex.Test.Fixture;
 using Xunit.Abstractions;
 
 namespace WebExpress.WebIndex.Test.WQL
@@ -23,7 +22,7 @@ namespace WebExpress.WebIndex.Test.WQL
         /// Tests phrase search, which retrieves content from documents that contain a specific order and combination of words defined by the phrase.
         /// </summary>
         [Fact]
-        public void MultipleWords()
+        public void SingleWord()
         {
             var wql = Fixture.ExecuteWql("name='Olivia'");
             var res = wql?.Apply();
@@ -33,7 +32,7 @@ namespace WebExpress.WebIndex.Test.WQL
             Assert.NotNull(item);
             Assert.Equal(1, res.Count());
             Assert.Equal("Name = 'Olivia'", wql.ToString());
-            Assert.Contains("lOlivia", item.Name);
+            Assert.Contains("Olivia", item.Name);
             Assert.NotNull(wql.Filter);
             Assert.Null(wql.Order);
             Assert.Null(wql.Partitioning);

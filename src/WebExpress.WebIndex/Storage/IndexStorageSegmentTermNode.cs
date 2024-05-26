@@ -514,6 +514,8 @@ namespace WebExpress.WebIndex.Storage
                                 {
                                     yield return id;
                                 }
+
+                                break;
                             }
                         }
                         break;

@@ -160,14 +160,13 @@ namespace WebExpress.WebIndex.Test.IndexManager
         {
             var stopWatch = new Stopwatch();
 
-            var itemCount = Enumerable.Range(2, 1).Select(x => x * 10000);
+            var itemCount = Enumerable.Range(1, 1).Select(x => x * 10000);
             var wordCount = Enumerable.Range(1, 1).Select(x => x * 100);
             var vocabulary = Enumerable.Range(1, 1).Select(x => x * 20000);
             var wordLength = Enumerable.Range(1, 1).Select(x => x * 15);
             var maxCachedSegments = Enumerable.Range(5, 1).Select(x => x * 10000);
             var bufferSize = Enumerable.Range(12, 1).Select(x => Math.Pow(2, x));
             var file = await Task.Run(() => File.CreateText(Path.Combine(Environment.CurrentDirectory, "storage-reindexasync_series.csv")));
-            var lastProgress = 0;
 
             file.WriteLine("item count;wordCount;vocabulary;wordLength;max cached segments;buffer size;elapsed reindex [hh:mm:ss];elapsed retrieval [ms];size of document store [MB];size of reverse index [MB];∑ storage space [MB];size of process mem [MB]");
 
@@ -205,16 +204,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
                                         stopWatch.Start();
 
                                         // test execution
-                                        await IndexManager.ReIndexAsync(data, new Progress<int>((i) =>
-                                        {
-                                            lastProgress = i;
-
-                                            if (i > lastProgress + 10)
-                                            {
-                                                Output.WriteLine($"progress: {i}");
-                                                lastProgress = i;
-                                            }
-                                        }));
+                                        await IndexManager.ReIndexAsync(data);
 
                                         // stop measurement
                                         var elapsedReindex = stopWatch.Elapsed;

@@ -114,11 +114,10 @@ namespace WebExpress.WebIndex.Term
 
             foreach (var pipeStage in TextProcessingPipeline)
             {
-                foreach (var token in pipeStage.Process(tokens, culture))
-                {
-                    yield return token;
-                }
+                return pipeStage.Process(tokens, culture);
             }
+
+            return [];
         }
 
         /// <summary>
