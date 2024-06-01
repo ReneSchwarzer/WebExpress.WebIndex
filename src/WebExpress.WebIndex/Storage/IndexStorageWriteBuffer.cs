@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using WebExpress.WebIndex.Utility;
 
 namespace WebExpress.WebIndex.Storage
 {
@@ -37,6 +38,10 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="file">A stream for the index file.</param>
         public IndexStorageWriteBuffer(IndexStorageFile file)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+            
             _cache = new ConcurrentDictionary<ulong, IIndexStorageSegment>(-1, 5000);
             StorageFile = file;
             Writer = new BinaryWriter(file.FileStream);
@@ -50,6 +55,10 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="segment">The segment.</param>
         public void Cache(IIndexStorageSegment segment)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+            
             lock (StorageFile.Guard)
             {
                 _cache.AddOrUpdate(segment.Addr, segment, (key, oldValue) => segment);
@@ -63,6 +72,10 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>True if the segment has already been stored in the buffer, false otherwise.</returns>
         public bool Contains(IIndexStorageSegment segment)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             return _cache.ContainsKey(segment.Addr);
         }
 
@@ -73,6 +86,10 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>True if the segment has already been stored in the buffer, false otherwise.</returns>
         public bool Contains(ulong addr)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             return _cache.ContainsKey(addr);
         }
 
@@ -84,6 +101,10 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>The segment if cached or null.</returns>
         public bool GetSegment(ulong addr, out IIndexStorageSegment segment)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             if (_cache.TryGetValue(addr, out IIndexStorageSegment res))
             {
                 segment = res;
@@ -101,6 +122,10 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         public void Flush()
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             lock (StorageFile.Guard)
             {
                 var segments = _cache.Values.ToList();
@@ -121,6 +146,10 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         public virtual void Dispose()
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             Flush();
             Timer.Dispose();
 

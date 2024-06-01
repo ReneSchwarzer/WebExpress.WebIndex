@@ -38,7 +38,7 @@ namespace WebExpress.WebIndex.Test.Token
             var culture = CultureInfo.GetCultureInfo("en");
             var pipeStage = new IndexPipeStageFilterEmpty(Fixture.Context);
 
-            var token = IndexTermTokenizer.Tokenize("Dogs are known as man's best friend.");
+            var token = IndexTermTokenizer.Tokenize("Dogs are known as man's best friend.", culture);
 
             var res = pipeStage.Process(token, culture)
                 .Select(x => x.Value)

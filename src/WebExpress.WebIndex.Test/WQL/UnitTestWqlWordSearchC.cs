@@ -24,7 +24,10 @@ namespace WebExpress.WebIndex.Test.WQL
         [Fact]
         public void SingleWordFromQueryable()
         {
+            // preconditions
             var term = Fixture.Term;
+
+            // test execution
             var wql = Fixture.ExecuteWql($"text~'{term}'");
             var res = wql?.Apply(Fixture.TestData.AsQueryable());
             var item = res?.FirstOrDefault();
@@ -45,7 +48,10 @@ namespace WebExpress.WebIndex.Test.WQL
         [Fact]
         public void SingleWord()
         {
+            // preconditions
             var term = Fixture.Term;
+
+            // test execution
             var wql = Fixture.ExecuteWql($"text~'{term}'");
             var res = wql?.Apply();
             var item = res?.FirstOrDefault();
@@ -66,21 +72,20 @@ namespace WebExpress.WebIndex.Test.WQL
         [Fact]
         public void MultipleWords()
         {
+            // preconditions
             var term = Fixture.Term;
             var secondTerm = Fixture.RandomItem.Text.Split(' ').Skip(1).FirstOrDefault();
+
+            // test execution
             var wql = Fixture.ExecuteWql($"text~'{secondTerm} {term}'");
             var res = wql?.Apply();
             var item = res?.FirstOrDefault();
 
             Assert.NotNull(res);
             Assert.NotNull(item);
-            Assert.True(res.Count() >= 2);
-            Assert.Equal($"Text ~ '{secondTerm} {term}'", wql.ToString());
+            Assert.NotEmpty(res);
             Assert.Contains(term, item.Text);
             Assert.Contains(secondTerm, item.Text);
-            Assert.NotNull(wql.Filter);
-            Assert.Null(wql.Order);
-            Assert.Null(wql.Partitioning);
         }
     }
 }

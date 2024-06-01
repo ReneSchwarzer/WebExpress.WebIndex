@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using WebExpress.WebIndex.Test.Document;
+using WebExpress.WebIndex.Utility;
 using WebExpress.WebIndex.Wql;
 
 namespace WebExpress.WebIndex.Test.Fixture
@@ -35,6 +36,7 @@ namespace WebExpress.WebIndex.Test.Fixture
         {
             IndexManager.Dispose();
             Directory.Delete(IndexManager.Context.IndexDirectory, true);
+            Profiling.Store();
         }
 
         /// <summary>

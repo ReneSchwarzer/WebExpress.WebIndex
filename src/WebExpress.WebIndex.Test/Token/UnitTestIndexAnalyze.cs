@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using WebExpress.WebIndex.Term;
 using WebExpress.WebIndex.Test.Fixture;
 using Xunit.Abstractions;
 
@@ -36,21 +35,21 @@ namespace WebExpress.WebIndex.Test.Token
         {
             // preconditions
             var input = "abc def, ghi jkl mno-p.";
-            
+
             // test execution
             var tokens = Fixture.TokenAnalyzer.Analyze(input, CultureInfo.GetCultureInfo("en"));
 
-            Assert.True(tokens.Count() == 5);
+            Assert.Equal(5, tokens.Count());
             Assert.True(tokens.First().Position == 0);
-            Assert.True(tokens.First().Value == "abc");
+            Assert.Equal("abc", tokens.First().Value);
             Assert.True(tokens.Skip(1).First().Position == 1);
-            Assert.True(tokens.Skip(1).First().Value == "def");
+            Assert.Equal("def", tokens.Skip(1).First().Value);
             Assert.True(tokens.Skip(2).First().Position == 2);
-            Assert.True(tokens.Skip(2).First().Value == "ghi");
+            Assert.Equal("ghi", tokens.Skip(2).First().Value);
             Assert.True(tokens.Skip(3).First().Position == 3);
-            Assert.True(tokens.Skip(3).First().Value == "jkl");
+            Assert.Equal("jkl", tokens.Skip(3).First().Value);
             Assert.True(tokens.Skip(4).First().Position == 4);
-            Assert.True(tokens.Skip(4).First().Value == "mno-p");
+            Assert.Equal("mno-p", tokens.Skip(4).First().Value);
         }
 
         /// <summary>

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using WebExpress.WebIndex.Utility;
 
 namespace WebExpress.WebIndex.Storage
 {
@@ -35,6 +36,10 @@ namespace WebExpress.WebIndex.Storage
         {
             get
             {
+                #if DEBUG 
+                using var profiling = Profiling.Diagnostic(); 
+                #endif
+
                 if (FreeListAddr == 0)
                 {
                     yield break;
@@ -66,6 +71,10 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         public void Initialization()
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             NextFreeAddr = Context.IndexFile.NextFreeAddr;
         }
 
@@ -77,6 +86,10 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>The start address of the reserved storage area.</returns>
         public ulong Alloc(uint size)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+            
             var last = default(IndexStorageSegmentFree);
 
             lock (Guard)
@@ -108,6 +121,10 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="segment">The segment determines how much memory should be reserved.</param>
         public void Free(IIndexStorageSegment segment)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             var item = new IndexStorageSegmentFree(Context, segment.Addr);
 
             Context.IndexFile.Invalidation(segment);
@@ -176,6 +193,10 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>The free address with the guaranteed memory.</returns>
         private ulong Split(IndexStorageSegmentFree predecessor, IndexStorageSegmentFree segment, uint size)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             var free = new IndexStorageSegmentFree(Context, segment.Addr + size)
             {
                 SuccessorAddr = segment.SuccessorAddr,
@@ -204,6 +225,10 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="reader">The reader for i/o operations.</param>
         public override void Read(BinaryReader reader)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             NextFreeAddr = reader.ReadUInt64();
             FreeListAddr = reader.ReadUInt64();
         }
@@ -214,6 +239,10 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="writer">The writer for i/o operations.</param>
         public override void Write(BinaryWriter writer)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+            
             writer.Write(NextFreeAddr);
             writer.Write(FreeListAddr);
         }
@@ -224,6 +253,10 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>A string that represents the current object.</returns>
         public override string ToString()
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             return $"[{string.Join(", ", FreeSegments)}]";
         }
     }

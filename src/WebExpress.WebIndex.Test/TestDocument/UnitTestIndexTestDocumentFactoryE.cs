@@ -17,127 +17,127 @@
             {
                 new()
                 {
-                    Id = Guid.Parse("ED242C79-E41B-4214-BFBC-C4673E87433B"),
+                    Id = Guid.Parse("ed242c79-e41b-4214-bfbc-c4673e87433b"),
                     Name = "Noah"
                 },
                 new()
                 {
-                    Id = Guid.Parse("CC4CE993-658C-4E7A-B7A5-FF03E6E0E973"),
+                    Id = Guid.Parse("cc4ce993-658c-4e7a-b7a5-ff03e6e0e973"),
                     Name = "Noah"
                 },
                 new()
                 {
-                    Id = Guid.Parse("DABC3985-0E5B-4C18-A1C5-BEAD46AE9CFC"),
+                    Id = Guid.Parse("dabc3985-0e5b-4c18-a1c5-bead46ae9cfc"),
                     Name = "Emma"
                 },
                 new()
                 {
-                    Id = Guid.Parse("E8CE186F-A00D-49A0-9DAA-CCE7B99C79A2"),
+                    Id = Guid.Parse("e8ce186f-a00d-49a0-9daa-cce7b99c79a2"),
                     Name = "Liam"
                 },
                 new()
                 {
-                    Id = Guid.Parse("D50774B3-5D95-4FB4-97FB-D107DD6FB9A0"),
+                    Id = Guid.Parse("d50774b3-5d95-4fb4-97fb-d107dd6fb9a0"),
                     Name = "Olivia"
                 },
                 new()
                 {
-                    Id = Guid.Parse("21051515-457F-4CC1-8175-8422A233C179"),
+                    Id = Guid.Parse("21051515-457f-4cc1-8175-8422a233c179"),
                     Name = "Isabella"
                 },
                 new()
                 {
-                    Id = Guid.Parse("4BAB72B9-C52A-44F6-ADD5-D50A601F6C8B"),
+                    Id = Guid.Parse("4bab72b9-c52a-44f6-add5-d50a601f6c8b"),
                     Name = "Sophia"
                 },
                 new()
                 {
-                    Id = Guid.Parse("2E7AC878-D2A3-42E7-808E-F38F30D0AD19"),
+                    Id = Guid.Parse("2e7ac878-d2a3-42e7-808e-f38f30d0ad19"),
                     Name = "Xantia"
                 },
                 new()
                 {
-                    Id = Guid.Parse("B3FDD146-8070-441B-99DF-827670C70BC8"),
+                    Id = Guid.Parse("b3fdd146-8070-441b-99df-827670c70bc8"),
                     Name = "Ava"
                 },
                 new()
                 {
-                    Id = Guid.Parse("43F9AA18-273E-4A09-A943-B81832F6302A"),
+                    Id = Guid.Parse("43f9aa18-273e-4a09-a943-b81832f6302a"),
                     Name = "James"
                 },
                 new()
                 {
-                    Id = Guid.Parse("7B922A2A-2658-4A4E-B7EB-EB29F679F7AD"),
+                    Id = Guid.Parse("7b922a2a-2658-4a4e-b7eb-eb29f679f7ad"),
                     Name = "Isabella"
                 },
                 new ()
                 {
-                    Id = Guid.Parse("5ABB1742-BEE1-45F4-BB6A-8AF6A3465FA3"),
+                    Id = Guid.Parse("5abb1742-bee1-45f4-bb6a-8af6a3465fa3"),
                     Name = "Berta"
                 },
                 new ()
                 {
-                    Id = Guid.Parse("BBDE531A-EB43-46DB-8576-284DBB93D254"),
+                    Id = Guid.Parse("bbde531a-eb43-46db-8576-284dbb93d254"),
                     Name = "Cäsar"
                 },
                 new ()
                 {
-                    Id = Guid.Parse("87CD42D7-169E-4329-8F6E-255F510EE013"),
+                    Id = Guid.Parse("87cd42d7-169e-4329-8f6e-255f510ee013"),
                     Name = "Doris"
                 },
                 new ()
                 {
-                    Id = Guid.Parse("A3E4DDCB-5E79-4BF9-8ECA-FEA791E6DD4A"),
+                    Id = Guid.Parse("a3e4ddcb-5e79-4bf9-8eca-fea791e6dd4a"),
                     Name = "Anton"
                 },
                 new ()
                 {
-                    Id = Guid.Parse("2D242F03-27FC-4DA2-A70A-0AAC3D94A69F"),
+                    Id = Guid.Parse("2d242f03-27fc-4da2-a70a-0aac3d94a69f"),
                     Name = "Emil"
                 },
                 new ()
                 {
-                    Id = Guid.Parse("3B30F151-6B01-4E3C-85F2-CCB048387F76"),
+                    Id = Guid.Parse("3b30f151-6b01-4e3c-85f2-ccb048387f76"),
                     Name = "Fina"
                 },
                 new ()
                 {
-                    Id = Guid.Parse("3CAE888A-EC88-44D8-BA7B-ABBD0681F0AB"),
+                    Id = Guid.Parse("3cae888a-ec88-44d8-ba7b-abbd0681f0ab"),
                     Name = "Kerstin"
                 },
                 new ()
                 {
-                    Id = Guid.Parse("5D07AABE-3F7C-448C-B571-5A32F358E722"),
+                    Id = Guid.Parse("5d07aabe-3f7c-448c-b571-5a32f358e722"),
                     Name = "Gustav"
                 },
                 new ()
                 {
-                    Id = Guid.Parse("124E9CDD-1EFB-40C0-B2FC-38AA9BCABAC5"),
+                    Id = Guid.Parse("124e9cdd-1efb-40c0-b2fc-38aa9bcabac5"),
                     Name = "Hans"
                 },
                 new ()
                 {
-                    Id = Guid.Parse("65C26230-9157-4B22-95EF-A91FA112AEEC"),
+                    Id = Guid.Parse("65c26230-9157-4b22-95ef-a91fa112aeec"),
                     Name = "Ines"
                 },
                 new ()
                 {
-                    Id = Guid.Parse("336118D9-BE1C-482B-9FF7-724058119220"),
+                    Id = Guid.Parse("336118d9-be1c-482b-9ff7-724058119220"),
                     Name = "Jana"
                 },
                 new ()
                 {
-                    Id = Guid.Parse("4DA00D0E-1E2A-4BAF-A95A-2E4DB46C4366"),
+                    Id = Guid.Parse("4da00d0e-1e2a-4baf-a95a-2e4db46c4366"),
                     Name = "Anton"
                 },
                 new ()
                 {
-                    Id = Guid.Parse("5046CB91-049C-4F03-B822-B7C1B961FB08"),
+                    Id = Guid.Parse("5046cb91-049c-4f03-b822-b7c1b961fb08"),
                     Name = "Karin"
                 },
                 new ()
                 {
-                    Id = Guid.Parse("160A6CBA-5F74-4D0D-939A-5E0764276B04"),
+                    Id = Guid.Parse("160a6cba-5f74-4d0d-939a-5e0764276b04"),
                     Name = "Lars"
                 }
 

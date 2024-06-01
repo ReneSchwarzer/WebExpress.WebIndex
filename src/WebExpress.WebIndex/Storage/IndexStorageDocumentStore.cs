@@ -5,6 +5,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using WebExpress.WebIndex.Utility;
 
 namespace WebExpress.WebIndex.Storage
 {
@@ -66,6 +67,10 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="capacity">The predicted capacity (number of items to store) of the document store.</param>
         public IndexStorageDocumentStore(IIndexContext context, uint capacity)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+            
             Context = context;
             Capacity = capacity;
             FileName = Path.Combine(Context.IndexDirectory, $"{typeof(T).Name}.wds");
@@ -103,6 +108,10 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="item">The item.</param>
         public void Add(T item)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             var json = JsonSerializer.Serialize(item);
             var bytes = CompressString(json);
             var segment = new IndexStorageSegmentItem(new IndexStorageContext(this), Allocator.Alloc((uint)(IndexStorageSegmentItem.SegmentSize + bytes.Length)))
@@ -126,6 +135,10 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="item">The item.</param>
         public void Update(T item)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             var list = HashMap.GetBucket(item.Id);
 
             if (!list.Any())
@@ -163,6 +176,10 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         public void Clear()
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             IndexFile.NextFreeAddr = 0;
             Header = new IndexStorageSegmentHeader(new IndexStorageContext(this)) { Identifier = "wfi" };
             Allocator = new IndexStorageSegmentAllocator(new IndexStorageContext(this));
@@ -185,6 +202,10 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="item">The item.</param>
         public void Remove(T item)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             var list = HashMap.GetBucket(item.Id);
 
             if (!list.Any())
@@ -204,6 +225,10 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>The item.</returns>
         public T GetItem(Guid id)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             return GetItem(HashMap.GetBucket(id).SkipWhile(x => x.Id != id).FirstOrDefault());
         }
 
@@ -214,6 +239,10 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>The item.</returns>
         private static T GetItem(IndexStorageSegmentItem segment)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             var bytes = segment?.Data;
 
             if (bytes == null)
@@ -233,6 +262,10 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         public void Dispose()
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             IndexFile.Dispose();
         }
 
@@ -243,6 +276,10 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>A byte array containing the compressed string.</returns>
         private static byte[] CompressString(string input)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             using var stream = new MemoryStream();
             using var gzip = new GZipStream(stream, CompressionMode.Compress);
             var bytes = Encoding.UTF8.GetBytes(input);
@@ -260,6 +297,10 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>A string that represents the decompressed byte array.</returns>
         private static string DecompressString(byte[] compressed)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+            
             using var stream = new MemoryStream(compressed);
             using var zip = new GZipStream(stream, CompressionMode.Decompress);
             using var reader = new StreamReader(zip);

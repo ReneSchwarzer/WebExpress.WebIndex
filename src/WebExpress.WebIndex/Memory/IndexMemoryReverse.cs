@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using WebExpress.WebIndex.Term;
+using WebExpress.WebIndex.Utility;
 
 namespace WebExpress.WebIndex.Memory
 {
@@ -46,7 +47,7 @@ namespace WebExpress.WebIndex.Memory
         /// <summary>
         /// 
         /// </summary>
-        public IndexMemoryReverseTerm<T> Root { get; private set; } = new();
+        public IndexMemoryReverseTerm Root { get; private set; } = new();
 
         /// <summary>
         /// Adds a item to the index.
@@ -67,9 +68,13 @@ namespace WebExpress.WebIndex.Memory
         /// <param name="terms">The terms to add to the reverse index for the given item.</param>
         public void Add(T item, IEnumerable<IndexTermToken> terms)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             foreach (var term in terms)
             {
-                Root.Add(item, term.Value, term.Position);
+                Root.Add(item.Id, term.Value.ToString(), term.Position);
             }
         }
 
@@ -94,7 +99,7 @@ namespace WebExpress.WebIndex.Memory
         {
             foreach (var term in terms)
             {
-                Root.Remove(term.Value, item);
+                Root.Remove(term.Value.ToString(), item.Id);
             }
         }
 
@@ -103,7 +108,7 @@ namespace WebExpress.WebIndex.Memory
         /// </summary>
         public void Clear()
         {
-            Root = new IndexMemoryReverseTerm<T>();
+            Root = new IndexMemoryReverseTerm();
         }
 
         /// <summary>
@@ -118,32 +123,89 @@ namespace WebExpress.WebIndex.Memory
             var distinct = new HashSet<Guid>((int)Math.Min(options.MaxResults, int.MaxValue / 2));
             var count = 0u;
 
-            foreach (var normalized in terms.Take(1))
+            if (!terms.Any())
             {
-                foreach (var document in Root.Retrieve(normalized.Value, options))
-                {
-                    if (distinct.Add(document) && count++ >= options.MaxResults)
-                    {
-                        break;
-                    }
-                }
+                return distinct;
             }
-
-            foreach (var normalized in terms.Skip(1))
+            
+            switch (options.Method)
             {
-                var temp = new HashSet<Guid>(distinct.Count);
-
-                foreach (var document in Root.Retrieve(normalized.Value, options))
+                case IndexRetrieveMethod.Phrase:
                 {
-                    if (distinct.Contains(document) && temp.Add(document))
-                    {
-                    }
-                }
+                    var firstTerm = terms.Take(1).FirstOrDefault();
+                    var nextTerms = terms.Skip(1);
 
-                distinct = temp;
+                    foreach (var posting in Root.GetPostings(firstTerm.Value.ToString()))
+                    {
+                        foreach (var position in posting.Positions)
+                        {
+                            if (CheckForPhraseMatch(posting.DocumentID, position, firstTerm.Position, nextTerms))
+                            {
+                                distinct.Add(posting.DocumentID);  
+                            }
+                        }
+                    }
+                    
+                    break;
+                }
+                default:
+                {
+                    foreach (var document in terms.Take(1).SelectMany(x => Root.Retrieve(x.Value.ToString(), options)))
+                    {
+                        if (distinct.Add(document) && count++ >= options.MaxResults)
+                        {
+                            break;
+                        }
+                    }
+
+                    foreach (var normalized in terms.Skip(1))
+                    {
+                        var temp = new HashSet<Guid>(distinct.Count);
+
+                        foreach (var document in Root.Retrieve(normalized.Value.ToString(), options))
+                        {
+                            if (distinct.Contains(document) && temp.Add(document))
+                            {
+                            }
+                        }
+
+                        distinct = temp;
+                    }
+
+                    break;
+                }
             }
 
             return distinct;
+        }
+
+        /// <summary>
+        /// Checks whether there is an exact match.
+        /// </summary>
+        /// <param name="document">The document id to check.</param>
+        /// <param name="position">The position of the term within the document.</param>
+        /// <param name="offset">The position within the search term.</param>
+        /// <param name="terms">Further following search terms.</param>
+        /// <returns>True ff there is an exact match, otherwise false.</returns>
+        private bool CheckForPhraseMatch(Guid document, uint position, uint offset, IEnumerable<IndexTermToken> terms)
+        {
+            if (!terms.Any())
+            {
+                return true;
+            }
+
+            var firstTerm = terms.Take(1).FirstOrDefault();
+            var nextTerms = terms.Skip(1);
+
+            foreach (var posting in Root.GetPostings(firstTerm.Value.ToString()).Where(x => x?.DocumentID == document))
+            {
+                foreach (var pos in posting.Positions.Where(x => x == position + (firstTerm.Position - offset)))
+                {
+                    return CheckForPhraseMatch(posting.DocumentID, pos, firstTerm.Position, nextTerms);  
+                }
+            }
+
+            return false;
         }
 
         /// <summary>

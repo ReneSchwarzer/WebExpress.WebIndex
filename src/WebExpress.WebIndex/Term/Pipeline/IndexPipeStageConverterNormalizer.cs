@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using WebExpress.WebIndex.Utility;
 
 namespace WebExpress.WebIndex.Term.Pipeline
 {
@@ -30,13 +31,24 @@ namespace WebExpress.WebIndex.Term.Pipeline
         /// <returns>The normalized form of the terms.</returns>
         public IEnumerable<IndexTermToken> Process(IEnumerable<IndexTermToken> input, CultureInfo culture)
         {
+#if DEBUG
+            using var profiling = Profiling.Diagnostic();
+#endif
+
             foreach (var token in input)
             {
-                yield return new IndexTermToken()
+                if (token.Value is string)
                 {
-                    Value = Normalize(token.Value),
-                    Position = token.Position
-                };
+                    yield return new IndexTermToken()
+                    {
+                        Value = Normalize(token.Value.ToString()),
+                        Position = token.Position
+                    };
+                }
+                else
+                {
+                    yield return token;
+                }
             }
         }
 

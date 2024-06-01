@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using WebExpress.WebIndex.Utility;
 
 namespace WebExpress.WebIndex.Storage
 {
@@ -41,6 +42,10 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="reader">The reader for i/o operations.</param>
         public override void Read(BinaryReader reader)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+            
             Position = reader.ReadUInt32();
             SuccessorAddr = reader.ReadUInt64();
         }
@@ -51,6 +56,10 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="writer">The writer for i/o operations.</param>
         public override void Write(BinaryWriter writer)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             writer.Write(Position);
             writer.Write(SuccessorAddr);
         }
@@ -70,6 +79,10 @@ namespace WebExpress.WebIndex.Storage
         /// <exception cref="System.ArgumentException">Obj is not the same type as this instance.</exception>
         public int CompareTo(object obj)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+            
             if (obj is IndexStorageSegmentPosition position)
             {
                 return Position.CompareTo(position.Position);

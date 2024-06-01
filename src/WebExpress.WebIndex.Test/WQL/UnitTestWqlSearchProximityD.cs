@@ -6,7 +6,7 @@ namespace WebExpress.WebIndex.Test.WQL
     /// <summary>
     /// Proximity search
     /// </summary>
-    public class UnitTestWqlProximitySearchD(UnitTestIndexFixtureWqlD fixture, ITestOutputHelper output) : IClassFixture<UnitTestIndexFixtureWqlD>
+    public class UnitTestWqlSearchProximityD(UnitTestIndexFixtureWqlD fixture, ITestOutputHelper output) : IClassFixture<UnitTestIndexFixtureWqlD>
     {
         /// <summary>
         /// Returns the log.
@@ -22,20 +22,17 @@ namespace WebExpress.WebIndex.Test.WQL
         /// Tests proximity searches, in which two or more terms must appear at a certain distance from each other.
         /// </summary>
         [Fact]
-        public void MultipleWords()
+        public void ProximityMatch()
         {
-            var wql = Fixture.ExecuteWql("description~2'lorem ipsum'");
+            // test execution
+            var wql = Fixture.ExecuteWql("description~'lorem ipsum':2");
             var res = wql?.Apply();
-            
-            var item = res?.FirstOrDefault();
+
             Assert.NotNull(res);
-            Assert.NotNull(item);
-            Assert.True(res.Count() > 2);
-            Assert.Equal("Description ~2 'lorem ipsum'", wql.ToString());
-            Assert.Contains("lorem", item.Description);
-            Assert.NotNull(wql.Filter);
-            Assert.Null(wql.Order);
-            Assert.Null(wql.Partitioning);
+            foreach (var item in res)
+            {
+                Assert.Matches(@"^(?=.*\blorem\b)(?=.*\bipsum\b).*", item.Description);
+            }
         }
     }
 }

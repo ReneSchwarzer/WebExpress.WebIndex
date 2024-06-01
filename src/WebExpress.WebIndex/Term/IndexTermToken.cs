@@ -13,7 +13,7 @@
         /// <summary>
         /// Returns the token value.
         /// </summary>
-        public string Value { get; internal set; }
+        public object Value { get; internal set; }
 
         /// <summary>
         /// Returns the hash code.

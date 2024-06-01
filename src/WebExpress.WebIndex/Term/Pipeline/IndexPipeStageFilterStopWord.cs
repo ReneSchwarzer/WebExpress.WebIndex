@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using WebExpress.WebIndex.Utility;
 
 namespace WebExpress.WebIndex.Term.Pipeline
 {
@@ -33,7 +34,7 @@ namespace WebExpress.WebIndex.Term.Pipeline
                 FillStopWordDictionary(context, CultureInfo.GetCultureInfo(extension));
             }
         }
-        
+
         /// <summary>
         /// Filters specific elements on the term enumeration.
         /// </summary>
@@ -42,6 +43,10 @@ namespace WebExpress.WebIndex.Term.Pipeline
         /// <returns>The filtered term enumeration.</returns>
         public IEnumerable<IndexTermToken> Process(IEnumerable<IndexTermToken> input, CultureInfo culture)
         {
+#if DEBUG
+            using var profiling = Profiling.Diagnostic();
+#endif
+
             var supportedCulture = GetSupportedCulture(culture);
 
             if (!StopWordDictionary.ContainsKey(supportedCulture))
@@ -54,7 +59,14 @@ namespace WebExpress.WebIndex.Term.Pipeline
 
             foreach (var token in input)
             {
-                if (!StopWordDictionary[supportedCulture].Contains(token.Value))
+                if (token.Value is string)
+                {
+                    if (!StopWordDictionary[supportedCulture].Contains(token.Value))
+                    {
+                        yield return token;
+                    }
+                }
+                else
                 {
                     yield return token;
                 }
@@ -81,7 +93,7 @@ namespace WebExpress.WebIndex.Term.Pipeline
 
             foreach (var word in fileContent.Select(x => x.Trim()).Where(x => !x.StartsWith('#')))
             {
-                var w  = word.Normalize(System.Text.NormalizationForm.FormKD).ToLower();
+                var w = word.Normalize(System.Text.NormalizationForm.FormKD).ToLower();
                 if (!StopWordDictionary[culture].Contains(w))
                 {
                     StopWordDictionary[culture].Add(w);

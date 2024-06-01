@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using WebExpress.WebIndex.Utility;
 
 namespace WebExpress.WebIndex.Storage
 {
@@ -32,6 +33,10 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="reader">The reader for i/o operations.</param>
         public override void Read(BinaryReader reader)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             Count = reader.ReadUInt32();
         }
 
@@ -41,6 +46,10 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="writer">The writer for i/o operations.</param>
         public override void Write(BinaryWriter writer)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+            
             writer.Write(Count);
         }
     }

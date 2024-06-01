@@ -38,7 +38,7 @@ namespace WebExpress.WebIndex.Test.Token
             var culture = CultureInfo.GetCultureInfo("en");
             var pipeStage = new IndexPipeStageFilterStopWord(Fixture.Context);
 
-            var token = IndexTermTokenizer.Tokenize("May the force be with you.");
+            var token = IndexTermTokenizer.Tokenize("May the force be with you.", culture);
 
             var res = pipeStage.Process(token, culture)
                 .Select(x => x.Value)
@@ -60,7 +60,7 @@ namespace WebExpress.WebIndex.Test.Token
             var culture = CultureInfo.GetCultureInfo("de");
             var pipeStage = new IndexPipeStageFilterStopWord(Fixture.Context);
 
-            var token = IndexTermTokenizer.Tokenize("Als Gregor Samsa eines Morgens aus unruhigen Träumen erwachte, fand er sich in seinem Bett zu einem ungeheueren Ungeziefer verwandelt.".ToLower());
+            var token = IndexTermTokenizer.Tokenize("Als Gregor Samsa eines Morgens aus unruhigen Träumen erwachte, fand er sich in seinem Bett zu einem ungeheueren Ungeziefer verwandelt.".ToLower(), culture);
 
             var res = pipeStage.Process(token, culture)
                 .Select(x => x.Value)

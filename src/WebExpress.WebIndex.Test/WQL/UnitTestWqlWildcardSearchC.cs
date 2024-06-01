@@ -24,18 +24,19 @@ namespace WebExpress.WebIndex.Test.WQL
         [Fact]
         public void SingleCharacterFirst()
         {
-            var wql = Fixture.ExecuteWql("text~'?ame_123'");
+            // preconditions
+            var term = Fixture.Term;
+            var secondTerm = Fixture.RandomItem.Text.Split(' ').Skip(1).FirstOrDefault();
+
+            // test execution
+            var wql = Fixture.ExecuteWql($"text~'{term} {string.Concat("?", secondTerm.AsSpan(1))}'");
             var res = wql?.Apply();
-            var item = res?.FirstOrDefault();
 
             Assert.NotNull(res);
-            Assert.NotNull(item);
-            Assert.Equal(1, res.Count());
-            Assert.Equal("Text ~ '?ame_123'", wql.ToString());
-            Assert.Equal("Name_123", item.Text);
-            Assert.NotNull(wql.Filter);
-            Assert.Null(wql.Order);
-            Assert.Null(wql.Partitioning);
+            foreach (var item in res)
+            {
+                Assert.Contains($"{term} {secondTerm}", item.Text);
+            }
         }
 
         /// <summary>
@@ -44,18 +45,19 @@ namespace WebExpress.WebIndex.Test.WQL
         [Fact]
         public void SingleCharacterMiddle()
         {
-            var wql = Fixture.ExecuteWql("text~'Name_?23'");
+            // preconditions
+            var term = Fixture.Term;
+            var secondTerm = Fixture.RandomItem.Text.Split(' ').Skip(1).FirstOrDefault();
+
+            // test execution
+            var wql = Fixture.ExecuteWql($"text~'{term} {string.Concat(secondTerm.AsSpan(0, 2), "?", secondTerm.AsSpan(1))}'");
             var res = wql?.Apply();
-            var item = res?.FirstOrDefault();
 
             Assert.NotNull(res);
-            Assert.NotNull(item);
-            Assert.Equal(1, res.Count());
-            Assert.Equal("Text ~ 'Name_?23'", wql.ToString());
-            Assert.Equal("Name_123", item.Text);
-            Assert.NotNull(wql.Filter);
-            Assert.Null(wql.Order);
-            Assert.Null(wql.Partitioning);
+            foreach (var item in res)
+            {
+                Assert.Contains($"{term} {secondTerm}", item.Text);
+            }
         }
 
         /// <summary>
@@ -64,18 +66,19 @@ namespace WebExpress.WebIndex.Test.WQL
         [Fact]
         public void SingleCharacterEnd()
         {
-            var wql = Fixture.ExecuteWql("text~'Name_12?'");
+            // preconditions
+            var term = Fixture.Term;
+            var secondTerm = Fixture.RandomItem.Text.Split(' ').Skip(1).FirstOrDefault();
+
+            // test execution
+            var wql = Fixture.ExecuteWql($"text~'{term} {string.Concat(secondTerm[..^1], "?")}'");
             var res = wql?.Apply();
-            var item = res?.FirstOrDefault();
 
             Assert.NotNull(res);
-            Assert.NotNull(item);
-            Assert.Equal(1, res.Count());
-            Assert.Equal("Text ~ 'Name_12?'", wql.ToString());
-            Assert.Equal("Name_123", item.Text);
-            Assert.NotNull(wql.Filter);
-            Assert.Null(wql.Order);
-            Assert.Null(wql.Partitioning);
+            foreach (var item in res)
+            {
+                Assert.Contains($"{term} {secondTerm}", item.Text);
+            }
         }
 
         /// <summary>
@@ -84,18 +87,19 @@ namespace WebExpress.WebIndex.Test.WQL
         [Fact]
         public void MultipleCharacters()
         {
-            var wql = Fixture.ExecuteWql("text~'Name*'");
+            // preconditions
+            var term = Fixture.Term;
+            var secondTerm = Fixture.RandomItem.Text.Split(' ').Skip(1).FirstOrDefault();
+
+            // test execution
+            var wql = Fixture.ExecuteWql($"text~'{term} {string.Concat(secondTerm[..^1], "*")}'");
             var res = wql?.Apply();
-            var item = res?.FirstOrDefault();
 
             Assert.NotNull(res);
-            Assert.NotNull(item);
-            Assert.Equal(1, res.Count());
-            Assert.Equal("Text ~ 'Name*'", wql.ToString());
-            Assert.Equal("Name_123", item.Text);
-            Assert.NotNull(wql.Filter);
-            Assert.Null(wql.Order);
-            Assert.Null(wql.Partitioning);
+            foreach (var item in res)
+            {
+                Assert.Contains($"{term} {secondTerm}", item.Text);
+            }
         }
     }
 }

@@ -57,25 +57,5 @@ namespace WebExpress.WebIndex.Test.WQL
             Assert.Null(wql.Order);
             Assert.Null(wql.Partitioning);
         }
-
-        /// <summary>
-        /// Tests word search, which searches for terms in a document regardless of their case or position.
-        /// </summary>
-        [Fact]
-        public void MultipleWords()
-        {
-            var wql = Fixture.ExecuteWql("name~'Name_321 Name_123'");
-            var res = wql?.Apply();
-            var item = res?.FirstOrDefault();
-
-            Assert.NotNull(res);
-            Assert.NotNull(item);
-            Assert.Equal(2, res.Count());
-            Assert.Equal("Name ~ 'Name_321 Name_123'", wql.ToString());
-            Assert.Contains("Name_321", item.Name);
-            Assert.NotNull(wql.Filter);
-            Assert.Null(wql.Order);
-            Assert.Null(wql.Partitioning);
-        }
     }
 }

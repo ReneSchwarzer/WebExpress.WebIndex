@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using WebExpress.WebIndex.Test.Document;
+using WebExpress.WebIndex.Utility;
 
 namespace WebExpress.WebIndex.Test.Fixture
 {
@@ -27,6 +28,7 @@ namespace WebExpress.WebIndex.Test.Fixture
         /// </summary>
         public virtual void Dispose()
         {
+            Profiling.Store();
         }
 
         /// <summary>

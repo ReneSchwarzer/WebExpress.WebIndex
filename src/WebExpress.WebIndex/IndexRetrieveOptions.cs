@@ -16,6 +16,11 @@
         public IndexRetrieveMethod Method { get; internal set; }
 
         /// <summary>
+        /// Returns the distance for proximity searches.
+        /// </summary>
+        public uint Distance { get; internal set; } = 0;
+
+        /// <summary>
         /// Constructor
         /// </summary>
         public IndexRetrieveOptions()

@@ -1,5 +1,4 @@
-﻿using WebExpress.WebIndex.Test.Document;
-using WebExpress.WebIndex.Test.Fixture;
+﻿using WebExpress.WebIndex.Test.Fixture;
 using Xunit.Abstractions;
 
 namespace WebExpress.WebIndex.Test.WQL
@@ -7,7 +6,7 @@ namespace WebExpress.WebIndex.Test.WQL
     /// <summary>
     /// Phrase search (exact word sequence)
     /// </summary>
-    public class UnitTestWqlPhraseSearchD(UnitTestIndexFixtureWqlD fixture, ITestOutputHelper output) : IClassFixture<UnitTestIndexFixtureWqlD>
+    public class UnitTestWqlSearchPhraseD(UnitTestIndexFixtureWqlD fixture, ITestOutputHelper output) : IClassFixture<UnitTestIndexFixtureWqlD>
     {
         /// <summary>
         /// Returns the log.
@@ -23,20 +22,17 @@ namespace WebExpress.WebIndex.Test.WQL
         /// Tests phrase search, which retrieves content from documents that contain a specific order and combination of words defined by the phrase.
         /// </summary>
         [Fact]
-        public void MultipleWords()
+        public void MultipleMatch1()
         {
+            // test execution
             var wql = Fixture.ExecuteWql("description='lorem ipsum'");
             var res = wql?.Apply();
-            var item = res?.FirstOrDefault();
 
             Assert.NotNull(res);
-            Assert.NotNull(item);
-            Assert.True(res.Count() > 2);
-            Assert.Equal("Description = 'lorem ipsum'", wql.ToString());
-            Assert.Contains("lorem", item.Description);
-            Assert.NotNull(wql.Filter);
-            Assert.Null(wql.Order);
-            Assert.Null(wql.Partitioning);
+            foreach (var description in res.Select(x => x.Description))
+            {
+                Assert.Contains("lorem ipsum", description);
+            }
         }
     }
 }

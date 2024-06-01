@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using WebExpress.WebIndex.Utility;
 
 namespace WebExpress.WebIndex.Storage
 {
@@ -44,6 +45,10 @@ namespace WebExpress.WebIndex.Storage
         {
             get
             {
+                #if DEBUG 
+                using var profiling = Profiling.Diagnostic(); 
+                #endif
+
                 if (PositionAddr == 0)
                 {
                     yield break;
@@ -68,6 +73,10 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>The position segment.</returns>
         public IndexStorageSegmentPosition AddPosition(uint pos)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+            
             var item = default(IndexStorageSegmentPosition);
 
             lock (Guard)
@@ -139,66 +148,27 @@ namespace WebExpress.WebIndex.Storage
         }
 
         /// <summary>
-        /// Remove a position segments.
+        /// Remove all position segments.
         /// </summary>
-        /// <param name="pos">The position of the term.</param>
-        /// <returns>The position segment.</returns>
-        public IndexStorageSegmentPosition RemovePosition(uint pos)
+        public void RemovePositions()
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             if (PositionAddr == 0)
             {
-                return null;
+                return;
             }
 
             lock (Guard)
             {
-                // check whether it exists
-                var last = default(IndexStorageSegmentPosition);
-                var position = default(IndexStorageSegmentPosition);
-                var count = 0U;
-
-                foreach (var i in Positions)
+                foreach (var position in Positions)
                 {
-                    var compare = i.Position.CompareTo(pos);
-
-                    if (compare > 0)
-                    {
-                        break;
-                    }
-                    else if (compare == 0)
-                    {
-                        position = i;
-                        break;
-                    }
-
-                    last = i;
-
-                    count++;
-                }
-
-                if (position != null && last == null)
-                {
-                    // remove at the beginning
-                    PositionAddr = position.SuccessorAddr;
-
-                    Context.IndexFile.Write(this);
+                    // remove
                     Context.Allocator.Free(position);
-
-                    return position;
-                }
-                else if (position != null && last != null)
-                {
-                    // remove in place
-                    last.SuccessorAddr = position.SuccessorAddr;
-
-                    Context.IndexFile.Write(last);
-                    Context.Allocator.Free(position);
-
-                    return position;
                 }
             }
-
-            return null;
         }
 
         /// <summary>
@@ -207,6 +177,10 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="reader">The reader for i/o operations.</param>
         public override void Read(BinaryReader reader)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             DocumentID = new Guid(reader.ReadBytes(16));
             SuccessorAddr = reader.ReadUInt64();
             PositionAddr = reader.ReadUInt64();
@@ -218,6 +192,10 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="writer">The writer for i/o operations.</param>
         public override void Write(BinaryWriter writer)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             writer.Write(DocumentID.ToByteArray());
             writer.Write(SuccessorAddr);
             writer.Write(PositionAddr);
@@ -238,6 +216,10 @@ namespace WebExpress.WebIndex.Storage
         /// <exception cref="System.ArgumentException">Obj is not the same type as this instance.</exception>
         public int CompareTo(object obj)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+            
             if (obj is IndexStorageSegmentPosting posting)
             {
                 return DocumentID.CompareTo(posting.DocumentID);

@@ -3,6 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using WebExpress.WebIndex.Utility;
 
 namespace WebExpress.WebIndex.Term.Pipeline
 {
@@ -121,6 +122,10 @@ namespace WebExpress.WebIndex.Term.Pipeline
         /// <returns>The terms where the words have been converted to singular.</returns>
         public IEnumerable<IndexTermToken> Process(IEnumerable<IndexTermToken> input, CultureInfo culture)
         {
+#if DEBUG
+            using var profiling = Profiling.Diagnostic();
+#endif
+
             var supportedCulture = GetSupportedCulture(culture);
 
             if (!IrregularWordDictionary.ContainsKey(supportedCulture))
@@ -135,38 +140,45 @@ namespace WebExpress.WebIndex.Term.Pipeline
 
             foreach (var token in input)
             {
-                if (dict.TryGetValue(token.Value, out string value))
+                if (token.Value is string)
                 {
-                    yield return new IndexTermToken()
+                    if (dict.TryGetValue(token.Value.ToString(), out string value))
                     {
-                        Value = value,
-                        Position = token.Position
-                    };
+                        yield return new IndexTermToken()
+                        {
+                            Value = value,
+                            Position = token.Position
+                        };
+                    }
+                    else
+                    {
+                        var treated = false;
+
+                        foreach (var keyValue in RegularWordDictionary[supportedCulture])
+                        {
+                            if (Regex.Match(token.Value.ToString(), keyValue.Key).Success)
+                            {
+                                treated = true;
+
+                                yield return new IndexTermToken()
+                                {
+                                    Value = Regex.Replace(token.Value.ToString(), keyValue.Key, keyValue.Value),
+                                    Position = token.Position
+                                };
+
+                                break;
+                            }
+                        }
+
+                        if (!treated)
+                        {
+                            yield return token;
+                        }
+                    }
                 }
                 else
                 {
-                    var treated = false;
-
-                    foreach (var keyValue in RegularWordDictionary[supportedCulture])
-                    {
-                        if (Regex.Match(token.Value, keyValue.Key).Success)
-                        {
-                            treated = true;
-
-                            yield return new IndexTermToken()
-                            {
-                                Value = Regex.Replace(token.Value, keyValue.Key, keyValue.Value),
-                                Position = token.Position
-                            };
-
-                            break;
-                        }
-                    }
-
-                    if (!treated)
-                    {
-                        yield return token;
-                    }
+                    yield return token;
                 }
             }
         }

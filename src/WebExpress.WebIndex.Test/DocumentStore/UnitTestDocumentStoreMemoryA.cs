@@ -182,8 +182,10 @@ namespace WebExpress.WebIndex.Test.DocumentStore
             var documentStore = new IndexMemoryDocumentStore<UnitTestIndexTestDocumentA>(Context, 5);
 
             documentStore.Clear();
-            documentStore.Add(Fixture.TestData[0]);
-            documentStore.Add(Fixture.TestData[1]);
+            foreach (var item in Fixture.TestData)
+            {
+                documentStore.Add(item);
+            }
 
             // test execution
             var all = documentStore.All;

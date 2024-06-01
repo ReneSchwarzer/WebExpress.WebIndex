@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using WebExpress.WebIndex.Utility;
 using WebExpress.WebIndex.WebAttribute;
 
 namespace WebExpress.WebIndex.Storage
@@ -62,6 +64,10 @@ namespace WebExpress.WebIndex.Storage
         {
             get
             {
+                #if DEBUG 
+                using var profiling = Profiling.Diagnostic(); 
+                #endif
+
                 if (SiblingAddr == 0)
                 {
                     yield break;
@@ -86,6 +92,10 @@ namespace WebExpress.WebIndex.Storage
         {
             get
             {
+                #if DEBUG 
+                using var profiling = Profiling.Diagnostic(); 
+                #endif
+
                 if (ChildAddr == 0)
                 {
                     yield break;
@@ -116,6 +126,10 @@ namespace WebExpress.WebIndex.Storage
         {
             get
             {
+                #if DEBUG 
+                using var profiling = Profiling.Diagnostic(); 
+                #endif
+
                 yield return this;
 
                 foreach (var child in Children)
@@ -131,10 +145,14 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Returns all terms.
         /// </summary>
-        public IEnumerable<(string, Guid[])> Terms
+        public IEnumerable<(string, IndexStorageSegmentTermNode)> Terms
         {
             get
             {
+                #if DEBUG 
+                using var profiling = Profiling.Diagnostic(); 
+                #endif
+
                 foreach (var child in Children)
                 {
                     foreach (var term in child.Terms)
@@ -153,7 +171,7 @@ namespace WebExpress.WebIndex.Storage
                     yield break;
                 }
 
-                yield return (Character.ToString(), Postings?.Select(x => x.DocumentID).ToArray());
+                yield return (Character.ToString(), this);
             }
         }
 
@@ -161,7 +179,7 @@ namespace WebExpress.WebIndex.Storage
         /// Returns all items.
         /// </summary>
         public IEnumerable<Guid> All => Terms
-            .SelectMany(x => x.Item2);
+            .SelectMany(x => x.Item2.Postings.Select(x => x.DocumentID));
 
         /// <summary>
         /// Returns the a sorted list of the postings or no element.
@@ -170,6 +188,10 @@ namespace WebExpress.WebIndex.Storage
         {
             get
             {
+                #if DEBUG 
+                using var profiling = Profiling.Diagnostic(); 
+                #endif
+
                 if (PostingAddr == 0)
                 {
                     yield break;
@@ -196,6 +218,10 @@ namespace WebExpress.WebIndex.Storage
         {
             get
             {
+                #if DEBUG 
+                using var profiling = Profiling.Diagnostic(); 
+                #endif
+
                 if (subterm == null)
                 {
                     return this;
@@ -224,6 +250,10 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="subterm">A subterm that is shortened by the first character at each tree level.</param>
         public IndexStorageSegmentTermNode Add(string subterm)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+            
             if (subterm == null)
             {
                 return this;
@@ -260,6 +290,10 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>The posting segment.</returns>
         public IndexStorageSegmentPosting AddPosting(Guid id)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             var item = default(IndexStorageSegmentPosting);
 
             lock (Guard)
@@ -337,6 +371,10 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>The posting segment.</returns>
         public IndexStorageSegmentPosting RemovePosting(Guid id)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             if (PostingAddr == 0)
             {
                 return null;
@@ -376,6 +414,8 @@ namespace WebExpress.WebIndex.Storage
 
                     Context.IndexFile.Write(this);
                     Context.Allocator.Free(posting);
+                    
+                    posting.RemovePositions();
 
                     return posting;
                 }
@@ -386,6 +426,8 @@ namespace WebExpress.WebIndex.Storage
 
                     Context.IndexFile.Write(last);
                     Context.Allocator.Free(posting);
+
+                    posting.RemovePositions();
 
                     return posting;
                 }
@@ -400,6 +442,10 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>The child node.<returns>
         private IndexStorageSegmentTermNode AddChild(IndexStorageSegmentTermNode node)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             lock (Guard)
             {
                 if (ChildAddr == 0)
@@ -463,15 +509,53 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         /// <param name="term">The term.</param>
         /// <param name="options">The retrieve options.</param>
-        /// <returns>An enumeration of tuples with data ids and the terms.</returns>
+        /// <returns>An enumeration of data ids of the terms.</returns>
         public virtual IEnumerable<Guid> Retrieve(string term, IndexRetrieveOptions options)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
+            foreach (var posting in GetPostings(term))
+            {
+                yield return posting.DocumentID;
+            }
+        }
+
+        /// <summary>
+        /// Return all term posting items for a given term.
+        /// </summary>
+        /// <param name="term">The term.</param>
+        /// <returns>An enumeration of posting items.</returns>
+        internal virtual IEnumerable<IndexStorageSegmentPosting> GetPostings(string term)
+        {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
+            foreach (var node in GetLeafs(term))
+            {
+                foreach (var posting in node.Postings)
+                {
+                    yield return posting;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns the nodes in the tree.
+        /// </summary>
+        /// <param name="term">A subterm that is shortened by the first character at each tree level.</param>
+        /// <returns>An enumeration of leafs of the term.</returns>
+        public virtual IEnumerable<IndexStorageSegmentTermNode> GetLeafs(string term)
+        {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             if (term == null)
             {
-                foreach (var posting in Postings)
-                {
-                    yield return posting.DocumentID;
-                }
+                yield return this;
             }
             else
             {
@@ -484,9 +568,9 @@ namespace WebExpress.WebIndex.Storage
                         // find nodes
                         foreach (var child in Children)
                         {
-                            foreach (var id in child.Retrieve(next, options))
+                            foreach (var node in child.GetLeafs(next))
                             {
-                                yield return id;
+                                yield return node;
                             }
                         }
                         break;
@@ -496,10 +580,7 @@ namespace WebExpress.WebIndex.Storage
                         {
                             if (Regex.IsMatch(termTuple.Item1, pattern))
                             {
-                                foreach (var id in termTuple.Item2)
-                                {
-                                    yield return id;
-                                }
+                                yield return termTuple.Item2;
                             }
                         }
                         break;
@@ -510,12 +591,10 @@ namespace WebExpress.WebIndex.Storage
                             if (first == child.Character)
                             {
                                 // recursive descent
-                                foreach (var id in child.Retrieve(next, options))
+                                foreach (var node in child.GetLeafs(next))
                                 {
-                                    yield return id;
+                                    yield return node;
                                 }
-
-                                break;
                             }
                         }
                         break;
@@ -529,6 +608,10 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="reader">The reader for i/o operations.</param>
         public override void Read(BinaryReader reader)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             Character = reader.ReadChar();
             SiblingAddr = reader.ReadUInt64();
             ChildAddr = reader.ReadUInt64();
@@ -542,6 +625,10 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="writer">The writer for i/o operations.</param>
         public override void Write(BinaryWriter writer)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             writer.Write(Character);
             writer.Write(SiblingAddr);
             writer.Write(ChildAddr);
@@ -564,6 +651,10 @@ namespace WebExpress.WebIndex.Storage
         /// <exception cref="System.ArgumentException">Obj is not the same type as this instance.</exception>
         public int CompareTo(object obj)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             if (obj is IndexStorageSegmentTermNode item)
             {
                 return Character == item.Character ? 0 : -1;
@@ -578,6 +669,10 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>The order expression as a string.</returns>
         public override string ToString()
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+            
             if (IsRoot)
             {
                 return "ROOT";

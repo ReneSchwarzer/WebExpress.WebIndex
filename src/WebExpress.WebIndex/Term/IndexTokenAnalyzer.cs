@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using WebExpress.WebIndex.Term.Pipeline;
+using WebExpress.WebIndex.Utility;
 
 namespace WebExpress.WebIndex.Term
 {
@@ -110,14 +111,18 @@ namespace WebExpress.WebIndex.Term
         /// <returns>The terms.</returns>
         public IEnumerable<IndexTermToken> Analyze(string input, CultureInfo culture, bool retrieval = false)
         {
-            var tokens = IndexTermTokenizer.Tokenize(input, retrieval ? IndexTermTokenizer.Wildcards : null);
+#if DEBUG
+            using var profiling = Profiling.Diagnostic();
+#endif
+
+            var tokens = IndexTermTokenizer.Tokenize(input, culture, retrieval ? IndexTermTokenizer.Wildcards : null);
 
             foreach (var pipeStage in TextProcessingPipeline)
             {
-                return pipeStage.Process(tokens, culture);
+                tokens = pipeStage.Process(tokens, culture);
             }
 
-            return [];
+            return tokens;
         }
 
         /// <summary>

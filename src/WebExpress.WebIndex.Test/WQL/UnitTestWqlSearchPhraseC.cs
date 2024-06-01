@@ -6,7 +6,7 @@ namespace WebExpress.WebIndex.Test.WQL
     /// <summary>
     /// Phrase search (exact word sequence)
     /// </summary>
-    public class UnitTestWqlPhraseSearchE(UnitTestIndexFixtureWqlE fixture, ITestOutputHelper output) : IClassFixture<UnitTestIndexFixtureWqlE>
+    public class UnitTestWqlSearchPhraseC(UnitTestIndexFixtureWqlC fixture, ITestOutputHelper output) : IClassFixture<UnitTestIndexFixtureWqlC>
     {
         /// <summary>
         /// Returns the log.
@@ -16,26 +16,27 @@ namespace WebExpress.WebIndex.Test.WQL
         /// <summary>
         /// Returns the test context.
         /// </summary>
-        protected UnitTestIndexFixtureWqlE Fixture { get; set; } = fixture;
+        protected UnitTestIndexFixtureWqlC Fixture { get; set; } = fixture;
 
         /// <summary>
         /// Tests phrase search, which retrieves content from documents that contain a specific order and combination of words defined by the phrase.
         /// </summary>
         [Fact]
-        public void SingleWord()
+        public void MultipleMatch1()
         {
-            var wql = Fixture.ExecuteWql("name='Olivia'");
+            // preconditions
+            var term = Fixture.Term;
+            var secondTerm = Fixture.RandomItem.Text.Split(' ').Skip(1).FirstOrDefault();
+
+            // test execution
+            var wql = Fixture.ExecuteWql($"text='{term} {secondTerm}'");
             var res = wql?.Apply();
-            var item = res?.FirstOrDefault();
 
             Assert.NotNull(res);
-            Assert.NotNull(item);
-            Assert.Equal(1, res.Count());
-            Assert.Equal("Name = 'Olivia'", wql.ToString());
-            Assert.Contains("Olivia", item.Name);
-            Assert.NotNull(wql.Filter);
-            Assert.Null(wql.Order);
-            Assert.Null(wql.Partitioning);
+            foreach (var text in res.Select(x => x.Text))
+            {
+                Assert.Contains($"{term} {secondTerm}", text);
+            }
         }
     }
 }

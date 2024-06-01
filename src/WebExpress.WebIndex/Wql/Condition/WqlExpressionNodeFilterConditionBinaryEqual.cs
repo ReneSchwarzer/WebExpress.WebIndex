@@ -22,7 +22,11 @@ namespace WebExpress.WebIndex.Wql.Condition
         {
             var value = Parameter.GetValue()?.ToString();
 
-            return Attribute.ReverseIndex?.Retrieve(value, new IndexRetrieveOptions()).AsQueryable();
+            return Attribute.ReverseIndex?.Retrieve(value, new IndexRetrieveOptions()
+            {
+                Method = IndexRetrieveMethod.Phrase,
+                Distance = Options.Distance.HasValue ? Options.Distance.Value : 0
+            }).AsQueryable();
         }
 
         /// <summary>

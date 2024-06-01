@@ -43,7 +43,7 @@ namespace WebExpress.WebIndex.Test.Token
                 ("joyful", "happy")
             ];
 
-            var res = pipeStage.Process(IndexTermTokenizer.Tokenize(string.Join(" ", words.Select(x => x.Item1))), culture)
+            var res = pipeStage.Process(IndexTermTokenizer.Tokenize(string.Join(" ", words.Select(x => x.Item1)), culture), culture)
                 .Select(x => x.Value)
                 .ToList();
 
@@ -64,7 +64,7 @@ namespace WebExpress.WebIndex.Test.Token
                 ("kfz", "auto")
             ];
 
-            var res = pipeStage.Process(IndexTermTokenizer.Tokenize(string.Join(" ", words.Select(x => x.Item1))), culture)
+            var res = pipeStage.Process(IndexTermTokenizer.Tokenize(string.Join(" ", words.Select(x => x.Item1)), culture), culture)
                 .Select(x => x.Value)
                 .ToList();
 

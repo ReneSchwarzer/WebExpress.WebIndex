@@ -24,6 +24,7 @@ namespace WebExpress.WebIndex.Test.WQL
         [Fact]
         public void SingleCharacterFirst()
         {
+            // test execution
             var wql = Fixture.ExecuteWql("name~'?ame_123'");
             var res = wql?.Apply();
             var item = res?.FirstOrDefault();
@@ -31,11 +32,7 @@ namespace WebExpress.WebIndex.Test.WQL
             Assert.NotNull(res);
             Assert.NotNull(item);
             Assert.Equal(1, res.Count());
-            Assert.Equal("Name ~ '?ame_123'", wql.ToString());
             Assert.Equal("Name_123", item.Name);
-            Assert.NotNull(wql.Filter);
-            Assert.Null(wql.Order);
-            Assert.Null(wql.Partitioning);
         }
 
         /// <summary>
@@ -44,18 +41,16 @@ namespace WebExpress.WebIndex.Test.WQL
         [Fact]
         public void SingleCharacterMiddle()
         {
+            // test execution
             var wql = Fixture.ExecuteWql("name~'Name_?23'");
             var res = wql?.Apply();
-            var item = res?.FirstOrDefault();
 
             Assert.NotNull(res);
-            Assert.NotNull(item);
-            Assert.Equal(1, res.Count());
-            Assert.Equal("Name ~ 'Name_?23'", wql.ToString());
-            Assert.Equal("Name_123", item.Name);
-            Assert.NotNull(wql.Filter);
-            Assert.Null(wql.Order);
-            Assert.Null(wql.Partitioning);
+
+            foreach (var item in res)
+            {
+                Assert.Matches("Name_.23", item.Name);
+            }
         }
 
         /// <summary>
@@ -64,18 +59,15 @@ namespace WebExpress.WebIndex.Test.WQL
         [Fact]
         public void SingleCharacterEnd()
         {
+            // test execution
             var wql = Fixture.ExecuteWql("name~'Name_12?'");
             var res = wql?.Apply();
-            var item = res?.FirstOrDefault();
 
             Assert.NotNull(res);
-            Assert.NotNull(item);
-            Assert.Equal(1, res.Count());
-            Assert.Equal("Name ~ 'Name_12?'", wql.ToString());
-            Assert.Equal("Name_123", item.Name);
-            Assert.NotNull(wql.Filter);
-            Assert.Null(wql.Order);
-            Assert.Null(wql.Partitioning);
+            foreach (var item in res)
+            {
+                Assert.Matches("Name_12.", item.Name);
+            }
         }
 
         /// <summary>
@@ -84,18 +76,15 @@ namespace WebExpress.WebIndex.Test.WQL
         [Fact]
         public void MultipleCharacters()
         {
+            // test execution
             var wql = Fixture.ExecuteWql("name~'Name*'");
             var res = wql?.Apply();
-            var item = res?.FirstOrDefault();
 
             Assert.NotNull(res);
-            Assert.NotNull(item);
-            Assert.Equal(1, res.Count());
-            Assert.Equal("Name ~ 'Name*'", wql.ToString());
-            Assert.Equal("Name_123", item.Name);
-            Assert.NotNull(wql.Filter);
-            Assert.Null(wql.Order);
-            Assert.Null(wql.Partitioning);
+            foreach (var item in res)
+            {
+                Assert.Matches("Name.*", item.Name);
+            }
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using WebExpress.WebIndex.Test.Document;
-using WebExpress.WebIndex.Test.Fixture;
+﻿using WebExpress.WebIndex.Test.Fixture;
 using Xunit.Abstractions;
 
 namespace WebExpress.WebIndex.Test.WQL
@@ -7,7 +6,7 @@ namespace WebExpress.WebIndex.Test.WQL
     /// <summary>
     /// Phrase search (exact word sequence)
     /// </summary>
-    public class UnitTestWqlPhraseSearchA(UnitTestIndexFixtureWqlA fixture, ITestOutputHelper output) : IClassFixture<UnitTestIndexFixtureWqlA>
+    public class UnitTestWqlSearchPhraseB(UnitTestIndexFixtureWqlB fixture, ITestOutputHelper output) : IClassFixture<UnitTestIndexFixtureWqlB>
     {
         /// <summary>
         /// Returns the log.
@@ -17,7 +16,7 @@ namespace WebExpress.WebIndex.Test.WQL
         /// <summary>
         /// Returns the test context.
         /// </summary>
-        protected UnitTestIndexFixtureWqlA Fixture { get; set; } = fixture;
+        protected UnitTestIndexFixtureWqlB Fixture { get; set; } = fixture;
 
         /// <summary>
         /// Tests the parser.
@@ -25,7 +24,8 @@ namespace WebExpress.WebIndex.Test.WQL
         [Fact]
         public void ParseValidWql1()
         {
-            var wql = Fixture.ExecuteWql("text='Helena'");
+            // test execution
+            var wql = Fixture.ExecuteWql("description='lorem ipsum'");
             Assert.False(wql.HasErrors);
         }
 
@@ -35,7 +35,8 @@ namespace WebExpress.WebIndex.Test.WQL
         [Fact]
         public void ParseValidWql2()
         {
-            var wql = Fixture.ExecuteWql("text=\"Helena\"");
+            // test execution
+            var wql = Fixture.ExecuteWql("description=\"lorem ipsum\"");
             Assert.False(wql.HasErrors);
         }
 
@@ -45,17 +46,8 @@ namespace WebExpress.WebIndex.Test.WQL
         [Fact]
         public void ParseValidWql3()
         {
-            var wql = Fixture.ExecuteWql("text=Helena");
-            Assert.False(wql.HasErrors);
-        }
-
-        /// <summary>
-        /// Tests the parser.
-        /// </summary>
-        [Fact]
-        public void ParseValidWql4()
-        {
-            var wql = Fixture.ExecuteWql("text='Helena Helge'");
+            // test execution
+            var wql = Fixture.ExecuteWql("description=lorem");
             Assert.False(wql.HasErrors);
         }
 
@@ -65,7 +57,8 @@ namespace WebExpress.WebIndex.Test.WQL
         [Fact]
         public void ParseInvalidWql1()
         {
-            var wql = Fixture.ExecuteWql("text~Helena Helge order by text");
+            // test execution
+            var wql = Fixture.ExecuteWql("description=lorem ipsum");
             Assert.True(wql.HasErrors);
         }
 
@@ -75,7 +68,8 @@ namespace WebExpress.WebIndex.Test.WQL
         [Fact]
         public void ParseInvalidWql2()
         {
-            var wql = Fixture.ExecuteWql("text~'Helena Helge order by text");
+            // test execution
+            var wql = Fixture.ExecuteWql("description='lorem ipsum");
             Assert.True(wql.HasErrors);
         }
 
@@ -85,7 +79,8 @@ namespace WebExpress.WebIndex.Test.WQL
         [Fact]
         public void ParseInvalidWql3()
         {
-            var wql = Fixture.ExecuteWql("text~'Helena Helge\" order by text");
+            // test execution
+            var wql = Fixture.ExecuteWql("description='lorem ipsum\"");
             Assert.True(wql.HasErrors);
         }
 
@@ -95,7 +90,8 @@ namespace WebExpress.WebIndex.Test.WQL
         [Fact]
         public void ParseInvalidWql4()
         {
-            var wql = Fixture.ExecuteWql("~'Helena Helge\" order by text");
+            // test execution
+            var wql = Fixture.ExecuteWql("='lorem ipsum'");
             Assert.True(wql.HasErrors);
         }
 
@@ -103,23 +99,34 @@ namespace WebExpress.WebIndex.Test.WQL
         /// Tests phrase search, which retrieves content from documents that contain a specific order and combination of words defined by the phrase.
         /// </summary>
         [Fact]
-        public void MultipleWords()
+        public void SingleMatch1()
         {
-            Fixture.IndexManager.Insert(new UnitTestIndexTestDocumentD()
-            {
-                Id = Guid.NewGuid(),
-
-            });
-
-            var wql = Fixture.ExecuteWql("text='Hello Helena, Hello Helge'");
+            // test execution
+            var wql = Fixture.ExecuteWql("Description='lorem'");
             var res = wql?.Apply();
 
             Assert.NotNull(res);
-            Assert.Equal(2, res.Count());
-            Assert.Equal("Text = 'Hello Helena, Hello Helge'", wql.ToString());
-            Assert.NotNull(wql.Filter);
-            Assert.Null(wql.Order);
-            Assert.Null(wql.Partitioning);
+            foreach (var description in res.Select(x => x.Description))
+            {
+                Assert.Contains("lorem", description);
+            }
+        }
+
+        /// <summary>
+        /// Tests phrase search, which retrieves content from documents that contain a specific order and combination of words defined by the phrase.
+        /// </summary>
+        [Fact]
+        public void MultipleMatch1()
+        {
+            // test execution
+            var wql = Fixture.ExecuteWql("Description='lorem ipsum'");
+            var res = wql?.Apply();
+
+            Assert.NotNull(res);
+            foreach (var description in res.Select(x => x.Description))
+            {
+                Assert.Contains("lorem ipsum", description);
+            }
         }
     }
 }

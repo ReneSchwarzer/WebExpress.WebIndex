@@ -3,7 +3,6 @@
 # ToDos
 - Merging free storage areas
 - build in wql functions
-- Proximity search
 - Fuzzy search
 - performance improvements 
 
@@ -813,7 +812,7 @@ IndexManager.Register<Test>(CultureInfo.GetCultureInfo("en"), IndexType.Storage)
 var greetings = new []
 {
     new Greetings { Id = new Guid("b2e8a5c3-1f6d-4e7b-9e1f-8c1a9d0f2b4a"), Text = "Hello Helena!"},
-    new Greetings { Id = new Guid("c7d8f9e0-3a2b-4c5d-8e6f-9a1b0c2d4e5f"), Text = "Hello Helena, Helge & Helena!"}
+    new Greetings { Id = new Guid("c7d8f9e0-3a2b-4c5d-8e6f-9a1b0c2d4e5f"), Text = "Hello Helena and Helge!"}
 };
 
 IndexManager.ReIndex(greetings);
@@ -854,10 +853,8 @@ IndexManager.ReIndex(greetings);
                                      ┌Pos: 413┐◄────│ 413    │           │ 1      │     └────────┘     │ 0      │
                                      │ 3      │     └────────┘           │ 0      │                    │ 309    │────►┌Pos: 309┐
                                      │ 0      │                          └────────┘                    └────────┘     │ 1      │
-                                     └────────┘                                                        ┌Pos: 425┐◄────│ 425    │
-                                                                                                       │ 4      │     └────────┘
-                                                                                                       │ 0      │
-                                                                                                       └────────┘
+                                     └────────┘                                                                       │ 0      │
+                                                                                                                      └────────┘
 ```
 
 # WQL

@@ -4,9 +4,9 @@ using Xunit.Abstractions;
 namespace WebExpress.WebIndex.Test.WQL
 {
     /// <summary>
-    /// Proximity search
+    /// Phrase search (exact word sequence)
     /// </summary>
-    public class UnitTestWqlProximitySearchE(UnitTestIndexFixtureWqlE fixture, ITestOutputHelper output) : IClassFixture<UnitTestIndexFixtureWqlE>
+    public class UnitTestWqlSearchPhraseE(UnitTestIndexFixtureWqlE fixture, ITestOutputHelper output) : IClassFixture<UnitTestIndexFixtureWqlE>
     {
         /// <summary>
         /// Returns the log.
@@ -19,19 +19,20 @@ namespace WebExpress.WebIndex.Test.WQL
         protected UnitTestIndexFixtureWqlE Fixture { get; set; } = fixture;
 
         /// <summary>
-        /// Tests proximity searches, in which two or more terms must appear at a certain distance from each other.
+        /// Tests phrase search, which retrieves content from documents that contain a specific order and combination of words defined by the phrase.
         /// </summary>
         [Fact]
-        public void MultipleWords()
+        public void SingleMatch()
         {
-            var wql = Fixture.ExecuteWql("name~2'Olivia'");
+            // test execution
+            var wql = Fixture.ExecuteWql("name='Olivia'");
             var res = wql?.Apply();
-            
             var item = res?.FirstOrDefault();
+
             Assert.NotNull(res);
             Assert.NotNull(item);
-            Assert.True(res.Count() > 2);
-            Assert.Equal("Name ~2 'Olivia'", wql.ToString());
+            Assert.Equal(1, res.Count());
+            Assert.Equal("Name = 'Olivia'", wql.ToString());
             Assert.Contains("Olivia", item.Name);
             Assert.NotNull(wql.Filter);
             Assert.Null(wql.Order);

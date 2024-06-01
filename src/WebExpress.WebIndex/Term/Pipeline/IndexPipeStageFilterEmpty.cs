@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
+using WebExpress.WebIndex.Utility;
 
 namespace WebExpress.WebIndex.Term.Pipeline
 {
@@ -29,9 +30,20 @@ namespace WebExpress.WebIndex.Term.Pipeline
         /// <returns>The filtered term enumeration.</returns>
         public IEnumerable<IndexTermToken> Process(IEnumerable<IndexTermToken> input, CultureInfo culture)
         {
+#if DEBUG
+            using var profiling = Profiling.Diagnostic();
+#endif
+
             foreach (var token in input)
             {
-                if (!string.IsNullOrWhiteSpace(token.Value))
+                if (token.Value is string)
+                {
+                    if (!string.IsNullOrWhiteSpace(token.Value.ToString()))
+                    {
+                        yield return token;
+                    }
+                }
+                else
                 {
                     yield return token;
                 }

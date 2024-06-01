@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using WebExpress.WebIndex.Utility;
 
 namespace WebExpress.WebIndex.Term.Pipeline
 {
@@ -42,6 +43,10 @@ namespace WebExpress.WebIndex.Term.Pipeline
         /// <returns>The terms at which the synonyms have been converted.</returns>
         public IEnumerable<IndexTermToken> Process(IEnumerable<IndexTermToken> input, CultureInfo culture)
         {
+#if DEBUG
+            using var profiling = Profiling.Diagnostic();
+#endif
+
             var supportedCulture = GetSupportedCulture(culture);
 
             if (!SynonymDictionary.ContainsKey(supportedCulture))
@@ -54,13 +59,20 @@ namespace WebExpress.WebIndex.Term.Pipeline
 
             foreach (var token in input)
             {
-                if (SynonymDictionary[supportedCulture].TryGetValue(token.Value, out string value))
+                if (token.Value is string)
                 {
-                    yield return new IndexTermToken()
+                    if (SynonymDictionary[supportedCulture].TryGetValue(token.Value.ToString(), out string value))
                     {
-                        Value = value,
-                        Position = token.Position
-                    };
+                        yield return new IndexTermToken()
+                        {
+                            Value = value,
+                            Position = token.Position
+                        };
+                    }
+                    else
+                    {
+                        yield return token;
+                    }
                 }
                 else
                 {

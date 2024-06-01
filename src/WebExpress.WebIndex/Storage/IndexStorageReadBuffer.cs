@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using WebExpress.WebIndex.Utility;
 
 namespace WebExpress.WebIndex.Storage
 {
@@ -47,6 +48,10 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="file">A stream for the index file.</param>
         public IndexStorageReadBuffer(IndexStorageFile file)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+            
             _cache = new Dictionary<ulong, IndexStorageReadBufferItem>((int)MaxCachedSegments);
             _imperishableCache = new Dictionary<ulong, IndexStorageReadBufferItem>((int)MaxCachedSegments);
             StorageFile = file;
@@ -61,6 +66,10 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="segment">The segment.</param>
         public void Cache(IIndexStorageSegment segment)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             var segmentItem = new IndexStorageReadBufferItem(segment);
 
             if (segmentItem.Counter < uint.MaxValue)
@@ -99,6 +108,10 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="segment">The segment.</param>
         public void Read(IIndexStorageSegment segment)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             lock (StorageFile.Guard)
             {
                 Reader.BaseStream.Seek((long)segment.Addr, SeekOrigin.Begin);
@@ -113,6 +126,10 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         public void ReduceLifetimeAndRemoveExpiredSegments()
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             if (_cache.Count < 0.8 * MaxCachedSegments)
             {
                 lock (StorageFile.Guard)
@@ -143,6 +160,10 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="segment">The segment object to be invalidated.</param>
         public void Invalidation(IIndexStorageSegment segment)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             _cache.Remove(segment.Addr, out _);
         }
 
@@ -153,6 +174,10 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>True if the segment has already been stored in the buffer, false otherwise.</returns>
         public bool Contains(IIndexStorageSegment segment)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             return _cache.ContainsKey(segment.Addr) || _imperishableCache.ContainsKey(segment.Addr);
         }
 
@@ -163,6 +188,10 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>True if the segment has already been stored in the buffer, false otherwise.</returns>
         public bool Contains(ulong addr)
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             return _cache.ContainsKey(addr) || _imperishableCache.ContainsKey(addr);
         }
 
@@ -174,6 +203,10 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>True if the segment is cached, false otherwise.</returns>
         public bool GetSegment<T>(ulong addr, out IIndexStorageSegment segment) where T : IIndexStorageSegment
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+
             if (_cache.TryGetValue(addr, out IndexStorageReadBufferItem cached))
             {
                 cached.Refresh();
@@ -199,6 +232,10 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         public virtual void Dispose()
         {
+            #if DEBUG 
+            using var profiling = Profiling.Diagnostic(); 
+            #endif
+            
             Timer.Dispose();
 
             GC.SuppressFinalize(this);

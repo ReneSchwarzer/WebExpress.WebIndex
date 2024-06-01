@@ -8,7 +8,7 @@ namespace WebExpress.WebIndex.Memory
     /// <summary>
     /// Represents a tree which is formed from the characters of the terms.
     /// </summary>
-    public class IndexMemoryReverseTerm<T> where T : IIndexItem
+    public class IndexMemoryReverseTerm 
     {
         /// <summary>
         /// The character of the node.
@@ -18,12 +18,12 @@ namespace WebExpress.WebIndex.Memory
         /// <summary>
         /// Returns or sets the child nodes of the tree.
         /// </summary>
-        public List<IndexMemoryReverseTerm<T>> Children { get; set; } = [];
+        public List<IndexMemoryReverseTerm> Children { get; set; } = [];
 
         /// <summary>
         /// Returns or sets the postings. This is always on the leaf of an term.
         /// </summary>
-        public List<IndexMemoryReversePosting<T>> Postings { get; set; }
+        public List<IndexMemoryReversePosting> Postings { get; set; }
 
         /// <summary>
         /// Checks whether the current node is the root.
@@ -34,7 +34,7 @@ namespace WebExpress.WebIndex.Memory
         /// Passes through the tree in pre order.
         /// </summary>
         /// <returns>The tree as a list.</returns>
-        public IEnumerable<IndexMemoryReverseTerm<T>> PreOrder
+        public IEnumerable<IndexMemoryReverseTerm> PreOrder
         {
             get
             {
@@ -53,7 +53,7 @@ namespace WebExpress.WebIndex.Memory
         /// <summary>
         /// Returns all terms.
         /// </summary>
-        public IEnumerable<(string, Guid[])> Terms
+        public IEnumerable<(string, IndexMemoryReverseTerm)> Terms
         {
             get
             {
@@ -75,7 +75,7 @@ namespace WebExpress.WebIndex.Memory
                     yield break;
                 }
 
-                yield return (Character.ToString(), Postings?.Select(x => x.DocumentID).ToArray());
+                yield return (Character.ToString(), this);
             }
         }
 
@@ -89,30 +89,30 @@ namespace WebExpress.WebIndex.Memory
         /// <summary>
         /// Create tree from term and save item in leaf.
         /// </summary>
-        /// <param name="item">The data to be added to the index.</param>
+        /// <param name="id">The data to be added to the index.</param>
         /// <param name="subterm">A subterm that is shortened by the first character at each tree level.</param>
         /// <param name="position">The position of the term in the input value.</param>
-        public void Add(T item, string subterm, uint position)
+        public void Add(Guid id, string subterm, uint position)
         {
             if (subterm == null)
             {
                 // end of recursive descent reached
                 Postings ??= [];
-                var posting = Postings.FirstOrDefault(x => x.DocumentID.Equals(item.Id));
+                var posting = Postings.FirstOrDefault(x => x.DocumentID.Equals(id));
 
                 if (posting == null)
                 {
-                    Postings.Add(new IndexMemoryReversePosting<T>(item, position));
+                    Postings.Add(new IndexMemoryReversePosting(id, position));
                 }
-                else if (!posting.Contains<uint>(position))
+                else if (!posting.Positions.Contains<uint>(position))
                 {
-                    posting.Add(position);
+                    posting.Positions.Add(position);
                 }
 
                 return;
             }
 
-            var children = Children as List<IndexMemoryReverseTerm<T>>;
+            var children = Children as List<IndexMemoryReverseTerm>;
             var first = subterm.FirstOrDefault();
             var next = subterm.Length > 1 ? subterm[1..] : null;
 
@@ -122,28 +122,28 @@ namespace WebExpress.WebIndex.Memory
                 if (first == child.Character)
                 {
                     // recursive descent
-                    child.Add(item, next, position);
+                    child.Add(id, next, position);
 
                     return;
                 }
             }
 
             // add new node
-            var node = new IndexMemoryReverseTerm<T>() { Character = first };
+            var node = new IndexMemoryReverseTerm() { Character = first };
             children.Add(node);
-            node.Add(item, next, position);
+            node.Add(id, next, position);
         }
 
         /// <summary>
         /// The data to be removed from the field.
         /// </summary>
         /// <param name="subterm">A subterm that is shortened by the first character at each tree level.</param>
-        /// <param name="item">The data to be added to the index.</param>
-        public void Remove(string subterm, T item)
+        /// <param name="id">The data to be added to the index.</param>
+        public void Remove(string subterm, Guid id)
         {
             if (subterm == null)
             {
-                Postings = Postings?.Where(X => !X.DocumentID.Equals(item.Id)).ToList();
+                Postings = Postings?.Where(X => !X.DocumentID.Equals(id)).ToList();
 
                 return;
             }
@@ -157,7 +157,7 @@ namespace WebExpress.WebIndex.Memory
                 if (first == child.Character)
                 {
                     // recursive descent
-                    child.Remove(next, item);
+                    child.Remove(next, id);
                 }
             }
         }
@@ -167,15 +167,41 @@ namespace WebExpress.WebIndex.Memory
         /// </summary>
         /// <param name="term">The term.</param>
         /// <param name="options">The retrieve options.</param>
-        /// <returns>An enumeration of tuples with data ids and the terms.</returns>
+        /// <returns>An enumeration of data ids of the terms.</returns>
         public virtual IEnumerable<Guid> Retrieve(string term, IndexRetrieveOptions options)
+        {
+            foreach (var posting in GetPostings(term))
+            {
+                yield return posting.DocumentID;
+            }
+        }
+
+        /// <summary>
+        /// Return all term posting items for a given term.
+        /// </summary>
+        /// <param name="term">The term.</param>
+        /// <returns>An enumeration of posting items.</returns>
+        internal virtual IEnumerable<IndexMemoryReversePosting> GetPostings(string term)
+        {
+            foreach (var node in GetLeafs(term))
+            {
+                foreach (var posting in node.Postings)
+                {
+                    yield return posting;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns the nodes in the tree.
+        /// </summary>
+        /// <param name="term">A subterm that is shortened by the first character at each tree level.</param>
+        /// <returns>An enumeration of leafs of the term.</returns>
+        public virtual IEnumerable<IndexMemoryReverseTerm> GetLeafs(string term)
         {
             if (term == null)
             {
-                foreach (var posting in Postings)
-                {
-                    yield return posting.DocumentID;
-                }
+                yield return this;
             }
             else
             {
@@ -188,9 +214,9 @@ namespace WebExpress.WebIndex.Memory
                         // find nodes
                         foreach (var child in Children)
                         {
-                            foreach (var id in child.Retrieve(next, options))
+                            foreach (var node in child.GetLeafs(next))
                             {
-                                yield return id;
+                                yield return node;
                             }
                         }
                         break;
@@ -200,10 +226,7 @@ namespace WebExpress.WebIndex.Memory
                         {
                             if (Regex.IsMatch(termTuple.Item1, pattern))
                             {
-                                foreach (var id in termTuple.Item2)
-                                {
-                                    yield return id;
-                                }
+                                yield return termTuple.Item2;
                             }
                         }
                         break;
@@ -214,9 +237,9 @@ namespace WebExpress.WebIndex.Memory
                             if (first == child.Character)
                             {
                                 // recursive descent
-                                foreach (var id in child.Retrieve(next, options))
+                                foreach (var node in child.GetLeafs(next))
                                 {
-                                    yield return id;
+                                    yield return node;
                                 }
                             }
                         }
