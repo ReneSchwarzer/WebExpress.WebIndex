@@ -138,6 +138,18 @@ namespace WebExpress.WebIndex
         }
 
         /// <summary>
+        /// Removes all index documents of type.
+        /// </summary>
+        /// <param name="dataType">The data type. This must have the IIndexItem interface.</param>
+        public void Drop(Type dataType)
+        {
+            var genericMethod = typeof(IndexManager).GetMethod("Drop", 1, []);
+            var specificMethod = genericMethod.MakeGenericMethod(dataType);
+
+            specificMethod.Invoke(this, []);
+        }
+
+        /// <summary>
         /// Removes all index documents of type T.
         /// </summary>
         /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>

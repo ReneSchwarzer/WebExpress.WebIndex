@@ -2,13 +2,18 @@ namespace WebExpress.WebIndex.Studio.Views;
 
 public partial class ObjectDetailsView : ContentView
 {
-    public ObjectDetailsView(Model.Object @object)
+    public ObjectDetailsView(Model.Object @object, string target = "")
     {
         InitializeComponent();
 
         BindingContext = @object;
 
-        Frame.Content = new ObjectDetailsDataView(BindingContext as Model.Object);
+        Frame.Content = target?.ToLower() switch
+        {
+            "property" => new ObjectPropertyView(BindingContext as Model.Object),
+            "attribute" => new ObjectDetailsAttributes(BindingContext as Model.Object),
+            _ => new ObjectDetailsDataView(BindingContext as Model.Object)
+        };
     }
 
     private void OnDataClicked(object sender, EventArgs e)

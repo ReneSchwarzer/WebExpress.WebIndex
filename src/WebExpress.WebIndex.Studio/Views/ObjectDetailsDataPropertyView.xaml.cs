@@ -17,7 +17,7 @@ public partial class ObjectDetailsDataPropertyView : ContentView
         stackLayout.Children.Add(idLlabel);
         stackLayout.Children.Add(idValue);
 
-        foreach (var attribute in @object.Attributes)
+        foreach (var attribute in @object?.Attributes ?? [])
         {
 
             var label = new Label { Text = $"{attribute.Name}:", Margin = new Thickness(2) };

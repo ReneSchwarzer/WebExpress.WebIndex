@@ -9,6 +9,7 @@
                 <Setter Property="TextColor" Value="Black" />
                 <Setter Property="BackgroundColor" Value="Transparent" />
                 <Setter Property="BorderColor" Value="Transparent" />
+                <Setter Property="CornerRadius" Value="0" />
                 <Style.Triggers>
                     <Trigger TargetType="Button" Property="IsPressed" Value="True">
                         <Setter Property="BorderColor" Value="Blue" />
@@ -29,17 +30,14 @@
 
             <Button Text="Daten" Clicked="OnDataClicked" Style="{StaticResource ButtonStyle}" />
             <Button Text="Attribute" Clicked="OnAttributesClicked" Style="{StaticResource ButtonStyle}"/>
-            <Button Text="Einstellungen" Clicked="OnPropertyClicked" Style="{StaticResource ButtonStyle}"/>
+            <Button Text="Properties" Clicked="OnPropertyClicked" Style="{StaticResource ButtonStyle}"/>
             
         </StackLayout>
 
         <Frame Grid.Row="1" 
                x:Name="Frame" 
                VerticalOptions="FillAndExpand"
-               HorizontalOptions="FillAndExpand" 
-               BorderColor="Transparent"
-               Padding="0"
-               CornerRadius="0">    
+               HorizontalOptions="FillAndExpand">    
         </Frame>
 
     </Grid>

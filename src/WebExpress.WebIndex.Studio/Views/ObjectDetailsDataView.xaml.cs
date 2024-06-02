@@ -8,7 +8,7 @@ public partial class ObjectDetailsDataView : ContentView
 
         BindingContext = @object;
 
-        Frame.Content = new ObjectDetailsDataPropertyView(@object, @object.Data.FirstOrDefault());
+        Frame.Content = new ObjectDetailsDataPropertyView(@object, @object?.Data?.FirstOrDefault());
     }
 
     private void OnSelectItem(object sender, SelectedItemChangedEventArgs e)

@@ -5,7 +5,7 @@
 
     
     <StackLayout>
-        <Label Text="Please enter the following information:" FontSize="Large" />
+        <Label Text="Object properties" FontSize="Large" />
 
         <Label Text="Name:" Margin="2"/>
         <Entry x:Name="Name" Placeholder="enter name" Margin="2" Text="{Binding Name}" />
