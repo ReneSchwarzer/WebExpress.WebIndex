@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="WebExpress.WebIndex.Studio.Views.ObjectDetailsDataView">
+    
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <ListView Grid.Column="0" ItemsSource="{Binding Data}" ItemSelected="OnSelectItem">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <Label Text="{Binding Name}" 
+                           Margin="2"
+                           Padding="1"/>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <Frame Grid.Column="1"
+               x:Name="Frame" 
+               VerticalOptions="FillAndExpand"
+               HorizontalOptions="FillAndExpand" 
+               BorderColor="Transparent"
+               Padding="0"
+               CornerRadius="0">
+        </Frame>
+    </Grid>
+</ContentView>

@@ -56,6 +56,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
 
             GC.Collect();
             GC.WaitForPendingFinalizers();
+            Thread.Sleep(10000);
         }
     }
 }

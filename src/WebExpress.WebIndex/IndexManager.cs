@@ -110,6 +110,20 @@ namespace WebExpress.WebIndex
         /// <summary>
         /// Registers a data type in the index.
         /// </summary>
+        /// <param name="dataType">The data type. This must have the IIndexItem interface.</param>
+        /// <param name="culture">The culture.</param>
+        /// <param name="type">The index type.</param>
+        public void Create(Type dataType, CultureInfo culture, IndexType type = IndexType.Memory)
+        {
+            var genericMethod = typeof(IndexManager).GetMethod("Create", 1, [typeof(CultureInfo), typeof(IndexType)]);
+            var specificMethod = genericMethod.MakeGenericMethod(dataType);
+
+            specificMethod.Invoke(this, [culture, type]);
+        }
+
+        /// <summary>
+        /// Registers a data type in the index.
+        /// </summary>
         /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
         /// <param name="culture">The culture.</param>
         /// <param name="type">The index type.</param>
@@ -153,6 +167,21 @@ namespace WebExpress.WebIndex
                     value.Dispose();
                 });
             }
+        }
+
+        /// <summary>
+        /// Adds a item to the index.
+        /// </summary>
+        /// <param name="dataType">The data type. This must have the IIndexItem interface.</param>
+        /// <param name="item">The data to be added to the index.</param>
+        public void Insert(Type dataType, object item)
+        {
+            var genericMethod = typeof(IndexManager).GetMethods()
+                .Where(m => m.Name == "Insert" && m.IsGenericMethodDefinition)
+                .First();
+            var specificMethod = genericMethod.MakeGenericMethod(dataType);
+
+            specificMethod.Invoke(this, [item]);
         }
 
         /// <summary>
@@ -235,6 +264,17 @@ namespace WebExpress.WebIndex
                 await document.RemoveAsync(item);
             }
         }
+        /// <summary>
+        /// Clear all data from index document.
+        /// </summary>
+        /// <param name="dataType">The data type. This must have the IIndexItem interface.</param>
+        public void Clear(Type dataType)
+        {
+            var genericMethod = typeof(IndexManager).GetMethod("Clear", 1, []);
+            var specificMethod = genericMethod.MakeGenericMethod(dataType);
+
+            specificMethod.Invoke(this, []);
+        }
 
         /// <summary>
         /// Clear all data from index document.
@@ -296,6 +336,19 @@ namespace WebExpress.WebIndex
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Returns all documents from the index.
+        /// </summary>
+        /// <param name="dataType">The data type. This must have the IIndexItem interface.</param>
+        /// <returns>An enumeration of the documents</returns>
+        public IEnumerable<object> All(Type dataType)
+        {
+            var genericMethod = typeof(IndexManager).GetMethod("All", 1, []);
+            var specificMethod = genericMethod.MakeGenericMethod(dataType);
+
+            return specificMethod.Invoke(this, []) as IEnumerable<object>;
         }
 
         /// <summary>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:Model="clr-namespace:WebExpress.WebIndex.Studio.Model"
+             x:Class="WebExpress.WebIndex.Studio.Pages.MainPage"
+             Title="WebIndex.Studio">
+    
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Create object" IconImageSource="add.png" Clicked="OnAddObjectClicked"/>
+    </ContentPage.ToolbarItems>
+
+    <Grid Margin="0">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="260"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <ListView Grid.Column="0" 
+                x:Name="List" 
+                VerticalOptions="FillAndExpand" 
+                HorizontalOptions="FillAndExpand"
+                ItemsSource="{Binding Objects}"
+                ItemSelected ="OnSelectObjectClicked">
+
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <Label Text="{Binding Name}" 
+                           Margin="2"
+                           Padding="1"/>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+
+        </ListView>
+
+        <Frame Grid.Column="1"
+               x:Name="Frame" 
+               VerticalOptions="FillAndExpand"
+               HorizontalOptions="FillAndExpand" 
+               BorderColor="Transparent"
+               Padding="0"
+               CornerRadius="0">
+        </Frame>
+
+    </Grid>
+</ContentPage>

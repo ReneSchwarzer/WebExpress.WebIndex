@@ -39,6 +39,24 @@ namespace WebExpress.WebIndex.Test.IndexManager
         }
 
         /// <summary>
+        /// Tests registering a document in the index manager.
+        /// </summary>
+        [Fact]
+        public void CreateType()
+        {
+            // preconditions
+            Preconditions();
+
+            // test execution
+            IndexManager.Create(typeof(UnitTestIndexTestDocumentA), CultureInfo.GetCultureInfo("en"), IndexType.Memory);
+
+            Assert.NotNull(IndexManager.GetIndexDocument<UnitTestIndexTestDocumentA>());
+
+            // postconditions
+            Postconditions();
+        }
+
+        /// <summary>
         /// Tests the reindex function from the index manager.
         /// </summary>
         [Fact]
