@@ -9,7 +9,7 @@
 
     <FlyoutItem Title="Project">
         <Tab>
-            <ShellContent Title="WebIndex.Studio - Project" ContentTemplate="{DataTemplate pages:MainPage}" />
+            <ShellContent Title="WebIndex.Studio - Project" ContentTemplate="{DataTemplate pages:ProjectPage}" />
         </Tab>
     </FlyoutItem>
     <FlyoutItem Title="Info" FlyoutIcon="?">

@@ -1,10 +1,28 @@
 ﻿namespace WebExpress.WebIndex.Studio.Model
 {
+    /// <summary>
+    /// Represents the types of attributes that can be used.
+    /// </summary>
     public enum AttributeType
     {
+        /// <summary>
+        /// Attribute type for plain text.
+        /// </summary>
         Text,
+
+        /// <summary>
+        /// Attribute type for boolean values.
+        /// </summary>
         Bool,
+
+        /// <summary>
+        /// Attribute type for integer values.
+        /// </summary>
         Int,
+
+        /// <summary>
+        /// Attribute type for double precision floating point numbers.
+        /// </summary>
         Double
     }
 

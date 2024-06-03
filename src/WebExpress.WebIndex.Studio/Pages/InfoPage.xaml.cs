@@ -2,8 +2,13 @@ namespace WebExpress.WebIndex.Studio.Pages;
 
 public partial class InfoPage : ContentPage
 {
-	public InfoPage()
-	{
-		InitializeComponent();
-	}
+    /// <summary>
+    /// Initializes a new instance of the <see cref="InfoPage"/> class.
+    /// </summary>
+    public InfoPage()
+    {
+        InitializeComponent();
+
+        BindingContext = App.ViewModel;
+    }
 }

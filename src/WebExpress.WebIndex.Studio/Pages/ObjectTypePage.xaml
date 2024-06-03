@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="WebExpress.WebIndex.Studio.Pages.ObjectTypePage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:Controls="clr-namespace:WebExpress.WebIndex.Studio.Controls"
+    xmlns:Converter="clr-namespace:WebExpress.WebIndex.Studio.Converter"
+    xmlns:Model="clr-namespace:WebExpress.WebIndex.Studio.Model"
+    Title="ObjectTypePage">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Converter:NullToBoolConverter x:Key="NullToBoolConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <Grid Margin="0">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="260" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="auto" />
+            </Grid.RowDefinitions>
+
+            <ListView
+                x:Name="ObjectList"
+                Grid.Row="0"
+                HorizontalOptions="FillAndExpand"
+                ItemSelected="OnSelectObjectClicked"
+                ItemsSource="{Binding Objects}"
+                VerticalOptions="FillAndExpand">
+
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <Label
+                                Margin="2"
+                                Padding="1"
+                                Text="{Binding Name}" />
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <StackLayout
+                Grid.Row="1"
+                BackgroundColor="{DynamicResource Gray50}"
+                Orientation="Horizontal">
+                <Controls:ToolButton
+                    Clicked="OnAddClicked"
+                    Icon="Add"
+                    Text="Add" />
+                <Controls:ToolButton
+                    Clicked="OnEditClicked"
+                    Icon="Pen"
+                    IsEnabled="{Binding SelectedItem, Source={x:Reference ObjectList}, Converter={StaticResource NullToBoolConverter}}"
+                    Text="Edit" />
+                <Controls:ToolButton
+                    Clicked="OnDeleteClicked"
+                    Icon="Trash"
+                    IsEnabled="{Binding SelectedItem, Source={x:Reference ObjectList}, Converter={StaticResource NullToBoolConverter}}"
+                    Text="Delete" />
+            </StackLayout>
+        </Grid>
+
+        <ContentView
+            x:Name="ContentArea"
+            Grid.Column="1"
+            HorizontalOptions="FillAndExpand"
+            VerticalOptions="FillAndExpand" />
+
+    </Grid>
+</ContentPage>

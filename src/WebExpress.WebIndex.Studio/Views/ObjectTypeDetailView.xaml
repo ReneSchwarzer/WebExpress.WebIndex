@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    x:Class="WebExpress.WebIndex.Studio.Views.ObjectTypeDetailView"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <ContentView.Resources>
+        <ResourceDictionary>
+            <Style x:Key="ButtonStyle" TargetType="Button">
+                <Setter Property="TextColor" Value="Black" />
+                <Setter Property="BackgroundColor" Value="Transparent" />
+                <Setter Property="BorderColor" Value="Transparent" />
+                <Setter Property="CornerRadius" Value="0" />
+                <Style.Triggers>
+                    <Trigger TargetType="Button" Property="IsPressed" Value="True">
+                        <Setter Property="BorderColor" Value="Blue" />
+                        <Setter Property="BorderWidth" Value="0,0,0,2" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+        </ResourceDictionary>
+    </ContentView.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackLayout Grid.Row="0" Orientation="Horizontal">
+
+            <Button
+                Clicked="OnDataClicked"
+                Style="{StaticResource ButtonStyle}"
+                Text="Daten" />
+            <Button
+                Clicked="OnAttributesClicked"
+                Style="{StaticResource ButtonStyle}"
+                Text="Attribute" />
+            <Button
+                Clicked="OnPropertyClicked"
+                Style="{StaticResource ButtonStyle}"
+                Text="Properties" />
+
+        </StackLayout>
+
+        <ContentView
+            x:Name="ContentArea"
+            Grid.Row="1"
+            HorizontalOptions="FillAndExpand"
+            VerticalOptions="FillAndExpand" />
+
+    </Grid>
+
+</ContentView>

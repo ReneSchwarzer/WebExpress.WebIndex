@@ -10,54 +10,7 @@
     <ContentPage.ToolbarItems>
     </ContentPage.ToolbarItems>
 
-    <ContentPage.Resources>
-        <ResourceDictionary>
-            <Converter:NullToBoolConverter x:Key="NullToBoolConverter" />
-        </ResourceDictionary>
-    </ContentPage.Resources>
-
-    <Grid Margin="0">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="260"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-
-        <Grid Grid.Column="0">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="auto"/>
-            </Grid.RowDefinitions>
-            
-            <ListView Grid.Row="0" 
-                x:Name="ObjectList" 
-                VerticalOptions="FillAndExpand" 
-                HorizontalOptions="FillAndExpand"
-                ItemsSource="{Binding Objects}"
-                ItemSelected ="OnSelectObjectClicked">
-
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <ViewCell>
-                            <Label Text="{Binding Name}" 
-                               Margin="2"
-                               Padding="1"/>
-                        </ViewCell>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-
-            <StackLayout Grid.Row="1" Orientation="Horizontal" BackgroundColor="{DynamicResource Gray50}">
-                <Controls:ToolButton Icon="Add" Text="Add" Clicked="OnAddClicked" ></Controls:ToolButton>
-                <Controls:ToolButton Icon="Pen" Text="Edit" Clicked="OnEditClicked" IsEnabled="{Binding SelectedItem, Source={x:Reference ObjectList}, Converter={StaticResource NullToBoolConverter}}"></Controls:ToolButton>
-                <Controls:ToolButton Icon="Trash" Text="Delete" Clicked="OnDeleteClicked" IsEnabled="{Binding SelectedItem, Source={x:Reference ObjectList}, Converter={StaticResource NullToBoolConverter}}"></Controls:ToolButton>
-            </StackLayout>
-        </Grid>
-
-        <Frame Grid.Column="1"
-               x:Name="Frame" 
-               VerticalOptions="FillAndExpand"
-               HorizontalOptions="FillAndExpand">
-        </Frame>
-
-    </Grid>
+    <StackLayout x:Name="StackLayout">
+    </StackLayout>
+    
 </ContentPage>
