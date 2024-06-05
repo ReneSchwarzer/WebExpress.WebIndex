@@ -98,6 +98,27 @@ namespace WebExpress.WebIndex.Studio.Model
         }
 
         /// <summary>
+        /// Create a project.
+        /// </summary>
+        /// <returns>The created project.</returns>
+        public Project CreatetProject()
+        {
+            var project = new Project() { Name = $"Project {Projects.Count + 1}" };
+            Projects.Add(project);
+
+            return project;
+        }
+
+        /// <summary>
+        /// Delete a project.
+        /// </summary>
+        /// <param name="project">The project to be deleted.</param>
+        public void DeleteProject(Project project)
+        {
+            Projects.Remove(project);
+        }
+
+        /// <summary>
         /// Returns the project based on the id.
         /// </summary>
         /// <param name="id">The project id.</param>
@@ -128,7 +149,7 @@ namespace WebExpress.WebIndex.Studio.Model
         /// <param name="project">The project.</param>
         private async void OpenProjectConfigPage(Project project)
         {
-            await Shell.Current.GoToAsync($"{nameof(ProjectConfigPage)}?id={project.Id}");
+            await Shell.Current.GoToAsync($"{nameof(ProjectConfigPage)}?id={project?.Id}");
         }
 
         /// <summary>

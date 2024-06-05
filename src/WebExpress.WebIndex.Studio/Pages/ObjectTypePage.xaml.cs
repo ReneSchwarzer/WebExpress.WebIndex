@@ -3,13 +3,13 @@ using WebExpress.WebIndex.Studio.Views;
 
 namespace WebExpress.WebIndex.Studio.Pages;
 
-[QueryProperty(nameof(ItemId), "id")]
+[QueryProperty(nameof(ProjectId), "id")]
 public partial class ObjectTypePage : ContentPage
 {
     /// <summary>
     /// Define a property to store the value of the query parameter
     /// </summary>
-    public string ItemId { set; get; }
+    public string ProjectId { set; get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ObjectTypePage"/> class.
@@ -26,7 +26,7 @@ public partial class ObjectTypePage : ContentPage
     {
         base.OnAppearing();
 
-        BindingContext = App.ViewModel.GetProject(ItemId);
+        BindingContext = App.ViewModel.GetProject(ProjectId);
     }
 
     /// <summary>
