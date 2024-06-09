@@ -8,7 +8,7 @@ namespace WebExpress.WebIndex.Test.Fixture
         /// <summary>
         /// Returns the test data.
         /// </summary>
-        public List<UnitTestIndexTestDocumentD> TestData { get; } = UnitTestIndexTestDocumentFactoryD.GenerateTestData();
+        public List<UnitTestIndexTestDocumentD> TestData { get; } = UnitTestIndexTestDocumentFactoryD.GenerateTestData().ToList();
 
         /// <summary>
         /// Returns a random document item.

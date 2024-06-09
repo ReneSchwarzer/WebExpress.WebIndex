@@ -1,8 +1,0 @@
-﻿<maui:MauiWinUIApplication
-    x:Class="WebExpress.WebIndex.Studio.WinUI.App"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:maui="using:Microsoft.Maui"
-    xmlns:local="using:WebExpress.WebIndex.Studio.WinUI">
-
-</maui:MauiWinUIApplication>

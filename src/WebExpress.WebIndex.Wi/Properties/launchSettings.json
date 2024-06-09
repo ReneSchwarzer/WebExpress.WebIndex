@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "WebExpress.WebIndex.Wi": {
+      "commandName": "Project",
+      "commandLineArgs": "-o %AppData%\\..\\Local\\WebIndex\\"
+    }
+  }
+}

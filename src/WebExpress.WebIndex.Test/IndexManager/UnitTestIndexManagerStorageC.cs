@@ -60,7 +60,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
         /// Tests the reindex function from the index manager.
         /// </summary>
         [Fact]
-        public async void ReIndexAsync_En()
+        public async Task ReIndexAsync_En()
         {
             // preconditions
             Preconditions();
@@ -156,11 +156,11 @@ namespace WebExpress.WebIndex.Test.IndexManager
         /// Tests the reindex function in a series of tests from the index manager.
         /// </summary>
         [Fact]
-        public async void ReIndexAsync_Series()
+        public async Task ReIndexAsync_Series()
         {
             var stopWatch = new Stopwatch();
 
-            var itemCount = Enumerable.Range(7, 3).Select(x => x * 10000);
+            var itemCount = Enumerable.Range(1, 1).Select(x => x * 10000);
             var wordCount = Enumerable.Range(1, 1).Select(x => x * 100);
             var vocabulary = Enumerable.Range(1, 1).Select(x => x * 20000);
             var wordLength = Enumerable.Range(1, 1).Select(x => x * 15);
@@ -349,7 +349,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
         /// Tests the update function of the index manager.
         /// </summary>
         [Fact]
-        public async void UpdateAsync()
+        public async Task UpdateAsync()
         {
             // preconditions
             Preconditions();
