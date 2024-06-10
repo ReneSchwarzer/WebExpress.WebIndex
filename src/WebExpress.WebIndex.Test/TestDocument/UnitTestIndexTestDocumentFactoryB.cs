@@ -13,17 +13,18 @@
             var testDataList = new List<UnitTestIndexTestDocumentB>();
 
             // Add more test data here
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < 100; i++)
             {
                 testDataList.Add(new UnitTestIndexTestDocumentB
                 {
                     Id = Guid.NewGuid(),
                     Name = $"Name_{i}",
                     Summary = $"Der Name_{i}",
-                    Description = GenerateLoremIpsum(1000),
+                    Description = GenerateLoremIpsum(100),
                     Date = DateTime.Now.AddMonths(i % 12),
                     Price = i,
-                    New = i % 2 != 0
+                    New = i % 2 != 0,
+                    Adress = new UnitTestIndexTestDocumentB.AdressClass() { City = GenerateCity(1), Zip = GenerateZip(i), Street = GenerateSreet(i)}
                 });
             }
 

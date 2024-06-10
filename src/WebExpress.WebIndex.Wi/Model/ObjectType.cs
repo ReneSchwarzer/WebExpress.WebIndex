@@ -17,14 +17,9 @@ namespace WebExpress.WebIndex.Wi.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Returns or sets the description of the object.
+        /// Retuns a collection of fields associated with the object.
         /// </summary>
-        public string Description { get; set; }
-
-        /// <summary>
-        /// Retuns a collection of attributes associated with the object.
-        /// </summary>
-        public List<Attribute> Attributes { get; } = [];
+        public IEnumerable<Field> Fields { get; set; }
 
         /// <summary>
         /// Gets a collection of stored data objects.
@@ -37,17 +32,6 @@ namespace WebExpress.WebIndex.Wi.Model
         public ObjectType()
         {
 
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ObjectType"/> class.
-        /// </summary>
-        /// <param name="name">The name of the object.</param>
-        /// <param name="attributes">A collection of attributes associated with the object.</param>
-        public ObjectType(string name, IEnumerable<Attribute> attributes)
-        {
-            Name = name;
-            Attributes = new List<Attribute>(attributes);
         }
 
         /// <summary>
@@ -69,9 +53,9 @@ namespace WebExpress.WebIndex.Wi.Model
 
             BildProperty(typeBuilder, "Id", typeof(Guid), true, true);
 
-            foreach (var attribute in Attributes)
+            foreach (var attribute in Fields.Where(x => !x.Name.Equals("id", StringComparison.OrdinalIgnoreCase)))
             {
-                BildProperty(typeBuilder, attribute.Name, attribute.Type.ToType(), false, false);
+                BildProperty(typeBuilder, attribute.Name, attribute.Type.ToType(), attribute.Ignore, attribute.Abstract);
             }
 
             var runtimeClass = typeBuilder.CreateType();

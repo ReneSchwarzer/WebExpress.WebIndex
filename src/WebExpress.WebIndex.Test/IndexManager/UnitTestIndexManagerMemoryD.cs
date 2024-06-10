@@ -66,7 +66,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
         /// Tests the reindex function from the index manager.
         /// </summary>
         [Fact]
-        public async void ReIndexAsync_En()
+        public async Task ReIndexAsync_En()
         {
             // preconditions
             Preconditions();
@@ -250,7 +250,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
         /// Tests the update function of the index manager.
         /// </summary>
         [Fact]
-        public async void UpdateAsync()
+        public async Task UpdateAsync()
         {
             // preconditions
             Preconditions();

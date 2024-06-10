@@ -6,10 +6,21 @@ using System.Threading.Tasks;
 
 namespace WebExpress.WebIndex
 {
+    /// <summary>
+    /// Defines the basic functionality of an index document.
+    /// </summary>
     public interface IIndexDocument : IDisposable
     {
+        /// <summary>
+        /// Event that is triggered when the schema has changed.
+        /// </summary>
+        event EventHandler<IndexSchemaMigrationEventArgs> SchemaChanged;
     }
 
+    /// <summary>
+    /// Defines the functionality of an index document for a specific type of index item.
+    /// </summary>
+    /// <typeparam name="T">The type of the index item. This type parameter must implement the IIndexItem interface.</typeparam>
     public interface IIndexDocument<T> : IIndexDocument where T : IIndexItem
     {
         /// <summary>

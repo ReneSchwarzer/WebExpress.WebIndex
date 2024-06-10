@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using System.Reflection;
-using System.Text.RegularExpressions;
+using System.Text.Json;
+using WebExpress.WebIndex.Wi.Converter;
 
 namespace WebExpress.WebIndex.Wi.Model
 {
@@ -46,14 +47,10 @@ namespace WebExpress.WebIndex.Wi.Model
             CurrentDirectory = Path.GetDirectoryName(indexFile);
             CurrentIndexFile = indexFile;
 
-            var indexName = Path.GetFileNameWithoutExtension(indexFile);
-            var attributes = Directory.GetFiles(CurrentDirectory, $"{indexName}.*.wri")
-                .Select(x => Path.GetFileNameWithoutExtension(x))
-                .Select(x => Regex.Match(x, $"{indexName}\\.(.*)").Groups[1]?.Value)
-                .Select(x => new Attribute() { Name = x, Type = AttributeType.Text });
+            var schema = File.ReadAllText(CurrentIndexFile);
+            var options = new JsonSerializerOptions { Converters = { new FieldTypeConverter() } };
+            ObjectType = JsonSerializer.Deserialize<ObjectType>(schema, options);
 
-
-            ObjectType = new ObjectType(indexName, attributes);
             var runtimeClass = ObjectType.BuildRuntimeClass();
 
             var context = new IndexContext { IndexDirectory = CurrentDirectory };
@@ -71,6 +68,8 @@ namespace WebExpress.WebIndex.Wi.Model
         /// <returns>True if successful, otherwise fasle.</returns>
         public bool CloseIndexFile()
         {
+            var runtimeClass = ObjectType.BuildRuntimeClass();
+            IndexManager.Drop(runtimeClass);
             CurrentIndexFile = null;
 
             ObjectType = null;

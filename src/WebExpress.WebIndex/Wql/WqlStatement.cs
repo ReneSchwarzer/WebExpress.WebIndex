@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -112,6 +113,16 @@ namespace WebExpress.WebIndex.Wql
             }
 
             return filtered;
+        }
+
+        /// <summary>
+        /// Applies the filter to the index.
+        /// </summary>
+        /// <param name="dataType">The data type. This must have the IIndexItem interface.</param>
+        /// <returns>The data ids from the index.</returns>
+        public IQueryable Apply(Type dataType)
+        {
+            return Apply();
         }
 
         /// <summary>

@@ -4,6 +4,7 @@
 - Merging free storage areas
 - build in wql functions
 - Fuzzy search
+- migration
 - performance improvements 
 
 # WebExpress.WebIndex
@@ -375,6 +376,14 @@ If a field is marked with the IndexIgnore attribute, it will be excluded from th
   │ IndexReverse 1 │ │ IndexReverse 2 │ │ IndexReverse … │ │ IndexReverse n │             │ Property n  │
   └────────────────┘ └────────────────┘ └────────────────┘ └────────────────┘             ├─────────────┤
                                                                                           └─────────────┘
+```
+## IndexSchema
+The index schema file contains important metadata, which provides detailed information about the structure and characteristics of 
+the provide indexes. In addition, the file contains a precise object description of the document captured by the index and is 
+managed. Furthermore, the JSON (JavaScript Object Notation) format is used for the index schema file and the have the extension `*.ws`.
+
+```
+
 ```
 
 ## IndexStore

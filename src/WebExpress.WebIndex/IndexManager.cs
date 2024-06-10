@@ -17,6 +17,11 @@ namespace WebExpress.WebIndex
     public abstract class IndexManager : IDisposable
     {
         /// <summary>
+        /// Event that is triggered when the schema has changed.
+        /// </summary>
+        public event EventHandler<IndexSchemaMigrationEventArgs> SchemaChanged;
+
+        /// <summary>
         /// Returns an enumeration of the existing index documents.
         /// </summary>
         private Dictionary<Type, IIndexDocument> Documents { get; } = [];
@@ -132,8 +137,10 @@ namespace WebExpress.WebIndex
             if (!Documents.ContainsKey(typeof(T)))
             {
                 var context = new IndexDocumemntContext(Context, TokenAnalyzer);
+                var document = new IndexDocument<T>(context, type, culture);
 
-                Documents.Add(typeof(T), new IndexDocument<T>(context, type, culture));
+                document.SchemaChanged += OnSchemaChanged;
+                Documents.Add(typeof(T), document);
             }
         }
 
@@ -157,9 +164,10 @@ namespace WebExpress.WebIndex
         {
             if (GetIndexDocument<T>() != null)
             {
-                Documents.Remove(typeof(T), out IIndexDocument value);
+                Documents.Remove(typeof(T), out IIndexDocument document);
 
-                value.Dispose();
+                document.SchemaChanged -= OnSchemaChanged;
+                document.Dispose();
             }
         }
 
@@ -317,6 +325,26 @@ namespace WebExpress.WebIndex
         /// Executes a wql statement.
         /// </summary>
         /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
+        /// <param name="dataType">The data type. This must have the IIndexItem interface.</param>
+        /// <param name="wql">The wql statement.</param>
+        /// <returns>The WQL statement.</returns>
+        public IWqlStatement Retrieve(Type dataType, string wql)
+        {
+            if (dataType == null)
+            {
+                return null;
+            }
+
+            var genericMethod = typeof(IndexManager).GetMethod("Retrieve", 1, [typeof(string)]);
+            var specificMethod = genericMethod.MakeGenericMethod(dataType);
+
+            return (IWqlStatement)specificMethod.Invoke(this, [wql]);
+        }
+
+        /// <summary>
+        /// Executes a wql statement.
+        /// </summary>
+        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
         /// <param name="wql">The wql statement.</param>
         /// <returns>The WQL statement.</returns>
         public IWqlStatement<T> Retrieve<T>(string wql) where T : IIndexItem
@@ -390,6 +418,16 @@ namespace WebExpress.WebIndex
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Raises the SchemaChanged event.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">An IndexSchemaMigrationEventArgs that contains the event data.</param>
+        protected virtual void OnSchemaChanged(object sender, IndexSchemaMigrationEventArgs e)
+        {
+            SchemaChanged?.Invoke(this, e);
         }
 
         /// <summary>

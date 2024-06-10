@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using WebExpress.WebIndex.Memory;
 using WebExpress.WebIndex.Storage;
@@ -19,9 +18,19 @@ namespace WebExpress.WebIndex
     public class IndexDocument<T> : Dictionary<PropertyInfo, IIndexReverse<T>>, IIndexDocument<T> where T : IIndexItem
     {
         /// <summary>
+        /// Event that is triggered when the schema has changed.
+        /// </summary>
+        public event EventHandler<IndexSchemaMigrationEventArgs> SchemaChanged;
+
+        /// <summary>
         /// Returns the document store.
         /// </summary>
         public IIndexDocumentStore<T> DocumentStore { get; private set; }
+
+        /// <summary>
+        /// Returns the index schema associated with this index document.
+        /// </summary>
+        public IIndexSchema<T> Schema { get; private set; }
 
         /// <summary>
         /// Returns the index type.
@@ -75,16 +84,40 @@ namespace WebExpress.WebIndex
                 {
                     case IndexType.Memory:
                         {
+                            Schema = new IndexMemorySchema<T>(Context);
                             DocumentStore = new IndexMemoryDocumentStore<T>(Context, capacity);
 
                             break;
                         }
                     default:
                         {
+                            Schema = new IndexStorageSchema<T>(Context);
                             DocumentStore = new IndexStorageDocumentStore<T>(Context, capacity);
 
                             break;
                         }
+                }
+
+                if (Schema.HasSchemaChanged())
+                {
+                    var args = new IndexSchemaMigrationEventArgs
+                    {
+                        SchemaType = typeof(T),
+                        PerformMigration = () =>
+                        {
+                            Schema.Migrate();
+
+                            return true;
+                        },
+                        PerformMigrationAsync = async () =>
+                        {
+                            Schema.Migrate();
+
+                            return await Task.FromResult(true);
+                        }
+                    };
+
+                    SchemaChanged?.Invoke(this, args);
                 }
             }
 
@@ -113,10 +146,33 @@ namespace WebExpress.WebIndex
                         }
                     default:
                         {
+                            var indexSchema = new IndexStorageSchema<T>(Context);
                             DocumentStore = new IndexStorageDocumentStore<T>(Context, capacity);
 
                             break;
                         }
+                }
+
+                if (Schema.HasSchemaChanged())
+                {
+                    var args = new IndexSchemaMigrationEventArgs
+                    {
+                        SchemaType = typeof(T),
+                        PerformMigration = () =>
+                        {
+                            Schema.Migrate();
+
+                            return true;
+                        },
+                        PerformMigrationAsync = async () =>
+                        {
+                            Schema.Migrate();
+
+                            return await Task.FromResult(true);
+                        }
+                    };
+
+                    SchemaChanged?.Invoke(this, args);
                 }
             }
 
@@ -328,7 +384,7 @@ namespace WebExpress.WebIndex
         /// </summary>
         /// <param name="item">The data to be removed from the index.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        public virtual async Task RemoveAsync(T item) 
+        public virtual async Task RemoveAsync(T item)
         {
             if (item == null)
             {

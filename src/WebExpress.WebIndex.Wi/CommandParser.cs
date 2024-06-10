@@ -1,4 +1,6 @@
-﻿namespace WebExpress.WebIndex.Wi
+﻿using WebExpress.WebIndex.Wql;
+
+namespace WebExpress.WebIndex.Wi
 {
     /// <summary>
     /// A simple parser that handles a command line. This parser recognizes commands and optional parameters. In 
@@ -33,7 +35,8 @@
         /// </summary>
         /// <param name="input">The input string to parse.</param>
         /// <param name="fallbackType">The fallback type if no command but a parameter is selected.</param>
-        public Command Parse(string input, CommandAction fallbackType)
+        /// <param name="wql"></param>
+        public Command Parse(string input, CommandAction fallbackType, Func<string, IWqlStatement> isWql)
         {
             if (string.IsNullOrWhiteSpace(input))
             {
@@ -43,6 +46,12 @@
             if (int.TryParse(input, out int res))
             {
                 return new Command() { Action = fallbackType, Parameter = res };
+            }
+
+            var wql = isWql(input);
+            if (wql != null && !wql.HasErrors)
+            {
+                return new Command() { Action = CommandAction.WQL, Parameter = wql };
             }
 
             var parts = input.Split(' ');

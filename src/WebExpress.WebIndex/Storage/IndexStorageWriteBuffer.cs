@@ -150,9 +150,14 @@ namespace WebExpress.WebIndex.Storage
             using var profiling = Profiling.Diagnostic(); 
             #endif
 
-            Flush();
-            Timer.Dispose();
+            using var waitHandle = new ManualResetEvent(false);
+            
+            Timer.Dispose(waitHandle);
 
+            waitHandle.WaitOne();
+
+            Flush();
+            
             GC.SuppressFinalize(this);
         }
     }

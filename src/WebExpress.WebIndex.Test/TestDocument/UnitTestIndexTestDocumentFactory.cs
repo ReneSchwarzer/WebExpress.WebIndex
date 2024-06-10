@@ -128,5 +128,36 @@ namespace WebExpress.WebIndex.Test.Document
                 _ => $"{index % 99} Main St."
             };
         }
+
+        /// <summary>
+        /// Generate city names.
+        /// </summary>
+        /// <param name="index">The index number.</param>
+        /// <returns>The city name.</returns>
+        protected static string GenerateCity(int index)
+        {
+            int rand = Rand.Next() % 5;
+
+            return rand switch
+            {
+                0 => "Phoenix",
+                1 => "Los Angeles",
+                2 => "Chicago,",
+                3 => "Houston",
+                _ => "New York City"
+            };
+        }
+
+        /// <summary>
+        /// Generate zip code.
+        /// </summary>
+        /// <param name="index">The index number.</param>
+        /// <returns>The zip code.</returns>
+        protected static int GenerateZip(int index)
+        {
+            int rand = Rand.Next() % 99999;
+
+            return rand;
+        }
     }
 }

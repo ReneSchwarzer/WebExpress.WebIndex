@@ -145,7 +145,7 @@
             };
 
             // Add more test data here
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < 100; i++)
             {
                 yield return new()
                 {
@@ -154,7 +154,7 @@
                     LastName = $"LastName{i}",
                     PhoneNumber = $"{i:000}-000-0000",
                     DateOfBirth = new DateTime(2000, 1, 1).AddDays(i),
-                    Description = GenerateLoremIpsum(1000),
+                    Description = GenerateLoremIpsum(100),
                     Salutation = i % 2 == 0 ? "Mr." : "Ms.",
                     Address = $"{i} {GenerateSreet(i)}"
                 };

@@ -6,6 +6,13 @@
     /// </summary>
     public class UnitTestIndexTestDocumentB : UnitTestIndexTestDocument
     {
+        public class AdressClass
+        {
+            public string Street { get; set;}
+            public string City { get; set;}
+            public int Zip { get; set;}
+        }
+
         /// <summary>
         /// Returns or sets the name.
         /// </summary>
@@ -35,6 +42,11 @@
         /// Returns or sets the new attribute.
         /// </summary>
         public bool New { get; set; }
+
+        /// <summary>
+        /// Returns or sets the adress attribute.
+        /// </summary>
+        public AdressClass Adress { get; set; }
 
         /// <summary>
         /// Convert the object into a string representation. 
