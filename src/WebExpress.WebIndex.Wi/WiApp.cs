@@ -112,8 +112,11 @@ internal class WiApp
             parser.Register("?", new CommandType() { Action = CommandAction.Help, Secret = true });
             parser.Register("h", new CommandType() { Action = CommandAction.Help, Secret = true });
             parser.Register("help", new CommandType() { Action = CommandAction.Help, Secret = false });
+            parser.Register("!", new CommandType() { Action = CommandAction.Info, Secret = true });
+            parser.Register("info", new CommandType() { Action = CommandAction.Info, Secret = false });
             parser.Register("q", new CommandType() { Action = CommandAction.Exit, Secret = true });
-            parser.Register("exit", new CommandType() { Action = CommandAction.Exit, Secret = false });
+            parser.Register("exit", new CommandType() { Action = CommandAction.Exit, Secret = true });
+            parser.Register("quit", new CommandType() { Action = CommandAction.Exit, Secret = false });
             parser.Register("bye", new CommandType() { Action = CommandAction.Exit, Secret = true });
 
             switch (State)
@@ -130,6 +133,8 @@ internal class WiApp
                         parser.Register("show", new CommandType() { Action = CommandAction.ShowIndexFile, Secret = false });
                         parser.Register("o", new CommandType() { Action = CommandAction.OpenIndexFile, Secret = true });
                         parser.Register("open", new CommandType() { Action = CommandAction.OpenIndexFile, Secret = false });
+                        parser.Register("c", new CommandType() { Action = CommandAction.CreateIndexFile, Secret = true });
+                        parser.Register("create", new CommandType() { Action = CommandAction.CreateIndexFile, Secret = false });
                         break;
                     }
                 case ProgrammState.OpenIndexFile:
@@ -147,10 +152,17 @@ internal class WiApp
                         parser.Register("close", new CommandType() { Action = CommandAction.CloseIndexFile, Secret = false });
                         parser.Register("o", new CommandType() { Action = CommandAction.OpenIndexField, Secret = true });
                         parser.Register("open", new CommandType() { Action = CommandAction.OpenIndexField, Secret = false });
-                        parser.Register("d", new CommandType() { Action = CommandAction.DropIndexFile, Secret = true });
                         parser.Register("drop", new CommandType() { Action = CommandAction.DropIndexFile, Secret = false });
                         parser.Register("a", new CommandType() { Action = CommandAction.All, Secret = true });
                         parser.Register("all", new CommandType() { Action = CommandAction.All, Secret = false });
+                        parser.Register("export", new CommandType() { Action = CommandAction.Export, Secret = false });
+                        parser.Register("import", new CommandType() { Action = CommandAction.Import, Secret = false });
+                        parser.Register("i", new CommandType() { Action = CommandAction.Insert, Secret = true });
+                        parser.Register("insert", new CommandType() { Action = CommandAction.Insert, Secret = false });
+                        parser.Register("u", new CommandType() { Action = CommandAction.Update, Secret = true });
+                        parser.Register("update", new CommandType() { Action = CommandAction.Update, Secret = false });
+                        parser.Register("d", new CommandType() { Action = CommandAction.Delete, Secret = true });
+                        parser.Register("delete", new CommandType() { Action = CommandAction.Delete, Secret = false });
                         break;
                     }
                 case ProgrammState.OpenIndexField:
@@ -162,7 +174,9 @@ internal class WiApp
                         parser.Register("ls", new CommandType() { Action = CommandAction.ShowIndexTerm, Secret = true });
                         parser.Register("dir", new CommandType() { Action = CommandAction.ShowIndexTerm, Secret = true });
                         parser.Register("list", new CommandType() { Action = CommandAction.ShowIndexTerm, Secret = true });
-                        parser.Register("show", new CommandType() { Action = CommandAction.ShowIndexTerm, Secret = false });
+                        parser.Register("show", new CommandType() { Action = CommandAction.ShowIndexTerm, Secret = true });
+                        parser.Register("a", new CommandType() { Action = CommandAction.ShowIndexTerm, Secret = true });
+                        parser.Register("all", new CommandType() { Action = CommandAction.ShowIndexTerm, Secret = false });
                         parser.Register("..", new CommandType() { Action = CommandAction.CloseIndexField, Secret = true });
                         parser.Register("c", new CommandType() { Action = CommandAction.CloseIndexField, Secret = true });
                         parser.Register("close", new CommandType() { Action = CommandAction.CloseIndexField, Secret = false });
@@ -218,9 +232,39 @@ internal class WiApp
                         OnCloseIndexFieldCommand(command);
                         break;
                     }
+                case CommandAction.CreateIndexFile:
+                    {
+                        OnCreateIndexFileCommand(command);
+                        break;
+                    }
                 case CommandAction.DropIndexFile:
                     {
                         OnDropIndexFileCommand(command);
+                        break;
+                    }
+                case CommandAction.Export:
+                    {
+                        OnExportCommand(command);
+                        break;
+                    }
+                case CommandAction.Import:
+                    {
+                        OnImportCommand(command);
+                        break;
+                    }
+                case CommandAction.Insert:
+                    {
+                        OnInsertCommand(command);
+                        break;
+                    }
+                case CommandAction.Update:
+                    {
+                        OnUpdateCommand(command);
+                        break;
+                    }
+                case CommandAction.Delete:
+                    {
+                        OnDeleteCommand(command);
                         break;
                     }
                 case CommandAction.WQL:
@@ -231,6 +275,11 @@ internal class WiApp
                 case CommandAction.Help:
                     {
                         parser.PrintHelp();
+                        break;
+                    }
+                case CommandAction.Info:
+                    {
+                        PrintInfo();
                         break;
                     }
                 case CommandAction.Exit:
@@ -479,6 +528,15 @@ internal class WiApp
     }
 
     /// <summary>
+    /// Execute the create index file command.
+    /// </summary>
+    /// <param name="command">The command to be executed.</param>
+    private void OnCreateIndexFileCommand(Command command)
+    {
+        PrintError("Sorry! Not implemented at the moment.");
+    }
+
+    /// <summary>
     /// Execute the drop index file command.
     /// </summary>
     /// <param name="command">The command to be executed.</param>
@@ -494,6 +552,51 @@ internal class WiApp
 
             State = ProgrammState.Initial;
         }
+    }
+
+    /// <summary>
+    /// Execute the export command.
+    /// </summary>
+    /// <param name="command">The command to be executed.</param>
+    private void OnExportCommand(Command command)
+    {
+        PrintError("Sorry! Not implemented at the moment.");
+    }
+
+    /// <summary>
+    /// Execute the import command.
+    /// </summary>
+    /// <param name="command">The command to be executed.</param>
+    private void OnImportCommand(Command command)
+    {
+        PrintError("Sorry! Not implemented at the moment.");
+    }
+
+    /// <summary>
+    /// Execute the insert command.
+    /// </summary>
+    /// <param name="command">The command to be executed.</param>
+    private void OnInsertCommand(Command command)
+    {
+        PrintError("Sorry! Not implemented at the moment.");
+    }
+
+    /// <summary>
+    /// Execute the update command.
+    /// </summary>
+    /// <param name="command">The command to be executed.</param>
+    private void OnUpdateCommand(Command command)
+    {
+        PrintError("Sorry! Not implemented at the moment.");
+    }
+
+    /// <summary>
+    /// Execute the delete command.
+    /// </summary>
+    /// <param name="command">The command to be executed.</param>
+    private void OnDeleteCommand(Command command)
+    {
+        PrintError("Sorry! Not implemented at the moment.");
     }
 
     /// <summary>
@@ -556,6 +659,17 @@ internal class WiApp
         Console.ForegroundColor = ConsoleColor.Red;
         Console.WriteLine(error);
         Console.ForegroundColor = col;
+    }
+
+    /// <summary>
+    ///Displays info about the application.
+    /// </summary>
+    private void PrintInfo()
+    {
+        Console.WriteLine("wi is an administrative console application for creating and searching WebIndex indexes.");
+        Console.WriteLine($"Version: {ViewModel.Version}");
+        Console.WriteLine("License: MIT");
+        Console.WriteLine("Project: https://github.com/ReneSchwarzer/WebExpress.WebIndex");
     }
 
     /// <summary>
