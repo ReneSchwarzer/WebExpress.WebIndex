@@ -585,17 +585,18 @@ internal class WiApp
     {
         var consoleWidth = ConsoleWidth;
         var columnCount = columns.Count();
-        var columnWidth = consoleWidth / columnCount;
+        var columnWidth = (int)Math.Round((double)consoleWidth / columnCount);
         var header = $"| {string.Join(" | ", columns.Select(x => FormatCell(x, columnWidth - 3)))}|";
+        var width = columnWidth * columnCount - 2;
 
         // print top border
-        Console.WriteLine($"┌{new string('─', header.Length - 2)}┐");
+        Console.WriteLine($"┌{new string('─', width)}┐");
 
         // print headers
         Console.WriteLine(header);
 
         // print separator
-        Console.WriteLine($"├{new string('─', header.Length - 2)}┤");
+        Console.WriteLine($"├{new string('─', width)}┤");
     }
 
     /// <summary>
@@ -607,8 +608,7 @@ internal class WiApp
     {
         var consoleWidth = ConsoleWidth;
         var columnCount = columns.Count();
-        var columnWidth = consoleWidth / columnCount;
-        var header = $"| {string.Join(" | ", columns.Select(x => FormatCell(x, columnWidth - 3)))}|";
+        var columnWidth = (int)Math.Round((double)consoleWidth / columnCount);
 
         // Print rows
         Console.WriteLine($"| {string.Join(" | ", row.Select(x => FormatCell(x, columnWidth - 3)))}|");
@@ -623,17 +623,17 @@ internal class WiApp
     {
         var consoleWidth = ConsoleWidth;
         var columnCount = columns.Count();
-        var columnWidth = consoleWidth / columnCount;
-        var header = $"| {string.Join(" | ", columns.Select(x => FormatCell(x, columnWidth - 3)))}|";
+        var columnWidth = (int)Math.Round((double)consoleWidth / columnCount);
+        var width = columnWidth * columnCount - 2;
 
         // print separator
-        Console.WriteLine($"├{new string('─', header.Length - 2)}┤");
+        Console.WriteLine($"├{new string('─', width)}┤");
 
         // print counter
-        Console.WriteLine($"|{$" Rows count: {count}".PadRight(header.Length - 2)}|");
+        Console.WriteLine($"|{$" Rows count: {count}".PadRight(width)}|");
 
         // print bottom border
-        Console.WriteLine($"└{new string('─', header.Length - 2)}┘");
+        Console.WriteLine($"└{new string('─', width)}┘");
     }
 
     /// <summary>
