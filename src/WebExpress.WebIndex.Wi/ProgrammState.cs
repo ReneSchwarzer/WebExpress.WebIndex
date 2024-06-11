@@ -16,8 +16,8 @@
         OpenIndexFile,
 
         /// <summary>
-        /// The state when the program is opening an attribute.
+        /// The state when the program is opening an index field.
         /// </summary>
-        OpenAttribute
+        OpenIndexField
     }
 }

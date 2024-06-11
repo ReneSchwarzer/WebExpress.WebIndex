@@ -115,20 +115,6 @@ namespace WebExpress.WebIndex
         /// <summary>
         /// Registers a data type in the index.
         /// </summary>
-        /// <param name="dataType">The data type. This must have the IIndexItem interface.</param>
-        /// <param name="culture">The culture.</param>
-        /// <param name="type">The index type.</param>
-        public void Create(Type dataType, CultureInfo culture, IndexType type = IndexType.Memory)
-        {
-            var genericMethod = typeof(IndexManager).GetMethod("Create", 1, [typeof(CultureInfo), typeof(IndexType)]);
-            var specificMethod = genericMethod.MakeGenericMethod(dataType);
-
-            specificMethod.Invoke(this, [culture, type]);
-        }
-
-        /// <summary>
-        /// Registers a data type in the index.
-        /// </summary>
         /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
         /// <param name="culture">The culture.</param>
         /// <param name="type">The index type.</param>
@@ -145,15 +131,37 @@ namespace WebExpress.WebIndex
         }
 
         /// <summary>
-        /// Removes all index documents of type.
+        /// Closes the index file of type T.
         /// </summary>
-        /// <param name="dataType">The data type. This must have the IIndexItem interface.</param>
-        public void Drop(Type dataType)
+        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
+        public void Close<T>() where T : IIndexItem
         {
-            var genericMethod = typeof(IndexManager).GetMethod("Drop", 1, []);
-            var specificMethod = genericMethod.MakeGenericMethod(dataType);
+            if (GetIndexDocument<T>() != null)
+            {
+                Documents.Remove(typeof(T), out IIndexDocument document);
 
-            specificMethod.Invoke(this, []);
+                document.SchemaChanged -= OnSchemaChanged;
+                document.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// Asynchronously closes the index file of type T.
+        /// </summary>
+        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public async Task CloseAsync<T>() where T : IIndexItem
+        {
+            if (GetIndexDocument<T>() != null)
+            {
+                await Task.Run(() =>
+                {
+                    Documents.Remove(typeof(T), out IIndexDocument document);
+
+                    document.SchemaChanged -= OnSchemaChanged;
+                    document.Dispose();
+                });
+            }
         }
 
         /// <summary>
@@ -182,26 +190,12 @@ namespace WebExpress.WebIndex
             {
                 await Task.Run(() =>
                 {
-                    Documents.Remove(typeof(T), out IIndexDocument value);
+                    Documents.Remove(typeof(T), out IIndexDocument document);
 
-                    value.Dispose();
+                    document.SchemaChanged -= OnSchemaChanged;
+                    document.Dispose();
                 });
             }
-        }
-
-        /// <summary>
-        /// Adds a item to the index.
-        /// </summary>
-        /// <param name="dataType">The data type. This must have the IIndexItem interface.</param>
-        /// <param name="item">The data to be added to the index.</param>
-        public void Insert(Type dataType, object item)
-        {
-            var genericMethod = typeof(IndexManager).GetMethods()
-                .Where(m => m.Name == "Insert" && m.IsGenericMethodDefinition)
-                .First();
-            var specificMethod = genericMethod.MakeGenericMethod(dataType);
-
-            specificMethod.Invoke(this, [item]);
         }
 
         /// <summary>
@@ -284,17 +278,6 @@ namespace WebExpress.WebIndex
                 await document.RemoveAsync(item);
             }
         }
-        /// <summary>
-        /// Clear all data from index document.
-        /// </summary>
-        /// <param name="dataType">The data type. This must have the IIndexItem interface.</param>
-        public void Clear(Type dataType)
-        {
-            var genericMethod = typeof(IndexManager).GetMethod("Clear", 1, []);
-            var specificMethod = genericMethod.MakeGenericMethod(dataType);
-
-            specificMethod.Invoke(this, []);
-        }
 
         /// <summary>
         /// Clear all data from index document.
@@ -319,26 +302,6 @@ namespace WebExpress.WebIndex
             {
                 await document.ClearAsync();
             }
-        }
-
-        /// <summary>
-        /// Executes a wql statement.
-        /// </summary>
-        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
-        /// <param name="dataType">The data type. This must have the IIndexItem interface.</param>
-        /// <param name="wql">The wql statement.</param>
-        /// <returns>The WQL statement.</returns>
-        public IWqlStatement Retrieve(Type dataType, string wql)
-        {
-            if (dataType == null)
-            {
-                return null;
-            }
-
-            var genericMethod = typeof(IndexManager).GetMethod("Retrieve", 1, [typeof(string)]);
-            var specificMethod = genericMethod.MakeGenericMethod(dataType);
-
-            return (IWqlStatement)specificMethod.Invoke(this, [wql]);
         }
 
         /// <summary>
@@ -381,19 +344,6 @@ namespace WebExpress.WebIndex
         /// <summary>
         /// Returns all documents from the index.
         /// </summary>
-        /// <param name="dataType">The data type. This must have the IIndexItem interface.</param>
-        /// <returns>An enumeration of the documents</returns>
-        public IEnumerable<object> All(Type dataType)
-        {
-            var genericMethod = typeof(IndexManager).GetMethod("All", 1, []);
-            var specificMethod = genericMethod.MakeGenericMethod(dataType);
-
-            return specificMethod.Invoke(this, []) as IEnumerable<object>;
-        }
-
-        /// <summary>
-        /// Returns all documents from the index.
-        /// </summary>
         /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
         /// <returns>An enumeration of the documents</returns>
         public IEnumerable<T> All<T>() where T : IIndexItem
@@ -409,6 +359,7 @@ namespace WebExpress.WebIndex
         /// <summary>
         /// Returns an index type based on its type.
         /// </summary>
+        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
         /// <returns>The index type or null.</returns>
         public IIndexDocument<T> GetIndexDocument<T>() where T : IIndexItem
         {

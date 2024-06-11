@@ -5,6 +5,9 @@
 - build in wql functions
 - Fuzzy search
 - migration
+- drop index
+- order by
+- statistic
 - performance improvements 
 
 # WebExpress.WebIndex
@@ -330,6 +333,8 @@ methods and properties of this class:
 - `Task ReIndexAsync<T>(IEnumerable<T> items, IProgress<int> progress, CancellationToken token)`: Performs an asynchronous reindexing 
    of a collection of index items.
 - `void Create<T>(CultureInfo culture, IndexType type)`: Registers a data type in the index.
+- `void Close<T>()`: Closes the index file of type T.
+- `Task CloseAsync<T>()`: Asynchronously closes the index file of type T.
 - `void Drop<T>()`: Removes all index documents of type T.
 - `Task DropAsync<T>()`: Asynchronously removes all index documents of type T.
 - `void Insert<T>(T item)`: Adds an item to the index.

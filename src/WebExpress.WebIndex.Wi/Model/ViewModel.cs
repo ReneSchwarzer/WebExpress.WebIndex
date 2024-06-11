@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using System.Reflection;
 using System.Text.Json;
+using WebExpress.WebIndex.Storage;
 using WebExpress.WebIndex.Wi.Converter;
 
 namespace WebExpress.WebIndex.Wi.Model
@@ -33,9 +34,14 @@ namespace WebExpress.WebIndex.Wi.Model
         public string CurrentIndexFile { get; set; }
 
         /// <summary>
-        /// Return or sets the object type.
+        /// Return or sets the current object type.
         /// </summary>
-        public ObjectType ObjectType { get; set; }
+        public ObjectType CurrentObjectType { get; set; }
+
+        /// <summary>
+        /// Return or sets the current field.
+        /// </summary>
+        public Field CurrentIndexField { get; set; }
 
         /// <summary>
         /// Opens the specified index file.
@@ -49,9 +55,9 @@ namespace WebExpress.WebIndex.Wi.Model
 
             var schema = File.ReadAllText(CurrentIndexFile);
             var options = new JsonSerializerOptions { Converters = { new FieldTypeConverter() } };
-            ObjectType = JsonSerializer.Deserialize<ObjectType>(schema, options);
+            CurrentObjectType = JsonSerializer.Deserialize<ObjectType>(schema, options);
 
-            var runtimeClass = ObjectType.BuildRuntimeClass();
+            var runtimeClass = CurrentObjectType.BuildRuntimeClass();
 
             var context = new IndexContext { IndexDirectory = CurrentDirectory };
             IndexManager = new IndexManager();
@@ -63,19 +69,62 @@ namespace WebExpress.WebIndex.Wi.Model
         }
 
         /// <summary>
+        /// Opens the specified index field.
+        /// </summary>
+        /// <param name="indexField">The the index field.</param>
+        /// <returns>True if successful, otherwise fasle.</returns>
+        public bool OpenIndexField(Field indexField)
+        {
+            CurrentIndexField = indexField;
+
+            return true;
+        }
+
+        /// <summary>
         /// Close the current index file.
         /// </summary>
         /// <returns>True if successful, otherwise fasle.</returns>
         public bool CloseIndexFile()
         {
-            var runtimeClass = ObjectType.BuildRuntimeClass();
-            IndexManager.Drop(runtimeClass);
+            var runtimeClass = CurrentObjectType.BuildRuntimeClass();
+            IndexManager.Close(runtimeClass);
             CurrentIndexFile = null;
 
-            ObjectType = null;
+            CurrentObjectType = null;
 
             return true;
         }
 
+        /// <summary>
+        /// Drop the current index file.
+        /// </summary>
+        /// <returns>True if successful, otherwise fasle.</returns>
+        public bool DropIndexFile()
+        {
+            var runtimeClass = CurrentObjectType.BuildRuntimeClass();
+            IndexManager.Drop(runtimeClass);
+            CurrentIndexFile = null;
+
+            CurrentObjectType = null;
+
+            return true;
+        }
+
+        /// <summary>
+        /// Returns the index terms.
+        /// </summary>
+        /// <returns>The index terms</returns>
+        public IEnumerable<(string, uint, IEnumerable<Guid>)> GetIndexTerms()
+        {
+            var runtimeClass = CurrentObjectType.BuildRuntimeClass();
+            var document = WiApp.ViewModel.IndexManager.GetIndexDocument(runtimeClass);
+            var fieldProperty = runtimeClass.GetProperty(CurrentIndexField?.Name);
+            var methodInfo = document.GetType().GetMethod("GetReverseIndex");
+            var reverseIndex = methodInfo.Invoke(document, [fieldProperty]);
+            var termProperty = reverseIndex.GetType().GetProperty("Term");
+            var term = termProperty.GetValue(reverseIndex) as IndexStorageSegmentTerm;
+
+            return term.Terms.Select(x => (x.Item1, x.Item2.Fequency, x.Item2.Postings.Select(y => y.DocumentID)));
+        }
     }
 }

@@ -11,8 +11,13 @@
         public CommandAction Action { get; set; }
 
         /// <summary>
-        /// The parameter for the command action.
+        /// The first parameter for the command action.
         /// </summary>
-        public object Parameter { get; set; }
+        public object Parameter1 { get; set; }
+
+        /// <summary>
+        /// The second parameter for the command action.
+        /// </summary>
+        public object Parameter2 { get; set; }
     }
 }

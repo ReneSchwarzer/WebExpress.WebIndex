@@ -34,41 +34,24 @@ namespace WebExpress.WebIndex.Wi
         /// Parses the input string into a command and an optional parameter.
         /// </summary>
         /// <param name="input">The input string to parse.</param>
-        /// <param name="fallbackType">The fallback type if no command but a parameter is selected.</param>
-        /// <param name="wql"></param>
-        public Command Parse(string input, CommandAction fallbackType, Func<string, IWqlStatement> isWql)
+        public Command Parse(string input)
         {
             if (string.IsNullOrWhiteSpace(input))
             {
                 return new Command() { Action = CommandAction.Empty };
             }
 
-            if (int.TryParse(input, out int res))
-            {
-                return new Command() { Action = fallbackType, Parameter = res };
-            }
-
-            var wql = isWql(input);
-            if (wql != null && !wql.HasErrors)
-            {
-                return new Command() { Action = CommandAction.WQL, Parameter = wql };
-            }
-
             var parts = input.Split(' ');
             var command = parts[0]?.Trim().ToLower();
-            var param = parts.Length > 1 ? parts[1] : null;
+            var param1 = parts.Length > 1 ? parts[1] : null;
+            var param2 = parts.Length > 2 ? parts[2] : null;
 
             if (commands.TryGetValue(command, out CommandType type))
             {
-                return new Command() { Action = type.Action, Parameter = param };
-            }
-            else
-            {
-                Console.WriteLine($"Invalid command: {command}");
-                PrintHelp();
+                return new Command() { Action = type.Action, Parameter1 = param1, Parameter2 = param2 };
             }
 
-            return new Command() { Action = CommandAction.Empty };
+            return new Command() { Action = CommandAction.None };
         }
 
         /// <summary>

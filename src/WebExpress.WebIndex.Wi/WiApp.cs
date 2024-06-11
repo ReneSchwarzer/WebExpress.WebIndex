@@ -18,6 +18,11 @@ internal class WiApp
     private ProgrammState State { get; set; } = ProgrammState.Initial;
 
     /// <summary>
+    /// Returns the console width.
+    /// </summary>
+    private int ConsoleWidth { get; set; } = 150;
+
+    /// <summary>
     /// Entry point of wi application.
     /// </summary>
     /// <param name="args">Call arguments.</param>
@@ -66,7 +71,7 @@ internal class WiApp
             }
             else if (File.Exists(ViewModel.CurrentIndexFile))
             {
-                OnOpenIndexFileCommand(new Command() { Action = CommandAction.OpenIndexFile, Parameter = ViewModel.CurrentIndexFile });
+                OnOpenIndexFileCommand(new Command() { Action = CommandAction.OpenIndexFile, Parameter1 = ViewModel.CurrentIndexFile });
             }
         }
 
@@ -100,7 +105,6 @@ internal class WiApp
     private void Start()
     {
         var cmd = GetCommand();
-        var fallbackType = CommandAction.Empty;
 
         while (true)
         {
@@ -108,6 +112,7 @@ internal class WiApp
             parser.Register("?", new CommandType() { Action = CommandAction.Help, Secret = true });
             parser.Register("h", new CommandType() { Action = CommandAction.Help, Secret = true });
             parser.Register("help", new CommandType() { Action = CommandAction.Help, Secret = false });
+            parser.Register("q", new CommandType() { Action = CommandAction.Exit, Secret = true });
             parser.Register("exit", new CommandType() { Action = CommandAction.Exit, Secret = false });
             parser.Register("bye", new CommandType() { Action = CommandAction.Exit, Secret = true });
 
@@ -129,51 +134,50 @@ internal class WiApp
                     }
                 case ProgrammState.OpenIndexFile:
                     {
-                        parser.Register(".", new CommandType() { Action = CommandAction.ShowAttribute, Secret = true });
-                        parser.Register("s", new CommandType() { Action = CommandAction.ShowAttribute, Secret = true });
-                        parser.Register("l", new CommandType() { Action = CommandAction.ShowAttribute, Secret = true });
-                        parser.Register("ll", new CommandType() { Action = CommandAction.ShowAttribute, Secret = true });
-                        parser.Register("ls", new CommandType() { Action = CommandAction.ShowAttribute, Secret = true });
-                        parser.Register("dir", new CommandType() { Action = CommandAction.ShowAttribute, Secret = true });
-                        parser.Register("list", new CommandType() { Action = CommandAction.ShowAttribute, Secret = true });
-                        parser.Register("show", new CommandType() { Action = CommandAction.ShowAttribute, Secret = false });
+                        parser.Register(".", new CommandType() { Action = CommandAction.ShowIndexField, Secret = true });
+                        parser.Register("s", new CommandType() { Action = CommandAction.ShowIndexField, Secret = true });
+                        parser.Register("l", new CommandType() { Action = CommandAction.ShowIndexField, Secret = true });
+                        parser.Register("ll", new CommandType() { Action = CommandAction.ShowIndexField, Secret = true });
+                        parser.Register("ls", new CommandType() { Action = CommandAction.ShowIndexField, Secret = true });
+                        parser.Register("dir", new CommandType() { Action = CommandAction.ShowIndexField, Secret = true });
+                        parser.Register("list", new CommandType() { Action = CommandAction.ShowIndexField, Secret = true });
+                        parser.Register("show", new CommandType() { Action = CommandAction.ShowIndexField, Secret = false });
                         parser.Register("..", new CommandType() { Action = CommandAction.CloseIndexFile, Secret = true });
                         parser.Register("c", new CommandType() { Action = CommandAction.CloseIndexFile, Secret = true });
                         parser.Register("close", new CommandType() { Action = CommandAction.CloseIndexFile, Secret = false });
-                        parser.Register("o", new CommandType() { Action = CommandAction.OpenAttribute, Secret = true });
-                        parser.Register("open", new CommandType() { Action = CommandAction.OpenAttribute, Secret = false });
+                        parser.Register("o", new CommandType() { Action = CommandAction.OpenIndexField, Secret = true });
+                        parser.Register("open", new CommandType() { Action = CommandAction.OpenIndexField, Secret = false });
+                        parser.Register("d", new CommandType() { Action = CommandAction.DropIndexFile, Secret = true });
+                        parser.Register("drop", new CommandType() { Action = CommandAction.DropIndexFile, Secret = false });
                         parser.Register("a", new CommandType() { Action = CommandAction.All, Secret = true });
                         parser.Register("all", new CommandType() { Action = CommandAction.All, Secret = false });
                         break;
                     }
-                case ProgrammState.OpenAttribute:
+                case ProgrammState.OpenIndexField:
                     {
-                        parser.Register("..", new CommandType() { Action = CommandAction.CloseAttribute, Secret = true });
-                        parser.Register("c", new CommandType() { Action = CommandAction.CloseAttribute, Secret = true });
-                        parser.Register("close", new CommandType() { Action = CommandAction.CloseAttribute, Secret = false });
+                        parser.Register(".", new CommandType() { Action = CommandAction.ShowIndexTerm, Secret = true });
+                        parser.Register("s", new CommandType() { Action = CommandAction.ShowIndexTerm, Secret = true });
+                        parser.Register("l", new CommandType() { Action = CommandAction.ShowIndexTerm, Secret = true });
+                        parser.Register("ll", new CommandType() { Action = CommandAction.ShowIndexTerm, Secret = true });
+                        parser.Register("ls", new CommandType() { Action = CommandAction.ShowIndexTerm, Secret = true });
+                        parser.Register("dir", new CommandType() { Action = CommandAction.ShowIndexTerm, Secret = true });
+                        parser.Register("list", new CommandType() { Action = CommandAction.ShowIndexTerm, Secret = true });
+                        parser.Register("show", new CommandType() { Action = CommandAction.ShowIndexTerm, Secret = false });
+                        parser.Register("..", new CommandType() { Action = CommandAction.CloseIndexField, Secret = true });
+                        parser.Register("c", new CommandType() { Action = CommandAction.CloseIndexField, Secret = true });
+                        parser.Register("close", new CommandType() { Action = CommandAction.CloseIndexField, Secret = false });
                         break;
                     }
             }
 
-            fallbackType = State switch
-            {
-                ProgrammState.Initial => CommandAction.OpenIndexFile,
-                ProgrammState.OpenIndexFile => CommandAction.WQL,
-                _ => CommandAction.Empty
-            };
-
-            var isWql = (string command) =>
-            {
-                var runtimeClass = ViewModel.ObjectType?.BuildRuntimeClass();
-                var statement = ViewModel.IndexManager.Retrieve(runtimeClass, command);
-
-                return statement;
-            };
-
-            var command = parser.Parse(cmd, fallbackType, isWql);
+            var command = parser.Parse(cmd);
 
             switch (command.Action)
             {
+                case CommandAction.Empty:
+                    {
+                        break;
+                    }
                 case CommandAction.All:
                     {
                         OnAllCommand(command);
@@ -184,9 +188,14 @@ internal class WiApp
                         OnShowIndexFileCommand(command);
                         break;
                     }
-                case CommandAction.ShowAttribute:
+                case CommandAction.ShowIndexField:
                     {
-                        OnShowAttributeCommand(command);
+                        OnShowIndexFieldCommand(command);
+                        break;
+                    }
+                case CommandAction.ShowIndexTerm:
+                    {
+                        OnShowIndexTermCommand(command);
                         break;
                     }
                 case CommandAction.OpenIndexFile:
@@ -194,9 +203,9 @@ internal class WiApp
                         OnOpenIndexFileCommand(command);
                         break;
                     }
-                case CommandAction.OpenAttribute:
+                case CommandAction.OpenIndexField:
                     {
-                        OnOpenAttributeCommand(command);
+                        OnOpenIndexFieldCommand(command);
                         break;
                     }
                 case CommandAction.CloseIndexFile:
@@ -204,9 +213,14 @@ internal class WiApp
                         OnCloseIndexFileCommand(command);
                         break;
                     }
-                case CommandAction.CloseAttribute:
+                case CommandAction.CloseIndexField:
                     {
-                        OnCloseAttributeCommand(command);
+                        OnCloseIndexFieldCommand(command);
+                        break;
+                    }
+                case CommandAction.DropIndexFile:
+                    {
+                        OnDropIndexFileCommand(command);
                         break;
                     }
                 case CommandAction.WQL:
@@ -223,6 +237,45 @@ internal class WiApp
                     {
                         return;
                     }
+                default:
+                    {
+                        if (int.TryParse(cmd, out int res))
+                        {
+                            switch (State)
+                            {
+                                case ProgrammState.Initial:
+                                    {
+                                        OnOpenIndexFileCommand(new Command() { Action = CommandAction.OpenIndexFile, Parameter1 = res });
+                                    }
+                                    break;
+                                case ProgrammState.OpenIndexFile:
+                                    {
+                                        OnOpenIndexFieldCommand(new Command() { Action = CommandAction.OpenIndexField, Parameter1 = res });
+                                    }
+                                    break;
+                                default:
+                                    {
+                                        PrintError($"Invalid command: {cmd}");
+                                    }
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            var runtimeClass = ViewModel.CurrentObjectType?.BuildRuntimeClass();
+                            var statement = ViewModel.IndexManager?.Retrieve(runtimeClass, cmd);
+
+                            if (statement != null && !statement.HasErrors)
+                            {
+                                OnWqlCommand(new Command() { Action = CommandAction.WQL, Parameter1 = statement });
+                            }
+                            else if (statement != null && statement.HasErrors)
+                            {
+                                PrintError($"Invalid command: {cmd} - {statement.Error}");
+                            };
+                        }
+                    }
+                    break;
             }
 
             cmd = GetCommand();
@@ -244,9 +297,9 @@ internal class WiApp
                     prefix = Path.GetFileNameWithoutExtension(ViewModel.CurrentIndexFile);
                     break;
                 }
-            case ProgrammState.OpenAttribute:
+            case ProgrammState.OpenIndexField:
                 {
-                    prefix = $"{Path.GetFileNameWithoutExtension(ViewModel.CurrentIndexFile)}/{"todo"}";
+                    prefix = $"{Path.GetFileNameWithoutExtension(ViewModel.CurrentIndexFile)}/{ViewModel.CurrentIndexField?.Name}";
                     break;
                 }
         }
@@ -263,10 +316,11 @@ internal class WiApp
     /// <param name="command">The command to be executed.</param>
     private void OnAllCommand(Command command)
     {
-        var runtimeClass = ViewModel.ObjectType.BuildRuntimeClass();
+        var runtimeClass = ViewModel.CurrentObjectType.BuildRuntimeClass();
         var headers = runtimeClass.GetProperties().Select(x => x.Name);
 
-        PrintTable(headers, ViewModel.ObjectType.All.Select(x => runtimeClass.GetProperties().Select(y => y.GetValue(x)?.ToString())));
+        UpdateConsoleWidth();
+        PrintTable(headers, ViewModel.CurrentObjectType.All.Select(x => runtimeClass.GetProperties().Select(y => y.GetValue(x)?.ToString())));
     }
 
     /// <summary>
@@ -279,19 +333,61 @@ internal class WiApp
 
         Console.WriteLine($"The '{ViewModel.CurrentDirectory}' directory contains the following index files:{Environment.NewLine}");
 
-        foreach (var file in Directory.GetFiles(ViewModel.CurrentDirectory, "*.ws", SearchOption.TopDirectoryOnly))
+        var files = Directory.GetFiles(ViewModel.CurrentDirectory, "*.ws", SearchOption.TopDirectoryOnly);
+        foreach (var file in files)
         {
             Console.WriteLine($"{i++} - {Path.GetFileNameWithoutExtension(file)}");
+        }
+
+        if (files.Length == 0)
+        {
+            Console.WriteLine("No files available.");
         }
     }
 
     /// <summary>
-    /// Execute the show attribute command.
+    /// Execute the show index field command.
     /// </summary>
     /// <param name="command">The command to be executed.</param>
-    private void OnShowAttributeCommand(Command command)
+    private void OnShowIndexFieldCommand(Command command)
     {
+        var i = 1;
 
+        Console.WriteLine($"The '{ViewModel?.CurrentObjectType?.Name}' contains the following fields:{Environment.NewLine}");
+
+        var fileds = ViewModel?.CurrentObjectType?.Fields.Where(x => !x.Ignore);
+        foreach (var field in fileds)
+        {
+            Console.WriteLine($"{i++} - {field.Name}");
+        }
+
+        if (!fileds.Any())
+        {
+            Console.WriteLine("No fields available.");
+        }
+    }
+
+    /// <summary>
+    /// Execute the show index term command.
+    /// </summary>
+    /// <param name="command">The command to be executed.</param>
+    private void OnShowIndexTermCommand(Command command)
+    {
+        var headers = new List<string>(["Term", "Fequency", "DocumentIDs"]);
+        var rows = ViewModel.GetIndexTerms();
+        var i = 0;
+
+        UpdateConsoleWidth();
+
+        PrintTableHeader(headers);
+
+        foreach (var row in rows)
+        {
+            PrintTableRow(headers, [row.Item1, row.Item2.ToString(), string.Join(",", row.Item3)]);
+            i++;
+        }
+
+        PrintTableFooter(headers, i);
     }
 
     /// <summary>
@@ -302,19 +398,18 @@ internal class WiApp
     {
         var file = "";
 
-        if (int.TryParse(command.Parameter?.ToString(), out int i))
+        if (int.TryParse(command.Parameter1?.ToString(), out int i))
         {
             file = Directory.GetFiles(ViewModel.CurrentDirectory, "*.ws", SearchOption.TopDirectoryOnly).Skip(i - 1).FirstOrDefault();
         }
         else
         {
-            file = Directory.GetFiles(ViewModel.CurrentDirectory, $"{command.Parameter}.ws", SearchOption.TopDirectoryOnly).FirstOrDefault();
+            file = Directory.GetFiles(ViewModel.CurrentDirectory, $"{command.Parameter1}.ws", SearchOption.TopDirectoryOnly).FirstOrDefault();
         }
-
 
         if (!File.Exists(file))
         {
-            PrintError($"File not found. {ViewModel.CurrentIndexFile}");
+            PrintError($"File '{ViewModel.CurrentIndexFile}' not found.");
             return;
         }
 
@@ -328,12 +423,35 @@ internal class WiApp
     }
 
     /// <summary>
-    /// Execute the open attribute command.
+    /// Execute the open index field command.
     /// </summary>
     /// <param name="command">The command to be executed.</param>
-    private void OnOpenAttributeCommand(Command command)
+    private void OnOpenIndexFieldCommand(Command command)
     {
-        State = ProgrammState.OpenAttribute;
+        var field = default(Field);
+
+        if (int.TryParse(command.Parameter1?.ToString(), out int i))
+        {
+            field = ViewModel?.CurrentObjectType?.Fields.Skip(i - 1).FirstOrDefault();
+        }
+        else
+        {
+            field = ViewModel?.CurrentObjectType?.Fields.Where(x => x.Name.Contains(command.ToString(), StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+        }
+
+        if (field == null)
+        {
+            PrintError($"Field '{field}' not found.");
+            return;
+        }
+
+        if (!ViewModel.OpenIndexField(field))
+        {
+            PrintError("An error occurred while opening the index field.");
+            return;
+        }
+
+        State = ProgrammState.OpenIndexField;
     }
 
     /// <summary>
@@ -352,12 +470,30 @@ internal class WiApp
     }
 
     /// <summary>
-    /// Execute the close attribute command.
+    /// Execute the close index field command.
     /// </summary>
     /// <param name="command">The command to be executed.</param>
-    private void OnCloseAttributeCommand(Command command)
+    private void OnCloseIndexFieldCommand(Command command)
     {
         State = ProgrammState.OpenIndexFile;
+    }
+
+    /// <summary>
+    /// Execute the drop index file command.
+    /// </summary>
+    /// <param name="command">The command to be executed.</param>
+    private void OnDropIndexFileCommand(Command command)
+    {
+        if (Confirm($"Are you sure you want to delete the index file '{ViewModel?.CurrentObjectType.Name}'? The action cannot be rolled back."))
+        {
+            if (!ViewModel.DropIndexFile())
+            {
+                PrintError("An error occurred while droping the index file.");
+                return;
+            }
+
+            State = ProgrammState.Initial;
+        }
     }
 
     /// <summary>
@@ -370,26 +506,44 @@ internal class WiApp
         {
             case ProgrammState.OpenIndexFile:
                 {
-                    var runtimeClass = ViewModel.ObjectType.BuildRuntimeClass();
+                    var runtimeClass = ViewModel.CurrentObjectType.BuildRuntimeClass();
                     var headers = runtimeClass.GetProperties().Select(x => x.Name);
-                    var wql = command.Parameter as IWqlStatement;
+                    var wql = command.Parameter1 as IWqlStatement;
                     var data = wql.Apply(runtimeClass);
                     var list = new List<IEnumerable<string>>();
+                    var i = 0;
 
+                    UpdateConsoleWidth();
                     PrintTableHeader(headers);
 
                     foreach (var item in data)
                     {
                         PrintTableRow(headers, runtimeClass.GetProperties().Select(y => y.GetValue(item)?.ToString()));
+                        i++;
                     }
 
-                    PrintTableFooter(headers);
+                    PrintTableFooter(headers, i);
                 }
                 break;
             default:
                 PrintError("WQL is not allowed at this point.");
                 break;
         }
+    }
+
+    /// <summary>
+    /// Confirmation of an action
+    /// </summary>
+    /// <param name="message">The confirmation message.</param>
+    private bool Confirm(string message)
+    {
+        var col = Console.ForegroundColor;
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.Write($"{message} (n)");
+        Console.ForegroundColor = col;
+        var cmd = Console.ReadLine().ToLower().Trim();
+
+        return cmd.Equals("y") || cmd.Equals("yes");
     }
 
     /// <summary>
@@ -411,19 +565,6 @@ internal class WiApp
     /// <param name="rows">The table rows.</param>
     private void PrintTable(IEnumerable<string> columns, IEnumerable<IEnumerable<string>> rows)
     {
-        var consoleWidth = 150;
-        try
-        {
-            consoleWidth = Console.WindowWidth - 4;
-        }
-        catch
-        {
-        }
-
-        var columnCount = columns.Count();
-        var columnWidth = consoleWidth / columnCount;
-        var header = $"| {string.Join(" | ", columns.Select(x => FormatCell(x, columnWidth - 3)))}|";
-
         PrintTableHeader(columns);
 
         // Print rows
@@ -433,7 +574,7 @@ internal class WiApp
         }
 
         // print bottom border
-        PrintTableFooter(columns);
+        PrintTableFooter(columns, rows.Count());
     }
 
     /// <summary>
@@ -442,15 +583,7 @@ internal class WiApp
     /// <param name="columns">The table columns.</param>
     private void PrintTableHeader(IEnumerable<string> columns)
     {
-        var consoleWidth = 150;
-        try
-        {
-            consoleWidth = Console.WindowWidth - 4;
-        }
-        catch
-        {
-        }
-
+        var consoleWidth = ConsoleWidth;
         var columnCount = columns.Count();
         var columnWidth = consoleWidth / columnCount;
         var header = $"| {string.Join(" | ", columns.Select(x => FormatCell(x, columnWidth - 3)))}|";
@@ -462,7 +595,7 @@ internal class WiApp
         Console.WriteLine(header);
 
         // print separator
-        Console.WriteLine($"|{new string('─', header.Length - 2)}|");
+        Console.WriteLine($"├{new string('─', header.Length - 2)}┤");
     }
 
     /// <summary>
@@ -472,15 +605,7 @@ internal class WiApp
     /// <param name="row">The table row.</param>
     private void PrintTableRow(IEnumerable<string> columns, IEnumerable<string> row)
     {
-        var consoleWidth = 150;
-        try
-        {
-            consoleWidth = Console.WindowWidth - 4;
-        }
-        catch
-        {
-        }
-
+        var consoleWidth = ConsoleWidth;
         var columnCount = columns.Count();
         var columnWidth = consoleWidth / columnCount;
         var header = $"| {string.Join(" | ", columns.Select(x => FormatCell(x, columnWidth - 3)))}|";
@@ -493,20 +618,19 @@ internal class WiApp
     /// Display the table footer.
     /// </summary>
     /// <param name="columns">The table columns.</param>
-    private void PrintTableFooter(IEnumerable<string> columns)
+    /// <param name="count">The row count.</param>
+    private void PrintTableFooter(IEnumerable<string> columns, int count)
     {
-        var consoleWidth = 150;
-        try
-        {
-            consoleWidth = Console.WindowWidth - 4;
-        }
-        catch
-        {
-        }
-
+        var consoleWidth = ConsoleWidth;
         var columnCount = columns.Count();
         var columnWidth = consoleWidth / columnCount;
         var header = $"| {string.Join(" | ", columns.Select(x => FormatCell(x, columnWidth - 3)))}|";
+
+        // print separator
+        Console.WriteLine($"├{new string('─', header.Length - 2)}┤");
+
+        // print counter
+        Console.WriteLine($"|{$" Rows count: {count}".PadRight(header.Length - 2)}|");
 
         // print bottom border
         Console.WriteLine($"└{new string('─', header.Length - 2)}┘");
@@ -527,6 +651,20 @@ internal class WiApp
         else
         {
             return cell.PadRight(width);
+        }
+    }
+
+    /// <summary>
+    /// Updates the width of the console.
+    /// </summary>
+    private void UpdateConsoleWidth()
+    {
+        try
+        {
+            ConsoleWidth = Console.WindowWidth - 4;
+        }
+        catch
+        {
         }
     }
 

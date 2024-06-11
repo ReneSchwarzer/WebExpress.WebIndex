@@ -6,6 +6,11 @@
     internal enum CommandAction
     {
         /// <summary>
+        /// No command was specified.
+        /// </summary>
+        None,
+
+        /// <summary>
         /// Lists all available data.
         /// </summary>
         All,
@@ -21,9 +26,14 @@
         ShowIndexFile,
 
         /// <summary>
-        /// List the index attributes in the currently open index file.
+        /// List the index field in the currently open index file.
         /// </summary>
-        ShowAttribute,
+        ShowIndexField,
+
+        /// <summary>
+        /// List the index terms in the currently open index field.
+        /// </summary>
+        ShowIndexTerm,
 
         /// <summary>
         /// Opens an index file for access.
@@ -31,9 +41,9 @@
         OpenIndexFile,
 
         /// <summary>
-        /// Opens an attribute for access.
+        /// Opens an index field for access.
         /// </summary>
-        OpenAttribute,
+        OpenIndexField,
 
         /// <summary>
         /// Stops accessing an index file.
@@ -41,9 +51,14 @@
         CloseIndexFile,
 
         /// <summary>
-        /// Stops accessing an index attribute.
+        /// Stops accessing an index field.
         /// </summary>
-        CloseAttribute,
+        CloseIndexField,
+
+        /// <summary>
+        /// Removes an index file.
+        /// </summary>
+        DropIndexFile,
 
         /// <summary>
         /// Displays help with the currently available commands.
@@ -77,11 +92,12 @@
             {
                 CommandAction.All => "Lists all available data.",
                 CommandAction.ShowIndexFile => "List the index files in the currently open directory.",
-                CommandAction.ShowAttribute => "List the index attributes in the currently open index file.",
+                CommandAction.ShowIndexField => "List the index attributes in the currently open index file.",
                 CommandAction.OpenIndexFile => "Opens an index file for access.",
-                CommandAction.OpenAttribute => "Opens an attribute for access.",
+                CommandAction.OpenIndexField => "Opens an attribute for access.",
                 CommandAction.CloseIndexFile => "Stops accessing an index file.",
-                CommandAction.CloseAttribute => "Stops accessing an index attribute.",
+                CommandAction.CloseIndexField => "Stops accessing an index attribute.",
+                CommandAction.DropIndexFile => "Removes an index file.",
                 CommandAction.Help => "Displays help with the currently available commands.",
                 CommandAction.Exit => "Quits the program.",
                 _ => ""
@@ -98,7 +114,7 @@
             return action switch
             {
                 CommandAction.OpenIndexFile => "'index file'",
-                CommandAction.OpenAttribute => "'attribute'",
+                CommandAction.OpenIndexField => "'attribute'",
                 _ => ""
             };
         }
@@ -113,7 +129,7 @@
             return action switch
             {
                 CommandAction.OpenIndexFile => 1,
-                CommandAction.OpenAttribute => 1,
+                CommandAction.OpenIndexField => 1,
                 _ => 0
             };
         }
