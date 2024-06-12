@@ -24,12 +24,12 @@
         /// Field type for double precision floating point numbers.
         /// </summary>
         Double,
-        
+
         /// <summary>
         /// Field type for date time values.
         /// </summary>
         DateTime,
-        
+
         /// <summary>
         /// Field type for guid values.
         /// </summary>
@@ -93,7 +93,7 @@
         {
             return str switch
             {
-                "Text" => FieldType.Text,
+                "String" => FieldType.Text,
                 "Boolean" => FieldType.Bool,
                 "Integer" => FieldType.Int,
                 "Double" => FieldType.Double,

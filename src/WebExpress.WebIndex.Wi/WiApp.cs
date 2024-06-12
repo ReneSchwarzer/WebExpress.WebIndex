@@ -135,6 +135,7 @@ internal class WiApp
                         parser.Register("open", new CommandType() { Action = CommandAction.OpenIndexFile, Secret = false });
                         parser.Register("c", new CommandType() { Action = CommandAction.CreateIndexFile, Secret = true });
                         parser.Register("create", new CommandType() { Action = CommandAction.CreateIndexFile, Secret = false });
+                        parser.Register("import", new CommandType() { Action = CommandAction.Import, Secret = false });
                         break;
                     }
                 case ProgrammState.OpenIndexFile:
@@ -156,7 +157,6 @@ internal class WiApp
                         parser.Register("a", new CommandType() { Action = CommandAction.All, Secret = true });
                         parser.Register("all", new CommandType() { Action = CommandAction.All, Secret = false });
                         parser.Register("export", new CommandType() { Action = CommandAction.Export, Secret = false });
-                        parser.Register("import", new CommandType() { Action = CommandAction.Import, Secret = false });
                         parser.Register("i", new CommandType() { Action = CommandAction.Insert, Secret = true });
                         parser.Register("insert", new CommandType() { Action = CommandAction.Insert, Secret = false });
                         parser.Register("u", new CommandType() { Action = CommandAction.Update, Secret = true });
@@ -379,19 +379,28 @@ internal class WiApp
     private void OnShowIndexFileCommand(Command command)
     {
         var i = 1;
+        var headers = new List<string>(["Id", "Index"]);
+        var files = Directory.GetFiles(ViewModel.CurrentDirectory, "*.ws", SearchOption.TopDirectoryOnly);
 
         Console.WriteLine($"The '{ViewModel.CurrentDirectory}' directory contains the following index files:{Environment.NewLine}");
 
-        var files = Directory.GetFiles(ViewModel.CurrentDirectory, "*.ws", SearchOption.TopDirectoryOnly);
-        foreach (var file in files)
+        if (files.Length > 0)
         {
-            Console.WriteLine($"{i++} - {Path.GetFileNameWithoutExtension(file)}");
+            UpdateConsoleWidth();
+
+            PrintTableHeader(headers);
+
+            foreach (var row in files.Select(x => new { Id = i++, Name = Path.GetFileNameWithoutExtension(x) }))
+            {
+                PrintTableRow(headers, [row.Id.ToString(), row.Name]);
+            }
+
+            PrintTableFooter(headers, i);
+
+            return;
         }
 
-        if (files.Length == 0)
-        {
-            Console.WriteLine("No files available.");
-        }
+        Console.WriteLine("No files available.");
     }
 
     /// <summary>
@@ -401,13 +410,25 @@ internal class WiApp
     private void OnShowIndexFieldCommand(Command command)
     {
         var i = 1;
+        var headers = new List<string>(["Id", "Field", "Type"]);
+        var fileds = ViewModel?.CurrentObjectType?.Fields.Where(x => !x.Ignore);
 
         Console.WriteLine($"The '{ViewModel?.CurrentObjectType?.Name}' contains the following fields:{Environment.NewLine}");
 
-        var fileds = ViewModel?.CurrentObjectType?.Fields.Where(x => !x.Ignore);
-        foreach (var field in fileds)
+        if (fileds.Any())
         {
-            Console.WriteLine($"{i++} - {field.Name}");
+            UpdateConsoleWidth();
+
+            PrintTableHeader(headers);
+
+            foreach (var row in fileds.Select(x => new { Id = i++, x.Name, x.Type }))
+            {
+                PrintTableRow(headers, [row.Id.ToString(), row.Name, row.Type.ToString()]);
+            }
+
+            PrintTableFooter(headers, i);
+
+            return;
         }
 
         if (!fileds.Any())
@@ -533,7 +554,28 @@ internal class WiApp
     /// <param name="command">The command to be executed.</param>
     private void OnCreateIndexFileCommand(Command command)
     {
-        PrintError("Sorry! Not implemented at the moment.");
+        var name = command.Parameter1?.ToString();
+
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            PrintError("Missing parameter name.");
+
+            return;
+        }
+
+        if (File.Exists(Path.Combine(ViewModel.CurrentDirectory, $"{name}.ws")))
+        {
+            PrintError($"The index file '{name}' to be created already exists.");
+
+            return;
+        }
+
+        if (!ViewModel.CreateIndexFile(name))
+        {
+            PrintError("An error occurred while creating the index file.");
+        }
+
+        State = ProgrammState.OpenIndexFile;
     }
 
     /// <summary>

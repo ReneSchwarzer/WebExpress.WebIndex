@@ -48,6 +48,26 @@ namespace WebExpress.WebIndex.Wi.Model
         /// </summary>
         /// <param name="indexFile">The full path to the index file.</param>
         /// <returns>True if successful, otherwise fasle.</returns>
+        public bool CreateIndexFile(string indexFile)
+        {
+            CurrentObjectType = new ObjectType() { Name = indexFile };
+            CurrentIndexFile = Path.Combine(CurrentDirectory, $"{indexFile}.ws");
+
+            var runtimeClass = CurrentObjectType.BuildRuntimeClass();
+            var context = new IndexContext { IndexDirectory = CurrentDirectory };
+            IndexManager = new IndexManager();
+            IndexManager.Initialization(context);
+
+            IndexManager.Create(runtimeClass, CultureInfo.GetCultureInfo("en"), IndexType.Storage);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Opens the specified index file.
+        /// </summary>
+        /// <param name="indexFile">The full path to the index file.</param>
+        /// <returns>True if successful, otherwise fasle.</returns>
         public bool OpenIndexFile(string indexFile)
         {
             CurrentDirectory = Path.GetDirectoryName(indexFile);

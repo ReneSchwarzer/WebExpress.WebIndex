@@ -19,7 +19,7 @@ namespace WebExpress.WebIndex.Wi.Model
         /// <summary>
         /// Retuns a collection of fields associated with the object.
         /// </summary>
-        public IEnumerable<Field> Fields { get; set; }
+        public IEnumerable<Field> Fields { get; set; } = [];
 
         /// <summary>
         /// Gets a collection of stored data objects.
