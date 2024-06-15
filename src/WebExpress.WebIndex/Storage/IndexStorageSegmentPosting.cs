@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using WebExpress.WebIndex.Utility;
 
 namespace WebExpress.WebIndex.Storage
 {
@@ -45,10 +44,6 @@ namespace WebExpress.WebIndex.Storage
         {
             get
             {
-                #if DEBUG 
-                using var profiling = Profiling.Diagnostic(); 
-                #endif
-
                 if (PositionAddr == 0)
                 {
                     yield break;
@@ -73,10 +68,6 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>The position segment.</returns>
         public IndexStorageSegmentPosition AddPosition(uint pos)
         {
-            #if DEBUG 
-            using var profiling = Profiling.Diagnostic(); 
-            #endif
-            
             var item = default(IndexStorageSegmentPosition);
 
             lock (Guard)
@@ -152,10 +143,6 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         public void RemovePositions()
         {
-            #if DEBUG 
-            using var profiling = Profiling.Diagnostic(); 
-            #endif
-
             if (PositionAddr == 0)
             {
                 return;
@@ -177,10 +164,6 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="reader">The reader for i/o operations.</param>
         public override void Read(BinaryReader reader)
         {
-            #if DEBUG 
-            using var profiling = Profiling.Diagnostic(); 
-            #endif
-
             DocumentID = new Guid(reader.ReadBytes(16));
             SuccessorAddr = reader.ReadUInt64();
             PositionAddr = reader.ReadUInt64();
@@ -192,10 +175,6 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="writer">The writer for i/o operations.</param>
         public override void Write(BinaryWriter writer)
         {
-            #if DEBUG 
-            using var profiling = Profiling.Diagnostic(); 
-            #endif
-
             writer.Write(DocumentID.ToByteArray());
             writer.Write(SuccessorAddr);
             writer.Write(PositionAddr);
@@ -216,10 +195,6 @@ namespace WebExpress.WebIndex.Storage
         /// <exception cref="System.ArgumentException">Obj is not the same type as this instance.</exception>
         public int CompareTo(object obj)
         {
-            #if DEBUG 
-            using var profiling = Profiling.Diagnostic(); 
-            #endif
-            
             if (obj is IndexStorageSegmentPosting posting)
             {
                 return DocumentID.CompareTo(posting.DocumentID);

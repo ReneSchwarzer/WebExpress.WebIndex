@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using WebExpress.WebIndex.Utility;
 
 namespace WebExpress.WebIndex.Storage
 {
@@ -27,12 +26,7 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Returns a buffer for caching segments.
         /// </summary>
-        private IndexStorageReadBuffer ReadBuffer { get; set; }
-
-        /// <summary>
-        /// Returns a buffer for caching segments.
-        /// </summary>
-        private IndexStorageWriteBuffer WriteBuffer { get; set; }
+        private IndexStorageBuffer Buffer { get; set; }
 
         /// <summary>
         /// Returns or sets the next free address.
@@ -40,20 +34,11 @@ namespace WebExpress.WebIndex.Storage
         public ulong NextFreeAddr { get; internal set; } = 0ul;
 
         /// <summary>
-        /// Returns a guard to protect against concurrent access.
-        /// </summary>
-        internal object Guard { get; } = new object();
-
-        /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="fileName">The file name.</param>
         public IndexStorageFile(string fileName)
         {
-            #if DEBUG 
-            using var profiling = Profiling.Diagnostic(); 
-            #endif
-            
             FileName = fileName;
 
             Directory.CreateDirectory(Path.GetDirectoryName(FileName));
@@ -66,8 +51,7 @@ namespace WebExpress.WebIndex.Storage
             };
 
             FileStream = File.Open(FileName, options);
-            ReadBuffer = new IndexStorageReadBuffer(this);
-            WriteBuffer = new IndexStorageWriteBuffer(this);
+            Buffer = new IndexStorageBuffer(this);
         }
 
         /// <summary>
@@ -78,10 +62,6 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>The start address of the reserved storage area.</returns>
         public ulong Alloc(uint size)
         {
-            #if DEBUG 
-            using var profiling = Profiling.Diagnostic(); 
-            #endif
-
             var addr = NextFreeAddr;
             NextFreeAddr += size;
 
@@ -97,27 +77,7 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>The segment, how it was read by the storage medium.</returns>
         public T Read<T>(ulong addr, IndexStorageContext context) where T : IIndexStorageSegment
         {
-            #if DEBUG 
-            using var profiling = Profiling.Diagnostic(); 
-            #endif
-
-            if (ReadBuffer.GetSegment<T>(addr, out IIndexStorageSegment readCached))
-            {
-                return (T)readCached;
-            }
-
-            lock (Guard)
-            {
-                if (WriteBuffer.GetSegment(addr, out IIndexStorageSegment writeCached))
-                {
-                    return (T)writeCached;
-                }
-
-                var segment = (T)Activator.CreateInstance(typeof(T), context, addr);
-                ReadBuffer.Read(segment);
-
-                return segment;
-            }
+            return Buffer.Read<T>(addr, context);
         }
 
         /// <summary>
@@ -126,26 +86,7 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="segment">The segment.</param>
         public T Read<T>(T segment) where T : IIndexStorageSegment
         {
-            #if DEBUG 
-            using var profiling = Profiling.Diagnostic(); 
-            #endif
-
-            if (ReadBuffer.GetSegment<T>(segment.Addr, out IIndexStorageSegment readCached))
-            {
-                return (T)readCached;
-            }
-
-            lock (Guard)
-            {
-                if (WriteBuffer.GetSegment(segment.Addr, out IIndexStorageSegment writeCached))
-                {
-                    return (T)writeCached;
-                }
-
-                ReadBuffer.Read(segment);
-            }
-
-            return segment;
+            return Buffer.Read<T>(segment);
         }
 
         /// <summary>
@@ -154,12 +95,7 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="segment">The segment.</param>
         public void Write(IIndexStorageSegment segment)
         {
-            #if DEBUG 
-            using var profiling = Profiling.Diagnostic(); 
-            #endif
-
-            ReadBuffer.Cache(segment);
-            WriteBuffer.Cache(segment);
+            Buffer.Write(segment);
         }
 
         /// <summary>
@@ -167,16 +103,12 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         public void Flush()
         {
-            #if DEBUG 
-            using var profiling = Profiling.Diagnostic(); 
-            #endif
-
             if (!FileStream.CanWrite)
             {
                 return;
             }
 
-            WriteBuffer.Flush();
+            Buffer.Flush();
         }
 
         /// <summary>
@@ -185,11 +117,7 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="segment">The IndexStorageSegment object to be invalidated.</param>
         public void Invalidation(IIndexStorageSegment segment)
         {
-            #if DEBUG 
-            using var profiling = Profiling.Diagnostic(); 
-            #endif
-
-            ReadBuffer.Invalidation(segment);
+            Buffer.Invalidation(segment);
         }
 
         /// <summary>
@@ -197,13 +125,7 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         public void Dispose()
         {
-            #if DEBUG 
-            using var profiling = Profiling.Diagnostic(); 
-            #endif
-            
-            ReadBuffer.Dispose();
-            WriteBuffer.Dispose();
-
+            Buffer.Dispose();
             FileStream.Dispose();
 
             GC.SuppressFinalize(this);

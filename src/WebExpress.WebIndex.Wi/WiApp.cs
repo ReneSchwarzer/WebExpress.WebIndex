@@ -87,6 +87,8 @@ internal class WiApp
     /// <param name="e">The event argument.</param>
     private void OnCancel(object sender, ConsoleCancelEventArgs e)
     {
+        e.Cancel = false;
+
         Exit();
     }
 

@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using WebExpress.WebIndex.Utility;
 using WebExpress.WebIndex.WebAttribute;
 
 namespace WebExpress.WebIndex.Storage
@@ -35,10 +34,6 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="segment">The segment to be cached.</param>
         public IndexStorageReadBufferItem(IIndexStorageSegment segment)
         {
-            #if DEBUG 
-            using var profiling = Profiling.Diagnostic(); 
-            #endif
-            
             Segment = segment;
 
             if (segment.GetType().GetCustomAttribute<SegmentCachedAttribute>() != null)
@@ -56,14 +51,7 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         public void IncrementCounter()
         {
-            #if DEBUG 
-            using var profiling = Profiling.Diagnostic(); 
-            #endif
-
-            if (_counter < uint.MaxValue)
-            {
-                _counter--;
-            }
+            _counter--;
         }
 
         /// <summary>
@@ -71,10 +59,6 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         public void Refresh()
         {
-            #if DEBUG 
-            using var profiling = Profiling.Diagnostic(); 
-            #endif
-            
             _counter = Lifetime;
         }
     }

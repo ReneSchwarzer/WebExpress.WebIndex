@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
-using WebExpress.WebIndex.Utility;
 
 namespace WebExpress.WebIndex.Term.Pipeline
 {
@@ -30,10 +29,6 @@ namespace WebExpress.WebIndex.Term.Pipeline
         /// <returns>The terms in lower case.</returns>
         public IEnumerable<IndexTermToken> Process(IEnumerable<IndexTermToken> input, CultureInfo culture)
         {
-#if DEBUG
-            using var profiling = Profiling.Diagnostic();
-#endif
-
             foreach (var token in input)
             {
                 if (token.Value is string)

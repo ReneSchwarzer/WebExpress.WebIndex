@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using WebExpress.WebIndex.Utility;
 
 namespace WebExpress.WebIndex.Storage
 {
@@ -46,10 +45,6 @@ namespace WebExpress.WebIndex.Storage
         /// </returns>
         public override string ToString()
         {
-            #if DEBUG 
-            using var profiling = Profiling.Diagnostic(); 
-            #endif
-            
             return $"{Addr}: {GetType().Name}";
         }
     }

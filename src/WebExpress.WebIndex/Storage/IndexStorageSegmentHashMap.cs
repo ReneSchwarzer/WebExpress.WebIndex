@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using WebExpress.WebIndex.Utility;
 
 namespace WebExpress.WebIndex.Storage
 {
@@ -36,11 +35,7 @@ namespace WebExpress.WebIndex.Storage
         public IEnumerable<IndexStorageSegmentItem> All
         {
             get
-            {        
-                #if DEBUG 
-                using var profiling = Profiling.Diagnostic(); 
-                #endif
-
+            {
                 foreach (var bucket in Buckets)
                 {
                     var addr = bucket;
@@ -64,10 +59,6 @@ namespace WebExpress.WebIndex.Storage
         public IndexStorageSegmentHashMap(IndexStorageContext context, uint capacity = ushort.MaxValue)
             : base(context, context.IndexFile.Alloc(SegmentSize))
         {
-            #if DEBUG 
-            using var profiling = Profiling.Diagnostic(); 
-            #endif
-
             BucketCount = DeterminePrimeNumber(capacity);
             Buckets = new ulong[BucketCount];
 
@@ -80,10 +71,6 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="segment">The segment.</param>
         public IndexStorageSegmentItem Add(IndexStorageSegmentItem segment)
         {
-            #if DEBUG 
-            using var profiling = Profiling.Diagnostic(); 
-            #endif
-
             var hash = segment.Id.GetHashCode();
             var index = (uint)hash % BucketCount;
 
@@ -153,10 +140,6 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>The items in the buckets.</returns>
         public IEnumerable<IndexStorageSegmentItem> GetBucket(Guid id)
         {
-            #if DEBUG 
-            using var profiling = Profiling.Diagnostic(); 
-            #endif
-
             var hash = id.GetHashCode();
             var index = (uint)hash % BucketCount;
 
@@ -185,10 +168,6 @@ namespace WebExpress.WebIndex.Storage
         /// found in the list.</returns>
         public bool Remove(IndexStorageSegmentItem segment)
         {
-            #if DEBUG 
-            using var profiling = Profiling.Diagnostic(); 
-            #endif
-
             var hash = segment.Id.GetHashCode();
             var index = (uint)hash % BucketCount;
 
@@ -224,10 +203,6 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>The predecessor or null if there is no predecessor.</returns>
         private IndexStorageSegmentItem GetPredecessor(IndexStorageSegmentItem item, out uint index)
         {
-            #if DEBUG 
-            using var profiling = Profiling.Diagnostic(); 
-            #endif
-
             var last = default(IndexStorageSegmentItem);
             index = 0u;
 
@@ -256,10 +231,6 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         public override void Read(BinaryReader reader)
         {
-            #if DEBUG 
-            using var profiling = Profiling.Diagnostic(); 
-            #endif
-
             BucketCount = reader.ReadUInt32();
             Buckets = new ulong[BucketCount];
 
@@ -275,10 +246,6 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="writer">The writer for i/o operations.</param>
         public override void Write(BinaryWriter writer)
         {
-            #if DEBUG 
-            using var profiling = Profiling.Diagnostic(); 
-            #endif
-
             writer.Write(BucketCount);
 
             for (int i = 0; i < BucketCount; i++)
@@ -294,10 +261,6 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>The next prime number.</returns>
         private static uint DeterminePrimeNumber(uint capacity)
         {
-            #if DEBUG 
-            using var profiling = Profiling.Diagnostic(); 
-            #endif
-            
             for (uint i = capacity; i <= uint.MaxValue; i++)
             {
                 if (i < 2)

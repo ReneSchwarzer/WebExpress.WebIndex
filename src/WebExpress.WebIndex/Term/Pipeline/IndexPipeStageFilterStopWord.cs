@@ -2,7 +2,6 @@
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using WebExpress.WebIndex.Utility;
 
 namespace WebExpress.WebIndex.Term.Pipeline
 {
@@ -19,7 +18,7 @@ namespace WebExpress.WebIndex.Term.Pipeline
         /// <summary>
         /// Returns a list of the stop words that are used for filtering.
         /// </summary>
-        internal Dictionary<CultureInfo, HashSet<string>> StopWordDictionary { get; } = [];
+        private Dictionary<CultureInfo, HashSet<string>> StopWordDictionary { get; } = [];
 
         /// <summary>
         /// Constructor
@@ -43,30 +42,28 @@ namespace WebExpress.WebIndex.Term.Pipeline
         /// <returns>The filtered term enumeration.</returns>
         public IEnumerable<IndexTermToken> Process(IEnumerable<IndexTermToken> input, CultureInfo culture)
         {
-#if DEBUG
-            using var profiling = Profiling.Diagnostic();
-#endif
-
             var supportedCulture = GetSupportedCulture(culture);
 
-            if (!StopWordDictionary.ContainsKey(supportedCulture))
+            if (StopWordDictionary.TryGetValue(supportedCulture, out HashSet<string> value))
             {
                 foreach (var token in input)
                 {
-                    yield return token;
-                }
-            }
-
-            foreach (var token in input)
-            {
-                if (token.Value is string)
-                {
-                    if (!StopWordDictionary[supportedCulture].Contains(token.Value))
+                    if (token.Value is string)
+                    {
+                        if (!value.Contains(token.Value))
+                        {
+                            yield return token;
+                        }
+                    }
+                    else
                     {
                         yield return token;
                     }
                 }
-                else
+            }
+            else
+            {
+                foreach (var token in input)
                 {
                     yield return token;
                 }

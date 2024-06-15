@@ -5,7 +5,6 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using WebExpress.WebIndex.Term;
-using WebExpress.WebIndex.Utility;
 
 namespace WebExpress.WebIndex.Memory
 {
@@ -68,10 +67,6 @@ namespace WebExpress.WebIndex.Memory
         /// <param name="terms">The terms to add to the reverse index for the given item.</param>
         public void Add(T item, IEnumerable<IndexTermToken> terms)
         {
-            #if DEBUG 
-            using var profiling = Profiling.Diagnostic(); 
-            #endif
-
             foreach (var term in terms)
             {
                 Root.Add(item.Id, term.Value.ToString(), term.Position);
@@ -127,53 +122,53 @@ namespace WebExpress.WebIndex.Memory
             {
                 return distinct;
             }
-            
+
             switch (options.Method)
             {
                 case IndexRetrieveMethod.Phrase:
-                {
-                    var firstTerm = terms.Take(1).FirstOrDefault();
-                    var nextTerms = terms.Skip(1);
-
-                    foreach (var posting in Root.GetPostings(firstTerm.Value.ToString()))
                     {
-                        foreach (var position in posting.Positions)
+                        var firstTerm = terms.Take(1).FirstOrDefault();
+                        var nextTerms = terms.Skip(1);
+
+                        foreach (var posting in Root.GetPostings(firstTerm.Value.ToString()))
                         {
-                            if (CheckForPhraseMatch(posting.DocumentID, position, firstTerm.Position, nextTerms))
+                            foreach (var position in posting.Positions)
                             {
-                                distinct.Add(posting.DocumentID);  
+                                if (CheckForPhraseMatch(posting.DocumentID, position, firstTerm.Position, nextTerms))
+                                {
+                                    distinct.Add(posting.DocumentID);
+                                }
                             }
                         }
+
+                        break;
                     }
-                    
-                    break;
-                }
                 default:
-                {
-                    foreach (var document in terms.Take(1).SelectMany(x => Root.Retrieve(x.Value.ToString(), options)))
                     {
-                        if (distinct.Add(document) && count++ >= options.MaxResults)
+                        foreach (var document in terms.Take(1).SelectMany(x => Root.Retrieve(x.Value.ToString(), options)))
                         {
-                            break;
-                        }
-                    }
-
-                    foreach (var normalized in terms.Skip(1))
-                    {
-                        var temp = new HashSet<Guid>(distinct.Count);
-
-                        foreach (var document in Root.Retrieve(normalized.Value.ToString(), options))
-                        {
-                            if (distinct.Contains(document) && temp.Add(document))
+                            if (distinct.Add(document) && count++ >= options.MaxResults)
                             {
+                                break;
                             }
                         }
 
-                        distinct = temp;
-                    }
+                        foreach (var normalized in terms.Skip(1))
+                        {
+                            var temp = new HashSet<Guid>(distinct.Count);
 
-                    break;
-                }
+                            foreach (var document in Root.Retrieve(normalized.Value.ToString(), options))
+                            {
+                                if (distinct.Contains(document) && temp.Add(document))
+                                {
+                                }
+                            }
+
+                            distinct = temp;
+                        }
+
+                        break;
+                    }
             }
 
             return distinct;
@@ -201,7 +196,7 @@ namespace WebExpress.WebIndex.Memory
             {
                 foreach (var pos in posting.Positions.Where(x => x == position + (firstTerm.Position - offset)))
                 {
-                    return CheckForPhraseMatch(posting.DocumentID, pos, firstTerm.Position, nextTerms);  
+                    return CheckForPhraseMatch(posting.DocumentID, pos, firstTerm.Position, nextTerms);
                 }
             }
 

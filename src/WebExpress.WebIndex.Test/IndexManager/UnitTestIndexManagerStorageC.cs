@@ -156,7 +156,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
         /// Tests the reindex function in a series of tests from the index manager.
         /// </summary>
         [Fact]
-        public async Task ReIndexAsync_Series()
+        public void ReIndex_Series()
         {
             var stopWatch = new Stopwatch();
 
@@ -166,9 +166,13 @@ namespace WebExpress.WebIndex.Test.IndexManager
             var wordLength = Enumerable.Range(1, 1).Select(x => x * 15);
             var maxCachedSegments = Enumerable.Range(5, 1).Select(x => x * 10000);
             var bufferSize = Enumerable.Range(12, 1).Select(x => Math.Pow(2, x));
-            var file = await Task.Run(() => File.CreateText(Path.Combine(Environment.CurrentDirectory, "storage-reindexasync_series.csv")));
+            var path = Path.Combine(Environment.CurrentDirectory, "storage-reindex_series.csv");
+            var exists = File.Exists(path);
 
-            file.WriteLine("item count;wordCount;vocabulary;wordLength;max cached segments;buffer size;elapsed reindex [hh:mm:ss];elapsed retrieval [ms];size of document store [MB];size of reverse index [MB];∑ storage space [MB];size of process mem [MB]");
+            if (!exists)
+            {
+                File.AppendAllText(path, "timestamp;item count;wordCount;vocabulary;wordLength;max cached segments;buffer size;elapsed reindex [hh:mm:ss];elapsed retrieval [ms];size of document store [MB];size of reverse index [MB];∑ storage space [MB];size of process mem [MB]" + Environment.NewLine);
+            }
 
             foreach (var w in wordCount)
             {
@@ -186,10 +190,111 @@ namespace WebExpress.WebIndex.Test.IndexManager
                             {
                                 foreach (var b in bufferSize)
                                 {
-                                    // disabled due to long execution time. activate if necessary.
-                                    /**/
                                     // preconditions
-                                    IndexStorageReadBuffer.MaxCachedSegments = (uint)m;
+                                    IndexStorageBuffer.MaxCachedSegments = (uint)m;
+                                    IndexStorageFile.BufferSize = (uint)b;
+
+                                    Preconditions();
+                                    var output = "";
+
+                                    IndexManager.Create<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
+                                    IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text = 'xyz'").Apply();
+
+                                    try
+                                    {
+                                        // preparing for a measurement
+                                        stopWatch.Start();
+
+                                        // test execution
+                                        IndexManager.ReIndex(data);
+
+                                        // stop measurement
+                                        var elapsedReindex = stopWatch.Elapsed;
+                                        stopWatch.Reset();
+
+                                        randomItem ??= IndexManager.All<UnitTestIndexTestDocumentC>().Skip(new Random().Next() % data.Count()).FirstOrDefault();
+                                        var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text ~ '{randomItem.Text.Split(' ').FirstOrDefault()}'");
+                                        Assert.NotNull(wql);
+
+                                        // preparing for a measurement
+                                        stopWatch.Start();
+
+                                        var item = wql.Apply();
+
+                                        // stop measurement
+                                        var elapsedRetrieval = stopWatch.Elapsed;
+                                        stopWatch.Reset();
+
+                                        Assert.NotEmpty(item);
+
+                                        IndexManager.Dispose();
+
+                                        var documentStoreSize = new DirectoryInfo(IndexManager.Context.IndexDirectory).GetFiles("*.wds", SearchOption.AllDirectories).Sum(file => file.Length);
+                                        var reverseIndexSize = new DirectoryInfo(IndexManager.Context.IndexDirectory).GetFiles("*.wri", SearchOption.AllDirectories).Sum(file => file.Length);
+
+                                        output = $"{DateTime.Now};{i};{w};{v};{l};{m};{b};{elapsedReindex:hh\\:mm\\:ss};{(int)Math.Ceiling(elapsedRetrieval.TotalMilliseconds)};{Math.Round((double)documentStoreSize / 1024 / 1024, 2)};{Math.Round((double)reverseIndexSize / 1024 / 1024, 2)};{Math.Round((double)(documentStoreSize + reverseIndexSize) / 1024 / 1024, 2)};{Fixture.GetUsedMemory() - mem}";
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Output.WriteLine(ex.Message + " " + ex.StackTrace);
+                                        throw;
+                                    }
+                                    finally
+                                    {
+                                        // postconditions
+                                        File.AppendAllText(path, output + Environment.NewLine);
+                                        Postconditions();
+                                    }
+
+                                    Thread.Sleep(5000);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Tests the reindex function in a series of tests from the index manager.
+        /// </summary>
+        [Fact]
+        public async Task ReIndexAsync_Series()
+        {
+            var stopWatch = new Stopwatch();
+
+            var itemCount = Enumerable.Range(1, 1).Select(x => x * 10000);
+            var wordCount = Enumerable.Range(1, 1).Select(x => x * 100);
+            var vocabulary = Enumerable.Range(1, 1).Select(x => x * 20000);
+            var wordLength = Enumerable.Range(1, 1).Select(x => x * 15);
+            var maxCachedSegments = Enumerable.Range(5, 1).Select(x => x * 10000);
+            var bufferSize = Enumerable.Range(12, 1).Select(x => Math.Pow(2, x));
+            var path = Path.Combine(Environment.CurrentDirectory, "storage-reindexasync_series.csv");
+            var exists = File.Exists(path);
+
+            if (!exists)
+            {
+                File.AppendAllText(path, "timestamp;item count;wordCount;vocabulary;wordLength;max cached segments;buffer size;elapsed reindex [hh:mm:ss];elapsed retrieval [ms];size of document store [MB];size of reverse index [MB];∑ storage space [MB];size of process mem [MB]" + Environment.NewLine);
+            }
+
+            foreach (var w in wordCount)
+            {
+                foreach (var i in itemCount)
+                {
+                    foreach (var v in vocabulary)
+                    {
+                        foreach (var l in wordLength)
+                        {
+                            var data = UnitTestIndexTestDocumentFactoryC.GenerateTestData(i, w, v, l);
+                            var randomItem = default(UnitTestIndexTestDocumentC);
+                            var mem = Fixture.GetUsedMemory();
+
+                            foreach (var m in maxCachedSegments)
+                            {
+                                foreach (var b in bufferSize)
+                                {
+                                    // preconditions
+                                    IndexStorageBuffer.MaxCachedSegments = (uint)m;
                                     IndexStorageFile.BufferSize = (uint)b;
 
                                     Preconditions();
@@ -211,7 +316,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
                                         stopWatch.Reset();
 
                                         randomItem ??= IndexManager.All<UnitTestIndexTestDocumentC>().Skip(new Random().Next() % data.Count()).FirstOrDefault();
-                                        var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text.Split(' ').FirstOrDefault()}'");
+                                        var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text ~ '{randomItem.Text.Split(' ').FirstOrDefault()}'");
                                         Assert.NotNull(wql);
 
                                         // preparing for a measurement
@@ -230,7 +335,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
                                         var documentStoreSize = new DirectoryInfo(IndexManager.Context.IndexDirectory).GetFiles("*.wds", SearchOption.AllDirectories).Sum(file => file.Length);
                                         var reverseIndexSize = new DirectoryInfo(IndexManager.Context.IndexDirectory).GetFiles("*.wri", SearchOption.AllDirectories).Sum(file => file.Length);
 
-                                        output = $"{i};{w};{v};{l};{m};{b};{elapsedReindex:hh\\:mm\\:ss};{(int)Math.Ceiling(elapsedRetrieval.TotalMilliseconds)};{Math.Round((double)documentStoreSize / 1024 / 1024, 2)};{Math.Round((double)reverseIndexSize / 1024 / 1024, 2)};{Math.Round((double)(documentStoreSize + reverseIndexSize) / 1024 / 1024, 2)};{Fixture.GetUsedMemory() - mem}";
+                                        output = $"{DateTime.Now};{i};{w};{v};{l};{m};{b};{elapsedReindex:hh\\:mm\\:ss};{(int)Math.Ceiling(elapsedRetrieval.TotalMilliseconds)};{Math.Round((double)documentStoreSize / 1024 / 1024, 2)};{Math.Round((double)reverseIndexSize / 1024 / 1024, 2)};{Math.Round((double)(documentStoreSize + reverseIndexSize) / 1024 / 1024, 2)};{Fixture.GetUsedMemory() - mem}";
                                     }
                                     catch (Exception ex)
                                     {
@@ -240,21 +345,17 @@ namespace WebExpress.WebIndex.Test.IndexManager
                                     finally
                                     {
                                         // postconditions
-                                        file.WriteLine(output);
-                                        file.Flush();
+                                        File.AppendAllText(path, output + Environment.NewLine);
                                         Postconditions();
                                     }
 
                                     Thread.Sleep(5000);
-                                    /**/
                                 }
                             }
                         }
                     }
                 }
             }
-
-            file.Close();
         }
 
         /// <summary>

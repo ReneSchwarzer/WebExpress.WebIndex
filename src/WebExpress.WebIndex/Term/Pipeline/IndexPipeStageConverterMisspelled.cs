@@ -2,7 +2,6 @@
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using WebExpress.WebIndex.Utility;
 
 namespace WebExpress.WebIndex.Term.Pipeline
 {
@@ -43,10 +42,6 @@ namespace WebExpress.WebIndex.Term.Pipeline
         /// <returns>The terms at which the misspelled words have been converted.</returns>
         public IEnumerable<IndexTermToken> Process(IEnumerable<IndexTermToken> input, CultureInfo culture)
         {
-#if DEBUG
-            using var profiling = Profiling.Diagnostic();
-#endif
-
             var supportedCulture = GetSupportedCulture(culture);
 
             if (!MisspelledWordDictionary.ContainsKey(supportedCulture))

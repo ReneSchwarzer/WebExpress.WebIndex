@@ -2,7 +2,6 @@
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using WebExpress.WebIndex.Utility;
 
 namespace WebExpress.WebIndex.Term
 {
@@ -30,10 +29,6 @@ namespace WebExpress.WebIndex.Term
         /// <returns>An enumeration of terms.</returns>
         public static IEnumerable<IndexTermToken> Tokenize(string input, CultureInfo culture, char[] wildcards = null)
         {
-#if DEBUG
-            using var profiling = Profiling.Diagnostic();
-#endif
-
             var currentToken = new StringBuilder();
             var position = (uint)0;
             var except = new HashSet<char>(Delimiters.Except(wildcards ?? []));

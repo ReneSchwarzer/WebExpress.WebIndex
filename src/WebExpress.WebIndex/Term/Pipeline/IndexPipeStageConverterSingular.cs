@@ -3,7 +3,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using WebExpress.WebIndex.Utility;
 
 namespace WebExpress.WebIndex.Term.Pipeline
 {
@@ -20,12 +19,12 @@ namespace WebExpress.WebIndex.Term.Pipeline
         /// <summary>
         /// Returns a list of the irregular words.
         /// </summary>
-        internal Dictionary<CultureInfo, Dictionary<string, string>> IrregularWordDictionary { get; } = [];
+        private Dictionary<CultureInfo, Dictionary<string, string>> IrregularWordDictionary { get; } = [];
 
         /// <summary>
         /// Returns a list of the regular words.
         /// </summary>
-        internal Dictionary<CultureInfo, Dictionary<string, string>> RegularWordDictionary { get; } = [];
+        private Dictionary<CultureInfo, Dictionary<string, string>> RegularWordDictionary { get; } = [];
 
         /// <summary>
         /// Initialization
@@ -45,6 +44,71 @@ namespace WebExpress.WebIndex.Term.Pipeline
                 var extension = Path.GetExtension(file).Trim('.');
 
                 FillRegularWordDictionary(context, CultureInfo.GetCultureInfo(extension));
+            }
+        }
+
+        /// <summary>
+        /// Converts specific elements on the term enumeration.
+        /// </summary>
+        /// <param name="input">The terms.</param>
+        /// <param name="culture">The culture.</param>
+        /// <returns>The terms where the words have been converted to singular.</returns>
+        public IEnumerable<IndexTermToken> Process(IEnumerable<IndexTermToken> input, CultureInfo culture)
+        {
+            var supportedCulture = GetSupportedCulture(culture);
+
+            if (IrregularWordDictionary.TryGetValue(supportedCulture, out Dictionary<string, string> dict))
+            {
+                foreach (var token in input)
+                {
+                    if (token.Value is string)
+                    {
+                        if (dict.TryGetValue(token.Value.ToString(), out string value))
+                        {
+                            yield return new IndexTermToken()
+                            {
+                                Value = value,
+                                Position = token.Position
+                            };
+                        }
+                        else
+                        {
+                            var treated = false;
+
+                            foreach (var keyValue in RegularWordDictionary[supportedCulture])
+                            {
+                                if (Regex.Match(token.Value.ToString(), keyValue.Key).Success)
+                                {
+                                    treated = true;
+
+                                    yield return new IndexTermToken()
+                                    {
+                                        Value = Regex.Replace(token.Value.ToString(), keyValue.Key, keyValue.Value),
+                                        Position = token.Position
+                                    };
+
+                                    break;
+                                }
+                            }
+
+                            if (!treated)
+                            {
+                                yield return token;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        yield return token;
+                    }
+                }
+            }
+            else
+            {
+                foreach (var token in input)
+                {
+                    yield return token;
+                }
             }
         }
 
@@ -110,75 +174,6 @@ namespace WebExpress.WebIndex.Term.Pipeline
                 if (!string.IsNullOrWhiteSpace(key) && !dict.ContainsKey(key))
                 {
                     dict.Add(key, value);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Converts specific elements on the term enumeration.
-        /// </summary>
-        /// <param name="input">The terms.</param>
-        /// <param name="culture">The culture.</param>
-        /// <returns>The terms where the words have been converted to singular.</returns>
-        public IEnumerable<IndexTermToken> Process(IEnumerable<IndexTermToken> input, CultureInfo culture)
-        {
-#if DEBUG
-            using var profiling = Profiling.Diagnostic();
-#endif
-
-            var supportedCulture = GetSupportedCulture(culture);
-
-            if (!IrregularWordDictionary.ContainsKey(supportedCulture))
-            {
-                foreach (var token in input)
-                {
-                    yield return token;
-                }
-            }
-
-            var dict = IrregularWordDictionary[supportedCulture];
-
-            foreach (var token in input)
-            {
-                if (token.Value is string)
-                {
-                    if (dict.TryGetValue(token.Value.ToString(), out string value))
-                    {
-                        yield return new IndexTermToken()
-                        {
-                            Value = value,
-                            Position = token.Position
-                        };
-                    }
-                    else
-                    {
-                        var treated = false;
-
-                        foreach (var keyValue in RegularWordDictionary[supportedCulture])
-                        {
-                            if (Regex.Match(token.Value.ToString(), keyValue.Key).Success)
-                            {
-                                treated = true;
-
-                                yield return new IndexTermToken()
-                                {
-                                    Value = Regex.Replace(token.Value.ToString(), keyValue.Key, keyValue.Value),
-                                    Position = token.Position
-                                };
-
-                                break;
-                            }
-                        }
-
-                        if (!treated)
-                        {
-                            yield return token;
-                        }
-                    }
-                }
-                else
-                {
-                    yield return token;
                 }
             }
         }

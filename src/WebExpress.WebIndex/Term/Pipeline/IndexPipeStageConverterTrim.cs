@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
-using WebExpress.WebIndex.Utility;
 
 namespace WebExpress.WebIndex.Term.Pipeline
 {
@@ -35,10 +34,6 @@ namespace WebExpress.WebIndex.Term.Pipeline
         /// <returns>The trimmed terms.</returns>
         public IEnumerable<IndexTermToken> Process(IEnumerable<IndexTermToken> input, CultureInfo culture)
         {
-#if DEBUG
-            using var profiling = Profiling.Diagnostic();
-#endif
-
             foreach (var token in input)
             {
                 if (token.Value is string)

@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using WebExpress.WebIndex.Term;
-using WebExpress.WebIndex.Utility;
 
 namespace WebExpress.WebIndex.Storage
 {
@@ -68,10 +67,6 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="culture">The culture.</param>
         public IndexStorageReverse(IIndexDocumemntContext context, PropertyInfo property, CultureInfo culture)
         {
-#if DEBUG
-            using var profiling = Profiling.Diagnostic();
-#endif
-
             Context = context;
             Property = property;
             Culture = culture;
@@ -112,10 +107,6 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="item">The data to be added to the index.</param>
         public void Add(T item)
         {
-#if DEBUG
-            using var profiling = Profiling.Diagnostic();
-#endif
-
             var value = Property?.GetValue(item)?.ToString();
             var terms = Context.TokenAnalyzer.Analyze(value, Culture);
 
@@ -129,10 +120,6 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="terms">The terms to add to the reverse index for the given item.</param>
         public void Add(T item, IEnumerable<IndexTermToken> terms)
         {
-#if DEBUG
-            using var profiling = Profiling.Diagnostic();
-#endif
-
             foreach (var term in terms)
             {
                 Term.Add(term.Value.ToString())
@@ -151,10 +138,6 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="item">The data to be removed from the field.</param>
         public void Remove(T item)
         {
-#if DEBUG
-            using var profiling = Profiling.Diagnostic();
-#endif
-
             var value = Property?.GetValue(item)?.ToString();
             var terms = Context.TokenAnalyzer.Analyze(value?.ToString(), Culture);
 
@@ -168,10 +151,6 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="terms">The terms to add to the reverse index for the given item.</param>
         public void Remove(T item, IEnumerable<IndexTermToken> terms)
         {
-#if DEBUG
-            using var profiling = Profiling.Diagnostic();
-#endif
-
             foreach (var term in terms)
             {
                 var node = Term[term.Value.ToString()];
@@ -193,10 +172,6 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         public void Clear()
         {
-#if DEBUG
-            using var profiling = Profiling.Diagnostic();
-#endif
-
             IndexFile.NextFreeAddr = 0;
 
             Header = new IndexStorageSegmentHeader(new IndexStorageContext(this)) { Identifier = "wri" };
@@ -222,10 +197,6 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>An enumeration of the data ids.</returns>
         public IEnumerable<Guid> Retrieve(string term, IndexRetrieveOptions options)
         {
-#if DEBUG
-            using var profiling = Profiling.Diagnostic();
-#endif
-
             var terms = Context.TokenAnalyzer.Analyze(term, Culture, true);
             var distinct = new HashSet<Guid>((int)Math.Min(options.MaxResults, int.MaxValue / 2));
             var count = 0u;
@@ -315,10 +286,6 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>True if there is an exact match, otherwise false.</returns>
         private bool CheckForPhraseMatch(Guid document, uint position, uint offset, uint distance, IEnumerable<IndexTermToken> terms)
         {
-#if DEBUG
-            using var profiling = Profiling.Diagnostic();
-#endif
-
             if (!terms.Any())
             {
                 return true;
@@ -352,10 +319,6 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>True if there is an exact match, otherwise false.</returns>
         private bool CheckForProximityMatch(Guid document, uint position, uint distance, IEnumerable<IndexTermToken> terms)
         {
-#if DEBUG
-            using var profiling = Profiling.Diagnostic();
-#endif
-
             if (!terms.Any())
             {
                 return true;
@@ -392,10 +355,6 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         public void Dispose()
         {
-#if DEBUG
-            using var profiling = Profiling.Diagnostic();
-#endif
-
             IndexFile.Dispose();
         }
     }
