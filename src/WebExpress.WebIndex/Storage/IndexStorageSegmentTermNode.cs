@@ -56,30 +56,6 @@ namespace WebExpress.WebIndex.Storage
         private object Guard { get; } = new object();
 
         /// <summary>
-        /// Returns the sibling list.
-        /// </summary>
-        public IEnumerable<IndexStorageSegmentTermNode> Siblings
-        {
-            get
-            {
-                if (SiblingAddr == 0)
-                {
-                    yield break;
-                }
-
-                var addr = SiblingAddr;
-
-                while (addr != 0)
-                {
-                    var item = Context.IndexFile.Read<IndexStorageSegmentTermNode>(addr, Context);
-                    yield return item;
-
-                    addr = item.SiblingAddr;
-                }
-            }
-        }
-
-        /// <summary>
         /// Returns the children list.
         /// </summary>
         public IEnumerable<IndexStorageSegmentTermNode> Children
@@ -168,29 +144,22 @@ namespace WebExpress.WebIndex.Storage
         /// Returns all items.
         /// </summary>
         public IEnumerable<Guid> All => Terms
-            .SelectMany(x => x.Item2.Postings.Select(x => x.DocumentID));
+            .SelectMany(x => x.Item2.Posting?.All);
 
         /// <summary>
-        /// Returns the a sorted list of the postings or no element.
+        /// Returns the root element of the posting tree.
         /// </summary>
-        public IEnumerable<IndexStorageSegmentPosting> Postings
+        public IndexStorageSegmentPostingNode Posting
         {
             get
             {
-                if (PostingAddr == 0)
+                if (PostingAddr != 0)
                 {
-                    yield break;
+                    var item = Context.IndexFile.Read<IndexStorageSegmentPostingNode>(PostingAddr, Context);
+                    return item;
                 }
 
-                var addr = PostingAddr;
-
-                while (addr != 0)
-                {
-                    var item = Context.IndexFile.Read<IndexStorageSegmentPosting>(addr, Context);
-                    yield return item;
-
-                    addr = item.SuccessorAddr;
-                }
+                return null;
             }
         }
 
@@ -264,17 +233,17 @@ namespace WebExpress.WebIndex.Storage
         /// Add a posting segments.
         /// </summary>
         /// <param name="id">The document id.</params>
-        /// <returns>The posting segment.</returns>
-        public IndexStorageSegmentPosting AddPosting(Guid id)
+        /// <returns>The posting node segment.</returns>
+        public IndexStorageSegmentPostingNode AddPosting(Guid id)
         {
-            var item = default(IndexStorageSegmentPosting);
+            var item = default(IndexStorageSegmentPostingNode);
 
             lock (Guard)
             {
                 if (PostingAddr == 0)
                 {
-                    PostingAddr = Context.Allocator.Alloc(IndexStorageSegmentPosting.SegmentSize);
-                    item = new IndexStorageSegmentPosting(Context, PostingAddr)
+                    PostingAddr = Context.Allocator.Alloc(IndexStorageSegmentPostingNode.SegmentSize);
+                    item = new IndexStorageSegmentPostingNode(Context, PostingAddr)
                     {
                         DocumentID = id
                     };
@@ -286,58 +255,14 @@ namespace WebExpress.WebIndex.Storage
                 }
                 else
                 {
-                    // check whether it exists
-                    var last = default(IndexStorageSegmentPosting);
-                    var count = 0U;
-
-                    foreach (var i in Postings)
+                    if (Posting.Insert(id, out IndexStorageSegmentPostingNode node))
                     {
-                        var compare = i.DocumentID.CompareTo(id);
-
-                        if (compare > 0)
-                        {
-                            break;
-                        }
-                        else if (compare == 0)
-                        {
-                            return i;
-                        }
-
-                        last = i;
-
-                        count++;
-                    }
-
-                    item = new IndexStorageSegmentPosting(Context, Context.Allocator.Alloc(IndexStorageSegmentPosting.SegmentSize))
-                    {
-                        DocumentID = id
-                    };
-
-                    if (last == null)
-                    {
-                        // insert at the beginning
-                        var tempAddr = PostingAddr;
-                        PostingAddr = item.Addr;
-                        item.SuccessorAddr = tempAddr;
-
                         Fequency++;
 
                         Context.IndexFile.Write(this);
-                        Context.IndexFile.Write(item);
                     }
-                    else
-                    {
-                        // insert in the correct place
-                        var tempAddr = last.SuccessorAddr;
-                        last.SuccessorAddr = item.Addr;
-                        item.SuccessorAddr = tempAddr;
 
-                        Fequency++;
-
-                        Context.IndexFile.Write(this);
-                        Context.IndexFile.Write(last);
-                        Context.IndexFile.Write(item);
-                    }
+                    item = node;
                 }
             }
 
@@ -349,7 +274,7 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         /// <param name="id">The document id.</params>
         /// <returns>The posting segment.</returns>
-        public IndexStorageSegmentPosting RemovePosting(Guid id)
+        public IndexStorageSegmentPostingNode RemovePosting(Guid id)
         {
             if (PostingAddr == 0)
             {
@@ -358,60 +283,65 @@ namespace WebExpress.WebIndex.Storage
 
             lock (Guard)
             {
-                // check whether it exists
-                var last = default(IndexStorageSegmentPosting);
-                var posting = default(IndexStorageSegmentPosting);
-                var count = 0U;
+                //if (PostingAddr != 0)
+                //{
+                //    var root = Posting;
 
-                foreach (var i in Postings)
-                {
-                    var compare = i.DocumentID.CompareTo(id);
+                //    if (id.CompareTo(root.DocumentID) < 0)
+                //    {
+                //        if (root.Left.Remove(id) != null)
+                //        {
+                //            Fequency--;
 
-                    if (compare > 0)
-                    {
-                        break;
-                    }
-                    else if (compare == 0)
-                    {
-                        posting = i;
+                //            Context.IndexFile.Write(this);
+                //        }
+                //    }
+                //    else if (id.CompareTo(root.DocumentID) > 0)
+                //    {
+                //        if (root.Right.Remove(id) != null)
+                //        {
+                //            Fequency--;
 
-                        break;
-                    }
+                //            Context.IndexFile.Write(this);
+                //        }
+                //    }
+                //    else
+                //    {
+                //        // node with only one child or no child
+                //        if (root.LeftAddr == 0)
+                //        {
+                //            PostingAddr = root.RightAddr;
 
-                    last = i;
+                //            Context.Allocator.Free(root);
 
-                    count++;
-                }
+                //            Fequency--;
 
-                if (posting != null && last == null)
-                {
-                    // remove at the beginning
-                    PostingAddr = posting.SuccessorAddr;
+                //            Context.IndexFile.Write(this);
 
-                    Fequency--;
+                //            return root;
+                //        }
+                //        else if (root.RightAddr == 0)
+                //        {
+                //            PostingAddr = root.LeftAddr;
 
-                    Context.IndexFile.Write(this);
-                    Context.Allocator.Free(posting);
+                //            Context.Allocator.Free(root);
 
-                    posting.RemovePositions();
+                //            Fequency--;
 
-                    return posting;
-                }
-                else if (posting != null && last != null)
-                {
-                    // remove in place
-                    last.SuccessorAddr = posting.SuccessorAddr;
+                //            Context.IndexFile.Write(this);
 
-                    Fequency--;
+                //            return root;
+                //        }
 
-                    Context.IndexFile.Write(this);
-                    Context.IndexFile.Write(last);
-                    Context.Allocator.Free(posting);
+                //        // node with two children: Get the inorder successor (smallest in the right subtree)
 
-                    posting.RemovePositions();
 
-                    return posting;
-                }
+                //        //root.data = MinValue(root.right);
+
+                //        //// Delete the inorder successor
+                //        //root.right = Remove(root.right, root.data);
+                //    }
+                //}
             }
 
             return null;
@@ -500,11 +430,11 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         /// <param name="term">The term.</param>
         /// <returns>An enumeration of posting items.</returns>
-        internal virtual IEnumerable<IndexStorageSegmentPosting> GetPostings(string term)
+        internal virtual IEnumerable<IndexStorageSegmentPostingNode> GetPostings(string term)
         {
             foreach (var node in GetLeafs(term))
             {
-                foreach (var posting in node.Postings)
+                foreach (var posting in node.Posting?.PreOrder ?? Enumerable.Empty<IndexStorageSegmentPostingNode>())
                 {
                     yield return posting;
                 }

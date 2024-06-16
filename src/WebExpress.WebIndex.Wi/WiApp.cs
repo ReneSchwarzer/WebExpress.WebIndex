@@ -445,7 +445,7 @@ internal class WiApp
     /// <param name="command">The command to be executed.</param>
     private void OnShowIndexTermCommand(Command command)
     {
-        var headers = new List<string>(["Term", "Fequency", "DocumentIDs"]);
+        var headers = new List<string>(["Term", "Fequency", "Posting tree height", "Posting balance factor", "DocumentIDs"]);
         var rows = ViewModel.GetIndexTerms();
         var i = 0;
 
@@ -455,7 +455,7 @@ internal class WiApp
 
         foreach (var row in rows)
         {
-            PrintTableRow(headers, [row.Item1, row.Item2.ToString(), string.Join(",", row.Item3)]);
+            PrintTableRow(headers, [row.Item1, row.Item2.ToString(), row.Item3.ToString(), row.Item4.ToString(), string.Join(",", row.Item5)]);
             i++;
         }
 

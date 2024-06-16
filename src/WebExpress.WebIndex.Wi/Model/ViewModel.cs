@@ -134,7 +134,7 @@ namespace WebExpress.WebIndex.Wi.Model
         /// Returns the index terms.
         /// </summary>
         /// <returns>The index terms</returns>
-        public IEnumerable<(string, uint, IEnumerable<Guid>)> GetIndexTerms()
+        public IEnumerable<(string, uint, uint, uint, IEnumerable<Guid>)> GetIndexTerms()
         {
             var runtimeClass = CurrentObjectType.BuildRuntimeClass();
             var document = WiApp.ViewModel.IndexManager.GetIndexDocument(runtimeClass);
@@ -144,7 +144,14 @@ namespace WebExpress.WebIndex.Wi.Model
             var termProperty = reverseIndex.GetType().GetProperty("Term");
             var term = termProperty.GetValue(reverseIndex) as IndexStorageSegmentTerm;
 
-            return term.Terms.Select(x => (x.Item1, x.Item2.Fequency, x.Item2.Postings.Select(y => y.DocumentID)));
+            return term.Terms.Select(x =>
+            (
+                x.Item1,
+                x.Item2.Fequency,
+                x.Item2.Posting.Height,
+                x.Item2.Posting.Balance,
+                x.Item2.Posting.PreOrder.Select(y => y.DocumentID)
+            ));
         }
     }
 }

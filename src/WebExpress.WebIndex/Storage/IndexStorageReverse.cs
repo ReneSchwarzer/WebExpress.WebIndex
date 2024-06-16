@@ -122,8 +122,8 @@ namespace WebExpress.WebIndex.Storage
         {
             foreach (var term in terms)
             {
-                Term.Add(term.Value.ToString())
-                    .AddPosting(item.Id)
+                Term.Add(term.Value.ToString())?
+                    .AddPosting(item.Id)?
                     .AddPosition(term.Position);
 
                 Statistic.Count++;

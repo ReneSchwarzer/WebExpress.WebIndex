@@ -256,33 +256,33 @@ pros and cons and choose the best solution for the specific requirements. The fo
 performance and resources required when using the file-based approach: 
 
 ```
-                                                             TIME CHART                                        >06:00
-  [h] ▲ [ms]                                                                                                        ▓>13
-      │                                                                                                             ▓░
- 2:00 ┼ 12                                                                                             1:55         ≈≈
- 1:55 ┤                                                                                                   ▓         ▓░
- 1:50 ┼ 11                                                                                                ▓         ▓░
- 1:45 ┤                                                                                                   ▓         ▓░
- 1:40 ┼ 10                                                                                                ▓         ▓░
- 1:35 ┤                                                                                      1:33         ▓         ▓░
- 1:30 ┼ 9                                                                                       ▓         ▓         ▓░
- 1:25 ┤                                                                                         ▓         ▓8        ▓░
- 1:20 ┼ 8                                                                          1:14         ▓         ▓░        ▓░
- 1:15 ┤                                                                               ▓         ▓7        ▓░        ▓░
- 1:10 ┼ 7                                                                             ▓         ▓░        ▓░        ▓░
- 1:05 ┤                                                                               ▓6        ▓░        ▓░        ▓░
- 1:00 ┼ 6                                                                0:57         ▓░        ▓░        ▓░        ▓░
- 0:55 ┤                                                            5        ▓5        ▓░        ▓░        ▓░        ▓░
- 0:50 ┼ 5                                                          ░        ▓░        ▓░        ▓░        ▓░        ▓░
- 0:45 ┤                                                  4     0:43░        ▓░        ▓░        ▓░        ▓░        ▓░
- 0:40 ┼ 4                                                ░        ▓░        ▓░        ▓░        ▓░        ▓░        ▓░
- 0:35 ┤                              3         3     0:30░        ▓░        ▓░        ▓░        ▓░        ▓░        ▓░
- 0:30 ┼ 3                            ░         ░        ▓░        ▓░        ▓░        ▓░        ▓░        ▓░        ▓░
- 0:25 ┤          2         2         ░     0:20░        ▓░        ▓░        ▓░        ▓░        ▓░        ▓░        ▓░
- 0:20 ┼ 2        ░         ░         ░        ▓░        ▓░        ▓░        ▓░        ▓░        ▓░        ▓░        ▓░
- 0:15 ┤          ░         ░     0:12░        ▓░        ▓░        ▓░        ▓░        ▓░        ▓░        ▓░        ▓░
- 0:10 ┼ 1    0:02░     0:07░        ▓░        ▓░        ▓░        ▓░        ▓░        ▓░        ▓░        ▓░        ▓░
- 0:05 ┤         ▓░        ▓░        ▓░        ▓░        ▓░        ▓░        ▓░        ▓░        ▓░        ▓░        ▓░
+                                                             TIME CHART                                        >01:50
+  [h] ▲ [ms]                                                                                                        ▓
+      │                                                                                                             ▓ 
+ 0:24 ┼ 12                                                                                                          ≈ 
+ 0:23 ┤                                                                                                             ▓ 
+ 0:22 ┼ 11                                                                                                          ▓ 
+ 0:21 ┤                                                                                                             ▓ 
+ 0:20 ┼ 10                                                                                                          ▓ 
+ 0:19 ┤                                                                                                             ▓ 
+ 0:18 ┼ 9                                                                                                           ▓ 
+ 0:17 ┤                                                                                                             ▓ 
+ 0:16 ┼ 8                                                                                                           ▓ 
+ 0:15 ┤                                                                                                             ▓ 
+ 0:14 ┼ 7                                                                                                           ▓ 
+ 0:13 ┤                                                                                                             ▓ 
+ 0:12 ┼ 6                                                                                              0:11         ▓ 
+ 0:11 ┤                                                                                      0:10         ▓         ▓>5
+ 0:10 ┼ 5                                                                                       ▓         ▓         ▓░
+ 0:09 ┤                                                                            0:08         ▓         ▓         ▓░
+ 0:08 ┼ 4                                                                0:07         ▓         ▓         ▓         ▓░
+ 0:06 ┤                                                        0:06         ▓         ▓         ▓         ▓         ▓░
+ 0:06 ┼ 3                                            0:05         ▓         ▓         ▓         ▓         ▓         ▓░
+ 0:05 ┤                                    0:04         ▓         ▓         ▓         ▓4        ▓         ▓         ▓░
+ 0:04 ┼ 2                        0:03         ▓         ▓         ▓         ▓         ▓░        ▓3        ▓         ▓░
+ 0:03 ┤          2     0:02         ▓         ▓         ▓2        ▓2        ▓2        ▓░        ▓░        ▓2        ▓░
+ 0:02 ┼ 1    0:01░        ▓1        ▓1        ▓1        ▓░        ▓░        ▓░        ▓░        ▓░        ▓░        ▓░
+ 0:01 ┤         ▓░        ▓░        ▓░        ▓░        ▓░        ▓░        ▓░        ▓░        ▓░        ▓░        ▓░
       └──────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬───~~~───┬─────►
               10,000    20,000    30,000    40,000    50,000    60,000    70,000    80,000    90,000    100,000  1,000,000 [items]
               
@@ -293,33 +293,33 @@ performance and resources required when using the file-based approach:
 ```
                                                          STORAGE SPACE CHART                                    >5,000
  [MB] ▲                                                                                                              ▒
-      │                                                                                                              ≈
-  550 ┤                                                                                                    534       ▒
-      │                                                                                                    ▒         ▒
-  500 ┤                                                                                          482       ▒    1,525▒
-      │                                                                                          ▒         ▒        █▒
-  450 ┤                                                                                429       ▒         ▒        ≈▒
+      │                                                                                                    573       ≈
+  550 ┤                                                                                                    ▒         ▒
+      │                                                                                          516       ▒         ▒
+  500 ┤                                                                                          ▒         ▒    1,525▒
+      │                                                                                460       ▒         ▒        █▒
+  450 ┤                                                                                ▒         ▒         ▒        ≈▒
       │                                                                                ▒         ▒         ▒        █▒
-  400 ┤                                                                                ▒         ▒         ▒        █▒
-      │                                                                      376       ▒         ▒         ▒        █▒
-  350 ┤                                                            324       ▒         ▒         ▒         ▒        █▒
+  400 ┤                                                                      403       ▒         ▒         ▒        █▒
+      │                                                                      ▒         ▒         ▒         ▒        █▒
+  350 ┤                                                            345       ▒         ▒         ▒         ▒        █▒
       │                                                            ▒         ▒         ▒         ▒         ▒        █▒
-  300 ┤                                                            ▒         ▒         ▒         ▒         ▒        █▒
-      │                                                  271       ▒         ▒         ▒         ▒         ▒        █▒
+  300 ┤                                                  291       ▒         ▒         ▒         ▒         ▒        █▒
+      │                                                  ▒         ▒         ▒         ▒         ▒         ▒        █▒
   250 ┤                                                  ▒         ▒         ▒         ▒         ▒         ▒        █▒
-      │                                        218       ▒         ▒         ▒         ▒         ▒         ▒        █▒
+      │                                        234       ▒         ▒         ▒         ▒         ▒         ▒        █▒
   200 ┤                                        ▒         ▒         ▒         ▒         ▒         ▒         ▒        █▒
-      │                              165       ▒         ▒         ▒         ▒         ▒         ▒         ▒        █▒
+      │                              178       ▒         ▒         ▒         ▒         ▒         ▒         ▒        █▒
   150 ┤                              ▒         ▒         ▒         ▒         ▒         ▒         ▒      152▒        █▒
-      │                    113       ▒         ▒         ▒         ▒         ▒      122▒      137▒        █▒        █▒
+      │                    121       ▒         ▒         ▒         ▒         ▒      122▒      137▒        █▒        █▒
   100 ┤                    ▒         ▒         ▒         ▒         ▒      107▒        █▒        █▒        █▒        █▒
-      │          60        ▒         ▒       61▒       76▒       91▒        █▒        █▒        █▒        █▒        █▒
+      │          65        ▒         ▒       61▒       76▒       91▒        █▒        █▒        █▒        █▒        █▒
    50 ┤        15▒       30▒       45▒        █▒        █▒        █▒        █▒        █▒        █▒        █▒        █▒
       │         █▒        █▒        █▒        █▒        █▒        █▒        █▒        █▒        █▒        █▒        █▒
       └──────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬───~~~───┬─────►
               10,000    20,000    30,000    40,000    50,000    60,000    70,000    80,000    90,000    100,000  1,000,000 [items]
           
-        █ - payload in [MB]    calculation: payload = item count * (100 wrods * 15 character + 99 spaces) / 1024 / 1024
+        █ - payload in [MB], calculation: payload = item count * (100 wrods * 15 character + 99 spaces) / 1024 / 1024
         ▒ - storage space required in [MB]
 ```
 
@@ -398,10 +398,6 @@ If a field is marked with the IndexIgnore attribute, it will be excluded from th
 The index schema file contains important metadata, which provides detailed information about the structure and characteristics of 
 the provide indexes. In addition, the file contains a precise object description of the document captured by the index and is 
 managed. Furthermore, the JSON (JavaScript Object Notation) format is used for the index schema file and the have the extension `*.ws`.
-
-```
-
-```
 
 ## IndexStore
 In a filesystem where the `WebIndex` is stored, a process is carried out where an inverted index is created for each field. These indexes are 
@@ -687,14 +683,15 @@ documents in which the term appears.
          ╚═══════════════╝
 ```
 
-The posting segment is designed as a list and contains the IDs of the documents that belong to a term. For each document, the 
-posting segment refers to the position information that indicates where the term is located in the document. The posting segment 
+The posting node segment is designed as a binary tree and contains the ids of the documents that belong to a term. For each document, the 
+posting node segment refers to the position information that indicates where the term is located in the document. The posting segment 
 is stored in the variable memory area of the inverted index.
 
 ```
-         ╔Posting════════╗
+         ╔PostingNode════╗
  16 Byte ║ Id            ║ guid of the document item
-  8 Byte ║ SuccessorAddr ║ pointer to the address of the next element of a sorted list or 0 if there is no element
+  8 Byte ║ LeftAddr      ║ pointer to the address of the left child or 0 if there is no element
+  8 Byte ║ RightAddr     ║ pointer to the address of the right child or 0 if there is no element
   8 Byte ║ PositionAddr  ║ adress of the first position element of a sorted list or 0 if there is no element
          ╚═══════════════╝
 ```
@@ -875,7 +872,8 @@ IndexManager.ReIndex(greetings);
                                                      ▼                                  ┌Post:233┐
                                                     ┌Post:381┐                          │ 'b2..' │
                                                     │ 'c7..' │                          │ 277    │────►┌Post:277┐
-                                                    │ 0      │           ┌Pos: 265┐◄────│ 265    │     │ 'c7..' │
+                                                    │ 0      │                          │ 0      │     │ 'c7..' │
+                                                    │ 0      │           ┌Pos: 265┐◄────│ 265    │     │ 0      │
                                      ┌Pos: 413┐◄────│ 413    │           │ 1      │     └────────┘     │ 0      │
                                      │ 3      │     └────────┘           │ 0      │                    │ 309    │────►┌Pos: 309┐
                                      │ 0      │                          └────────┘                    └────────┘     │ 1      │
