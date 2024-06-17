@@ -8,7 +8,7 @@
 - drop index
 - order by
 - statistic
-- performance improvements 
+- performance improvements (child access in term tree & getValue from reflection)
 
 # WebExpress.WebIndex
 The index model provides a reverse index to enable fast and efficient searching. A reverse index can significantly speed up access 

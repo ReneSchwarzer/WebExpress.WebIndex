@@ -1,9 +1,8 @@
 ﻿using System.Text;
-using WebExpress.WebIndex.WebAttribute;
 
 namespace WebExpress.WebIndex.Test.Document
 {
-    public abstract class UnitTestIndexTestDocumentFactory 
+    public abstract class UnitTestIndexTestDocumentFactory
     {
         /// <summary>
         /// The lorem ipsum vocabulary.
@@ -66,6 +65,11 @@ namespace WebExpress.WebIndex.Test.Document
         protected static Random Rand { get; } = new(10);
 
         /// <summary>
+        /// Returns a guard to protect against concurrent access.
+        /// </summary>
+        private static object Guard { get; } = new object();
+
+        /// <summary>
         /// Generate lorem ipsum sentence.
         /// </summary>
         /// <param name="numWords">The number of words.</param>
@@ -75,10 +79,13 @@ namespace WebExpress.WebIndex.Test.Document
             var sb = new StringBuilder();
             for (int i = 0; i < numWords; i++)
             {
-                sb.Append(LoremIpsumVocabulary[Rand.Next(LoremIpsumVocabulary.Length)]);
-                if (i < numWords - 1)
+                lock (Guard)
                 {
-                    sb.Append(' ');
+                    sb.Append(LoremIpsumVocabulary[Rand.Next(LoremIpsumVocabulary.Length)]);
+                    if (i < numWords - 1)
+                    {
+                        sb.Append(' ');
+                    }
                 }
             }
             return sb.ToString();
@@ -98,15 +105,19 @@ namespace WebExpress.WebIndex.Test.Document
 
             while (set.Count < vocabulary)
             {
-                var word = new string(Enumerable.Repeat(characters, /*Rand.Next(minWordLength, maxWordLength + 1)*/maxWordLength)
-                    .Select(s => s[Rand.Next(s.Length)]).ToArray());
-
-                if (!set.Contains(word))
+                lock (Guard)
                 {
-                    set.Add(word);
+                    var rand = Rand.Next(maxWordLength, maxWordLength + 1);
+                    var word = new string(Enumerable.Repeat(characters, rand).Select(s => s[Rand.Next(s.Length)]).ToArray());
+
+                    if (!set.Contains(word))
+                    {
+                        set.Add(word);
+                    }
+
                 }
             }
-            
+
             return set;
         }
 

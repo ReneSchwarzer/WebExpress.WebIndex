@@ -1,11 +1,10 @@
 ﻿using System.Globalization;
 using WebExpress.WebIndex.Test.Document;
-using WebExpress.WebIndex.Utility;
 using WebExpress.WebIndex.Wql;
 
 namespace WebExpress.WebIndex.Test.Fixture
 {
-    public class UnitTestIndexFixtureWqlC : IDisposable
+    public class UnitTestIndexFixtureWqlC : UnitTestIndexFixture
     {
         /// <summary>
         /// Returns the index manager.
@@ -37,18 +36,17 @@ namespace WebExpress.WebIndex.Test.Fixture
             IndexManager.Initialization(context);
             IndexManager.Create<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
             IndexManager.ReIndex(TestData);
-            RandomItem = TestData.Skip(new Random().Next() % TestData.Count()).FirstOrDefault();
+            RandomItem = TestData.Skip(Rand.Next(TestData.Count())).FirstOrDefault();
             Term = RandomItem.Text.Split(' ').FirstOrDefault();
         }
 
         /// <summary>
         /// Disposes of the resources used by the current instance.
         /// </summary>
-        public virtual void Dispose()
+        public override void Dispose()
         {
             IndexManager.Dispose();
             Directory.Delete(IndexManager.Context.IndexDirectory, true);
-            Profiling.Store();
         }
 
         /// <summary>

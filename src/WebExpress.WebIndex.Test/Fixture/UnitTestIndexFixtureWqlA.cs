@@ -1,11 +1,10 @@
 ﻿using System.Globalization;
 using WebExpress.WebIndex.Test.Document;
-using WebExpress.WebIndex.Utility;
 using WebExpress.WebIndex.Wql;
 
 namespace WebExpress.WebIndex.Test.Fixture
 {
-    public class UnitTestIndexFixtureWqlA : IDisposable
+    public class UnitTestIndexFixtureWqlA : UnitTestIndexFixture
     {
         /// <summary>
         /// Returns the index manager.
@@ -32,11 +31,10 @@ namespace WebExpress.WebIndex.Test.Fixture
         /// <summary>
         /// Disposes of the resources used by the current instance.
         /// </summary>
-        public virtual void Dispose()
+        public override void Dispose()
         {
             IndexManager.Dispose();
             Directory.Delete(IndexManager.Context.IndexDirectory, true);
-            Profiling.Store();
         }
 
         /// <summary>

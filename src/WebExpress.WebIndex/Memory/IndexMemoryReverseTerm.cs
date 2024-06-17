@@ -8,7 +8,7 @@ namespace WebExpress.WebIndex.Memory
     /// <summary>
     /// Represents a tree which is formed from the characters of the terms.
     /// </summary>
-    public class IndexMemoryReverseTerm 
+    public class IndexMemoryReverseTerm
     {
         /// <summary>
         /// The character of the node.
@@ -59,9 +59,21 @@ namespace WebExpress.WebIndex.Memory
             {
                 foreach (var child in Children)
                 {
+                    if (child.Postings != null && child.Children.Any())
+                    {
+                        yield return (Character + child.Character.ToString(), child);
+                    }
+
                     foreach (var term in child.Terms)
                     {
-                        yield return (Character + term.Item1, term.Item2);
+                        if (Character != 0)
+                        {
+                            yield return (Character + term.Item1, term.Item2);
+                        }
+                        else
+                        {
+                            yield return (term.Item1, term.Item2);
+                        }
                     }
                 }
 

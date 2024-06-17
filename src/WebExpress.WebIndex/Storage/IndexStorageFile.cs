@@ -95,6 +95,11 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="segment">The segment.</param>
         public void Write(IIndexStorageSegment segment)
         {
+            if (segment == null)
+            {
+                return;
+            }
+
             Buffer.Write(segment);
         }
 

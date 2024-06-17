@@ -11,6 +11,11 @@ namespace WebExpress.WebIndex
     public interface IIndexReverse<T> : IDisposable where T : IIndexItem
     {
         /// <summary>
+        /// Returns all items.
+        /// </summary>
+        IEnumerable<Guid> All {get;}
+
+        /// <summary>
         /// Adds a item to the index.
         /// </summary>
         /// <param name="item">The data to be added to the index.</param>

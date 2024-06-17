@@ -1,10 +1,9 @@
 ﻿using System.Diagnostics;
 using WebExpress.WebIndex.Test.Document;
-using WebExpress.WebIndex.Utility;
 
 namespace WebExpress.WebIndex.Test.Fixture
 {
-    public class UnitTestIndexFixtureIndexC : IDisposable
+    public class UnitTestIndexFixtureIndexC : UnitTestIndexFixture
     {
         /// <summary>
         /// Returns the test data.
@@ -14,7 +13,7 @@ namespace WebExpress.WebIndex.Test.Fixture
         /// <summary>
         /// Returns a random document item.
         /// </summary>
-        public UnitTestIndexTestDocumentC RandomItem => TestData[new Random().Next() % TestData.Count];
+        public UnitTestIndexTestDocumentC RandomItem => TestData[Rand.Next(TestData.Count)];
 
         /// <summary>
         /// Constructor
@@ -26,9 +25,8 @@ namespace WebExpress.WebIndex.Test.Fixture
         /// <summary>
         /// Disposes of the resources used by the current instance.
         /// </summary>
-        public virtual void Dispose()
+        public override void Dispose()
         {
-            Profiling.Store();
         }
 
         /// <summary>

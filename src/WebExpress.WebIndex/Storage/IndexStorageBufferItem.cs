@@ -6,7 +6,7 @@ namespace WebExpress.WebIndex.Storage
     /// <summary>
     /// A read buffer item for buffering of segments.
     /// </summary>
-    public class IndexStorageReadBufferItem
+    public class IndexStorageBufferItem
     {
         /// <summary>
         /// Returns or sets the lifetime.
@@ -32,7 +32,7 @@ namespace WebExpress.WebIndex.Storage
         /// Constructor
         /// </summary>
         /// <param name="segment">The segment to be cached.</param>
-        public IndexStorageReadBufferItem(IIndexStorageSegment segment)
+        public IndexStorageBufferItem(IIndexStorageSegment segment)
         {
             Segment = segment;
 

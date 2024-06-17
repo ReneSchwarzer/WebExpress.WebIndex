@@ -113,6 +113,11 @@ namespace WebExpress.WebIndex.Storage
             {
                 foreach (var child in Children)
                 {
+                    if (child.PostingAddr != 0 && child.ChildAddr != 0)
+                    {
+                        yield return (Character + child.Character.ToString(), child);
+                    }
+
                     foreach (var term in child.Terms)
                     {
                         if (Character != 0)
@@ -274,77 +279,102 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         /// <param name="id">The document id.</params>
         /// <returns>The posting segment.</returns>
-        public IndexStorageSegmentPostingNode RemovePosting(Guid id)
+        public bool RemovePosting(Guid id)
         {
             if (PostingAddr == 0)
             {
-                return null;
+                return false;
             }
 
             lock (Guard)
             {
-                //if (PostingAddr != 0)
-                //{
-                //    var root = Posting;
+                if (PostingAddr != 0)
+                {
+                    var root = Posting;
 
-                //    if (id.CompareTo(root.DocumentID) < 0)
-                //    {
-                //        if (root.Left.Remove(id) != null)
-                //        {
-                //            Fequency--;
+                    if (id.CompareTo(root.DocumentID) < 0)
+                    {
+                        if (root.Left?.Remove(id, root, IndexStorageBinaryTreeDirection.Left) ?? false)
+                        {
+                            Fequency--;
 
-                //            Context.IndexFile.Write(this);
-                //        }
-                //    }
-                //    else if (id.CompareTo(root.DocumentID) > 0)
-                //    {
-                //        if (root.Right.Remove(id) != null)
-                //        {
-                //            Fequency--;
+                            Context.IndexFile.Write(this);
 
-                //            Context.IndexFile.Write(this);
-                //        }
-                //    }
-                //    else
-                //    {
-                //        // node with only one child or no child
-                //        if (root.LeftAddr == 0)
-                //        {
-                //            PostingAddr = root.RightAddr;
+                            return true;
+                        }
 
-                //            Context.Allocator.Free(root);
+                        return false;
+                    }
+                    else if (id.CompareTo(root.DocumentID) > 0)
+                    {
+                        if (root.Right?.Remove(id, root, IndexStorageBinaryTreeDirection.Right) ?? false)
+                        {
+                            Fequency--;
 
-                //            Fequency--;
+                            Context.IndexFile.Write(this);
 
-                //            Context.IndexFile.Write(this);
+                            return true;
+                        }
 
-                //            return root;
-                //        }
-                //        else if (root.RightAddr == 0)
-                //        {
-                //            PostingAddr = root.LeftAddr;
+                        return false;
+                    }
 
-                //            Context.Allocator.Free(root);
+                    // node with only one child or no child
+                    if (root.LeftAddr == 0)
+                    {
+                        PostingAddr = root.RightAddr;
 
-                //            Fequency--;
+                        root.RemovePositions();
+                        Context.Allocator.Free(root);
 
-                //            Context.IndexFile.Write(this);
+                        Fequency--;
 
-                //            return root;
-                //        }
+                        Context.IndexFile.Write(this);
 
-                //        // node with two children: Get the inorder successor (smallest in the right subtree)
+                        return true;
+                    }
+                    else if (root.RightAddr == 0)
+                    {
+                        PostingAddr = root.LeftAddr;
 
+                        root.RemovePositions();
+                        Context.Allocator.Free(root);
 
-                //        //root.data = MinValue(root.right);
+                        Fequency--;
 
-                //        //// Delete the inorder successor
-                //        //root.right = Remove(root.right, root.data);
-                //    }
-                //}
+                        Context.IndexFile.Write(this);
+
+                        return true;
+                    }
+
+                    // node with two children: get the inorder successor (most left child in the right subtree)
+                    var leftmostChild = root.Right.LeftmostChild;
+                    var inorderSuccessor = leftmostChild?.Leftmost;
+                    var inorderSuccessorParent = leftmostChild?.Parent;
+
+                    inorderSuccessor.LeftAddr = root.LeftAddr;
+                    inorderSuccessor.RightAddr = inorderSuccessorParent?.Addr ?? 0ul;
+                    Context.IndexFile.Write(inorderSuccessor);
+
+                    if (inorderSuccessorParent != null)
+                    {
+                        inorderSuccessorParent.LeftAddr = 0ul;
+                        Context.IndexFile.Write(inorderSuccessorParent);
+                    }
+
+                    PostingAddr = inorderSuccessor?.Addr ?? 0ul;
+                    root.RemovePositions();
+                    Context.Allocator.Free(root);
+
+                    Fequency--;
+
+                    Context.IndexFile.Write(this);
+
+                    return true;
+                }
             }
 
-            return null;
+            return false;
         }
 
         /// <summary>

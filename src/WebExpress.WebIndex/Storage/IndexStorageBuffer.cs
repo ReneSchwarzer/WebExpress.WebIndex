@@ -19,12 +19,12 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Buffer for random access of segments.
         /// </summary>
-        private Dictionary<ulong, IndexStorageReadBufferItem> _readCache;
+        private Dictionary<ulong, IndexStorageBufferItem> _readCache;
 
         /// <summary>
         /// Buffer for random access of imperishable segments.
         /// </summary>
-        private readonly Dictionary<ulong, IndexStorageReadBufferItem> _imperishableCache;
+        private readonly Dictionary<ulong, IndexStorageBufferItem> _imperishableCache;
 
         /// <summary>
         /// Buffer for random access.
@@ -57,8 +57,8 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="file">A stream for the index file.</param>
         public IndexStorageBuffer(IndexStorageFile file)
         {
-            _readCache = new Dictionary<ulong, IndexStorageReadBufferItem>((int)MaxCachedSegments);
-            _imperishableCache = new Dictionary<ulong, IndexStorageReadBufferItem>((int)MaxCachedSegments);
+            _readCache = new Dictionary<ulong, IndexStorageBufferItem>((int)MaxCachedSegments);
+            _imperishableCache = new Dictionary<ulong, IndexStorageBufferItem>((int)MaxCachedSegments);
             _writeCache = new Dictionary<ulong, IIndexStorageSegment>((int)MaxCachedSegments);
 
             Reader = new BinaryReader(file.FileStream);
@@ -126,6 +126,11 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="segment">The segment.</param>
         public void Write(IIndexStorageSegment segment)
         {
+            if (segment == null)
+            {
+                return;
+            }
+
             lock (Guard)
             {
                 if (!_writeCache.TryAdd(segment.Addr, segment))
@@ -142,6 +147,7 @@ namespace WebExpress.WebIndex.Storage
         public void Invalidation(IIndexStorageSegment segment)
         {
             _readCache.Remove(segment.Addr, out _);
+            _imperishableCache.Remove(segment.Addr, out _);
         }
 
         /// <summary>
@@ -150,7 +156,7 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="segment">The segment.</param>
         private void Cache(IIndexStorageSegment segment)
         {
-            var segmentItem = new IndexStorageReadBufferItem(segment);
+            var segmentItem = new IndexStorageBufferItem(segment);
 
             if (segmentItem.Counter < uint.MaxValue)
             {
@@ -177,7 +183,7 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>True if the segment is cached, false otherwise.</returns>
         private bool GetSegment(ulong addr, out IIndexStorageSegment segment)
         {
-            if (_readCache.TryGetValue(addr, out IndexStorageReadBufferItem cached))
+            if (_readCache.TryGetValue(addr, out IndexStorageBufferItem cached))
             {
                 cached.Refresh();
                 segment = cached.Segment;
@@ -185,7 +191,7 @@ namespace WebExpress.WebIndex.Storage
                 return true;
             }
 
-            if (_imperishableCache.TryGetValue(addr, out IndexStorageReadBufferItem imperishableCached))
+            if (_imperishableCache.TryGetValue(addr, out IndexStorageBufferItem imperishableCached))
             {
                 imperishableCached.Refresh();
                 segment = imperishableCached.Segment;
@@ -229,7 +235,7 @@ namespace WebExpress.WebIndex.Storage
                 lock (Guard)
                 {
                     var average = _readCache.Average(x => x.Value.Counter);
-                    _readCache = new Dictionary<ulong, IndexStorageReadBufferItem>(_readCache.Where(x => x.Value.Counter <= average));
+                    _readCache = new Dictionary<ulong, IndexStorageBufferItem>(_readCache.Where(x => x.Value.Counter <= average));
                 }
             }
         }

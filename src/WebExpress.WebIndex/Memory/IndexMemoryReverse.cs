@@ -44,9 +44,17 @@ namespace WebExpress.WebIndex.Memory
         public CultureInfo Culture { get; private set; } = culture;
 
         /// <summary>
-        /// 
+        /// The root term.
         /// </summary>
         public IndexMemoryReverseTerm Root { get; private set; } = new();
+
+        /// <summary>
+        /// Returns all items.
+        /// </summary>
+        public IEnumerable<Guid> All => Root.Terms
+            .SelectMany(x => x.Item2.Postings)
+            .Select(x => x.DocumentID)
+            .Distinct();
 
         /// <summary>
         /// Adds a item to the index.

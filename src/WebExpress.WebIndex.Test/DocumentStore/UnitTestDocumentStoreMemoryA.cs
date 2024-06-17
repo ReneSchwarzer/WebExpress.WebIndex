@@ -87,7 +87,7 @@ namespace WebExpress.WebIndex.Test.DocumentStore
 
             var all = documentStore.All;
 
-            Assert.True(all.Select(x => x.Id).OrderBy(x => x).SequenceEqual(Fixture.TestData.Select(x => x.Id).OrderBy(x => x)));
+            Assert.Equal(all.Select(x => x.Id).OrderBy(x => x), Fixture.TestData.Take(2).Select(x => x.Id).OrderBy(x => x));
             Assert.True(all.Where(x => x.Text == name).Any());
 
             // postconditions
@@ -113,7 +113,7 @@ namespace WebExpress.WebIndex.Test.DocumentStore
             documentStore.Update(Fixture.TestData[0]);
             var all = documentStore.All;
 
-            Assert.True(all.Select(x => x.Id).OrderBy(x => x).SequenceEqual(Fixture.TestData.Select(x => x.Id).OrderBy(x => x)));
+            Assert.Equal(all.Select(x => x.Id).OrderBy(x => x), Fixture.TestData.Take(2).Select(x => x.Id).OrderBy(x => x));
             Assert.True(all.Where(x => x.Text == Fixture.TestData[0].Text).Any());
 
             // postconditions
@@ -139,7 +139,7 @@ namespace WebExpress.WebIndex.Test.DocumentStore
             documentStore.Remove(Fixture.TestData[0]);
             var all = documentStore.All;
 
-            Assert.True(all.Select(x => x.Id).SequenceEqual(Fixture.TestData.Where(x => x.Id != Fixture.TestData[0].Id).Select(x => x.Id)));
+            Assert.Equal(all.Select(x => x.Id).OrderBy(x => x), Fixture.TestData.Where(x => x.Id == Fixture.TestData[1].Id).Select(x => x.Id));
 
             // postconditions
             documentStore.Dispose();

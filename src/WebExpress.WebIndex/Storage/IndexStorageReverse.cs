@@ -60,6 +60,11 @@ namespace WebExpress.WebIndex.Storage
         public CultureInfo Culture { get; private set; }
 
         /// <summary>
+        /// Returns all items.
+        /// </summary>
+        public IEnumerable<Guid> All => Term.All.Distinct();
+
+        /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="context">The index context.</param>
@@ -157,13 +162,12 @@ namespace WebExpress.WebIndex.Storage
 
                 if (node != null)
                 {
-                    node.RemovePosting(item.Id);
-
-                    Statistic.Count--;
-                    IndexFile.Write(Statistic);
+                    if (node.RemovePosting(item.Id))
+                    {
+                        Statistic.Count--;
+                        IndexFile.Write(Statistic);
+                    }
                 }
-
-
             }
         }
 

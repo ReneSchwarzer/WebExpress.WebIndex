@@ -1,10 +1,12 @@
-﻿using System.Diagnostics;
-using System.Text;
+﻿using System.Text;
 using WebExpress.WebIndex.Term;
 
 namespace WebExpress.WebIndex.Test.Fixture
 {
-    public class UnitTestIndexFixtureToken : IDisposable
+    /// <summary>
+    /// A unit test fixture for tokens.
+    /// </summary
+    public class UnitTestIndexFixtureToken : UnitTestIndexFixture
     {
         /// <summary>
         /// Returns the context.
@@ -31,12 +33,17 @@ namespace WebExpress.WebIndex.Test.Fixture
         /// <summary>
         /// Disposes of the resources used by the current instance.
         /// </summary>
-        public virtual void Dispose()
+        public override void Dispose()
         {
             TokenAnalyzer.Dispose();
             Directory.Delete(Context.IndexDirectory, true);
         }
 
+        /// <summary>
+        /// Gets the resource with the specified name.
+        /// </summary>
+        /// <param name="name">The name of the resource.</param>
+        /// <returns>The resource as a string, or an empty string if the resource is not found.</returns>
         public string GetRessource(string name)
         {
             var assembly = typeof(UnitTestIndexFixtureToken).Assembly;

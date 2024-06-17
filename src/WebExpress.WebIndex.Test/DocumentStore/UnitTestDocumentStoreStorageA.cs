@@ -1,4 +1,4 @@
-﻿using WebExpress.WebIndex.Memory;
+﻿using WebExpress.WebIndex.Storage;
 using WebExpress.WebIndex.Test.Document;
 using WebExpress.WebIndex.Test.Fixture;
 using Xunit.Abstractions;
@@ -30,7 +30,7 @@ namespace WebExpress.WebIndex.Test.DocumentStore
             var context = new IndexContext();
 
             // test execution
-            var documentStore = new IndexMemoryDocumentStore<UnitTestIndexTestDocumentA>(context, 5);
+            var documentStore = new IndexStorageDocumentStore<UnitTestIndexTestDocumentA>(context, 5);
 
             // postconditions
             documentStore.Dispose();
@@ -44,7 +44,7 @@ namespace WebExpress.WebIndex.Test.DocumentStore
         {
             // preconditions
             Preconditions();
-            var documentStore = new IndexMemoryDocumentStore<UnitTestIndexTestDocumentA>(Context, 5);
+            var documentStore = new IndexStorageDocumentStore<UnitTestIndexTestDocumentA>(Context, 5);
 
             documentStore.Clear();
 
@@ -69,7 +69,7 @@ namespace WebExpress.WebIndex.Test.DocumentStore
         {
             // preconditions
             Preconditions();
-            var documentStore = new IndexMemoryDocumentStore<UnitTestIndexTestDocumentA>(Context, 5);
+            var documentStore = new IndexStorageDocumentStore<UnitTestIndexTestDocumentA>(Context, 5);
 
             documentStore.Clear();
             documentStore.Add(Fixture.TestData[0]);
@@ -87,7 +87,7 @@ namespace WebExpress.WebIndex.Test.DocumentStore
 
             var all = documentStore.All;
 
-            Assert.True(all.Select(x => x.Id).OrderBy(x => x).SequenceEqual(Fixture.TestData.Select(x => x.Id).OrderBy(x => x)));
+            Assert.Equal(all.Select(x => x.Id).OrderBy(x => x), Fixture.TestData.Take(2).Select(x => x.Id).OrderBy(x => x));
             Assert.True(all.Where(x => x.Text == name).Any());
 
             // postconditions
@@ -103,7 +103,7 @@ namespace WebExpress.WebIndex.Test.DocumentStore
         {
             // preconditions
             Preconditions();
-            var documentStore = new IndexMemoryDocumentStore<UnitTestIndexTestDocumentA>(Context, 5);
+            var documentStore = new IndexStorageDocumentStore<UnitTestIndexTestDocumentA>(Context, 5);
 
             documentStore.Clear();
             documentStore.Add(Fixture.TestData[0]);
@@ -113,7 +113,7 @@ namespace WebExpress.WebIndex.Test.DocumentStore
             documentStore.Update(Fixture.TestData[0]);
             var all = documentStore.All;
 
-            Assert.True(all.Select(x => x.Id).OrderBy(x => x).SequenceEqual(Fixture.TestData.Select(x => x.Id).OrderBy(x => x)));
+            Assert.Equal(all.Select(x => x.Id).OrderBy(x => x), Fixture.TestData.Take(2).Select(x => x.Id).OrderBy(x => x));
             Assert.True(all.Where(x => x.Text == Fixture.TestData[0].Text).Any());
 
             // postconditions
@@ -129,7 +129,7 @@ namespace WebExpress.WebIndex.Test.DocumentStore
         {
             // preconditions
             Preconditions();
-            var documentStore = new IndexMemoryDocumentStore<UnitTestIndexTestDocumentA>(Context, 5);
+            var documentStore = new IndexStorageDocumentStore<UnitTestIndexTestDocumentA>(Context, 5);
 
             documentStore.Clear();
             documentStore.Add(Fixture.TestData[0]);
@@ -139,7 +139,7 @@ namespace WebExpress.WebIndex.Test.DocumentStore
             documentStore.Remove(Fixture.TestData[0]);
             var all = documentStore.All;
 
-            Assert.True(all.Select(x => x.Id).SequenceEqual(Fixture.TestData.Where(x => x.Id != Fixture.TestData[0].Id).Select(x => x.Id)));
+            Assert.Equal(all.Select(x => x.Id).OrderBy(x => x), Fixture.TestData.Where(x => x.Id == Fixture.TestData[1].Id).Select(x => x.Id));
 
             // postconditions
             documentStore.Dispose();
@@ -154,7 +154,7 @@ namespace WebExpress.WebIndex.Test.DocumentStore
         {
             // preconditions
             Preconditions();
-            var documentStore = new IndexMemoryDocumentStore<UnitTestIndexTestDocumentA>(Context, 5);
+            var documentStore = new IndexStorageDocumentStore<UnitTestIndexTestDocumentA>(Context, 5);
 
             documentStore.Clear();
             documentStore.Add(Fixture.TestData[0]);
@@ -179,7 +179,7 @@ namespace WebExpress.WebIndex.Test.DocumentStore
         {
             // preconditions
             Preconditions();
-            var documentStore = new IndexMemoryDocumentStore<UnitTestIndexTestDocumentA>(Context, 5);
+            var documentStore = new IndexStorageDocumentStore<UnitTestIndexTestDocumentA>(Context, 5);
 
             documentStore.Clear();
             documentStore.Add(Fixture.TestData[0]);
@@ -188,7 +188,7 @@ namespace WebExpress.WebIndex.Test.DocumentStore
             // test execution
             var all = documentStore.All;
 
-            Assert.True(all.Select(x => x.Id).OrderBy(x => x).SequenceEqual(Fixture.TestData.Select(x => x.Id).OrderBy(x => x)));
+            Assert.Equal(all.Select(x => x.Id).OrderBy(x => x), Fixture.TestData.Take(2).Select(x => x.Id).OrderBy(x => x));
 
             // postconditions
             documentStore.Dispose();
