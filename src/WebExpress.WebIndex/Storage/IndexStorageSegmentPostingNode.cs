@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using WebExpress.WebIndex.WebAttribute;
 
 namespace WebExpress.WebIndex.Storage
 {
@@ -12,7 +11,6 @@ namespace WebExpress.WebIndex.Storage
     /// <typeparam name="T">The data type. This must have the IIndexData interface.</typeparam>
     /// <param name="context">The reference to the context of the index.</param>
     /// <param name="addr">The adress of the segment.</param>
-    [SegmentCached]
     public class IndexStorageSegmentPostingNode(IndexStorageContext context, ulong addr) : IndexStorageSegment(context, addr)
     {
         /// <summary>
