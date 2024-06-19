@@ -8,17 +8,12 @@ namespace WebExpress.WebIndex.Storage
     /// The items are stored in a segment. The size of the segment is variable and is determined by the size of the compressed 
     /// item instance. The segment are stored in the variable memory area of the IndexDocumentStore.
     /// </summary>
-    public class IndexStorageSegmentItem : IndexStorageSegment, IIndexStorageSegmentListItem
+    public class IndexStorageSegmentItem : IndexStorageSegment, IIndexStorageSegmentListItem, IIndexStorageSegmentChunk
     {
         /// <summary>
-        /// Returns or sets the address of the following term.
+        /// Returns the amount of space required on the storage device.
         /// </summary>
-        public ulong SuccessorAddr { get; set; }
-
-        /// <summary>
-        /// Returns the number of characters in the term.
-        /// </summary>
-        public uint Length => (uint)Data.Length;
+        public const uint SegmentSize = 16 + sizeof(uint) + IndexStorageSegmentChunk.ChunkSize + sizeof(ulong) + sizeof(ulong);
 
         /// <summary>
         /// Returns or sets the id of the item.
@@ -26,20 +21,24 @@ namespace WebExpress.WebIndex.Storage
         public Guid Id { get; set; }
 
         /// <summary>
-        /// Returns or sets the item data.
+        /// Returns the number of characters in the term.
         /// </summary>
-        public byte[] Data { get; set; }
+        public uint Length => (uint)DataChunk.Length;
 
         /// <summary>
-        /// Returns the amount of space required on the storage device.
+        /// Returns or sets the item data. 
         /// </summary>
-        public static uint SegmentSize => sizeof(ulong) + sizeof(uint) + sizeof(uint) + 16;
+        public byte[] DataChunk { get; set; }
 
         /// <summary>
-        /// Returns the amount of space required on the storage device.
-        /// SuccessorAddr + Length + Fequency + DocumentID + Data
+        /// Returns or sets the address of the next chunk element of a list or 0 if there is no element.
         /// </summary>
-        public uint Size => SegmentSize + Length;
+        public ulong NextChunkAddr { get; set; }
+
+        /// <summary>
+        /// Returns or sets the address of the next bucket element of a sorted list or 0 if there is no element.
+        /// </summary>
+        public ulong SuccessorAddr { get; set; }
 
         /// <summary>
         /// Constructor
@@ -59,8 +58,9 @@ namespace WebExpress.WebIndex.Storage
         {
             Id = new Guid(reader.ReadBytes(16));
             var length = reader.ReadUInt32();
+            DataChunk = reader.ReadBytes((int)Math.Min(length, IndexStorageSegmentChunk.ChunkSize));
+            NextChunkAddr = reader.ReadUInt64();
             SuccessorAddr = reader.ReadUInt64();
-            Data = reader.ReadBytes((int)length);
         }
 
         /// <summary>
@@ -71,8 +71,9 @@ namespace WebExpress.WebIndex.Storage
         {
             writer.Write(Id.ToByteArray());
             writer.Write(Length);
+            writer.Write(DataChunk);
+            writer.Write(NextChunkAddr);
             writer.Write(SuccessorAddr);
-            writer.Write(Data);
         }
 
         /// <summary>
@@ -92,7 +93,7 @@ namespace WebExpress.WebIndex.Storage
         {
             if (obj is IndexStorageSegmentItem item)
             {
-                return Data.SequenceEqual(item.Data) ? 0 : -1;
+                return DataChunk.SequenceEqual(item.DataChunk) ? 0 : -1;
             }
 
             throw new System.ArgumentException();

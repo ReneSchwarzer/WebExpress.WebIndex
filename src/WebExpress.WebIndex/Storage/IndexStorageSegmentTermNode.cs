@@ -23,7 +23,7 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Returns the amount of space required on the storage device.
         /// </summary>
-        public static uint SegmentSize => sizeof(char) + sizeof(ulong) + sizeof(ulong) + sizeof(uint) + sizeof(ulong);
+        public const uint SegmentSize = sizeof(char) + sizeof(ulong) + sizeof(ulong) + sizeof(uint) + sizeof(ulong);
 
         /// <summary>
         /// Returns or sets the character of the node.

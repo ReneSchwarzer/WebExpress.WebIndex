@@ -5,6 +5,11 @@ namespace WebExpress.WebIndex.Storage
     public class IndexStorageSegmentHeader : IndexStorageSegment
     {
         /// <summary>
+        /// Returns the amount of space required on the storage device.
+        /// </summary>
+        public const uint SegmentSize = 3;
+
+        /// <summary>
         /// Returns or sets the file identifire.
         /// </summary>
         public string Identifier { get; internal set; }
@@ -13,11 +18,6 @@ namespace WebExpress.WebIndex.Storage
         /// Returns or sets the file version.
         /// </summary>
         public byte Version { get; internal set; }
-
-        /// <summary>
-        /// Returns the amount of space required on the storage device.
-        /// </summary>
-        public static uint SegmentSize => 3;
 
         /// <summary>
         /// Constructor

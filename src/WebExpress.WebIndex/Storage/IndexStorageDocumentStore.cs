@@ -50,6 +50,11 @@ namespace WebExpress.WebIndex.Storage
         public IIndexContext Context { get; private set; }
 
         /// <summary>
+        /// Returns the storage index context.
+        /// </summary>
+        public IndexStorageContext StorageContext { get; private set; }
+
+        /// <summary>
         /// Returns all items.
         /// </summary>
         public IEnumerable<T> All => HashMap.All.Select(x => GetItem(x));
@@ -67,15 +72,16 @@ namespace WebExpress.WebIndex.Storage
         public IndexStorageDocumentStore(IIndexContext context, uint capacity)
         {
             Context = context;
+            StorageContext = new IndexStorageContext(this);
             Capacity = capacity;
             FileName = Path.Combine(Context.IndexDirectory, $"{typeof(T).Name}.wds");
 
             var exists = File.Exists(FileName);
             IndexFile = new IndexStorageFile(FileName);
-            Header = new IndexStorageSegmentHeader(new IndexStorageContext(this)) { Identifier = "wds" };
-            Allocator = new IndexStorageSegmentAllocator(new IndexStorageContext(this));
-            Statistic = new IndexStorageSegmentStatistic(new IndexStorageContext(this));
-            HashMap = new IndexStorageSegmentHashMap(new IndexStorageContext(this), Capacity);
+            Header = new IndexStorageSegmentHeader(StorageContext) { Identifier = "wds" };
+            Allocator = new IndexStorageSegmentAllocatorDocumentStore(StorageContext);
+            Statistic = new IndexStorageSegmentStatistic(StorageContext);
+            HashMap = new IndexStorageSegmentHashMap(StorageContext, Capacity);
 
             Allocator.Initialization();
 
@@ -103,21 +109,44 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="item">The item.</param>
         public void Add(T item)
         {
+            var chunkSize = (int)IndexStorageSegmentChunk.ChunkSize;
             var json = JsonSerializer.Serialize(item);
             var bytes = CompressString(json);
-            var segment = new IndexStorageSegmentItem(new IndexStorageContext(this), Allocator.Alloc((uint)(IndexStorageSegmentItem.SegmentSize + bytes.Length)))
-            {
-                Id = item.Id,
-                Data = bytes
-            };
+            var previousSegment = default(IIndexStorageSegmentChunk);
 
-            if (HashMap.Add(segment) == segment)
+            for (int i = 0; i < bytes.Length; i += chunkSize)
             {
-                Statistic.Count++;
-                IndexFile.Write(Statistic);
+                var chunk = bytes.Skip(i).Take(chunkSize).ToArray();
+                var segment = default(IIndexStorageSegmentChunk);
+
+                if (i == 0)
+                {
+                    segment = new IndexStorageSegmentItem(StorageContext, Allocator.Alloc(IndexStorageSegmentItem.SegmentSize))
+                    {
+                        Id = item.Id,
+                        DataChunk = chunk
+                    };
+
+                    if (HashMap.Add(segment as IndexStorageSegmentItem) == segment)
+                    {
+                        Statistic.Count++;
+                        IndexFile.Write(Statistic);
+                    }
+                }
+                else
+                {
+                    segment = new IndexStorageSegmentChunk(StorageContext, Allocator.Alloc(IndexStorageSegmentChunk.SegmentSize))
+                    {
+                        DataChunk = chunk
+                    };
+
+                    previousSegment.NextChunkAddr = segment.Addr;
+                    IndexFile.Write(previousSegment);
+                    IndexFile.Write(segment);
+                }
+
+                previousSegment = segment;
             }
-
-            IndexFile.Write(segment);
         }
 
         /// <summary>
@@ -135,27 +164,10 @@ namespace WebExpress.WebIndex.Storage
                 return;
             }
 
-            var segmnt = list.SkipWhile(x => x.Id != item.Id).FirstOrDefault();
-            var json = JsonSerializer.Serialize(item);
-            var bytes = CompressString(json);
+            var segment = list.SkipWhile(x => x.Id != item.Id).FirstOrDefault();
 
-            if (segmnt.Length == bytes.Length)
-            {
-                segmnt.Data = bytes;
-
-                IndexFile.Write(segmnt);
-                return;
-            }
-
-            HashMap.Remove(segmnt);
-
-            var newSegment = new IndexStorageSegmentItem(new IndexStorageContext(this), Allocator.Alloc((uint)(IndexStorageSegmentItem.SegmentSize + bytes.Length)))
-            {
-                Id = item.Id,
-                Data = bytes
-            };
-
-            HashMap.Add(newSegment);
+            HashMap.Remove(segment);
+            Add(item);
         }
 
         /// <summary>
@@ -164,10 +176,10 @@ namespace WebExpress.WebIndex.Storage
         public void Clear()
         {
             IndexFile.NextFreeAddr = 0;
-            Header = new IndexStorageSegmentHeader(new IndexStorageContext(this)) { Identifier = "wfi" };
-            Allocator = new IndexStorageSegmentAllocator(new IndexStorageContext(this));
-            Statistic = new IndexStorageSegmentStatistic(new IndexStorageContext(this));
-            HashMap = new IndexStorageSegmentHashMap(new IndexStorageContext(this), Capacity);
+            Header = new IndexStorageSegmentHeader(StorageContext) { Identifier = "wfi" };
+            Allocator = new IndexStorageSegmentAllocatorDocumentStore(StorageContext);
+            Statistic = new IndexStorageSegmentStatistic(StorageContext);
+            HashMap = new IndexStorageSegmentHashMap(StorageContext, Capacity);
 
             Allocator.Initialization();
 
@@ -210,18 +222,33 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Returns the item.
         /// </summary>
-        /// <param name="id">The segment of the item.</param>
+        /// <param name="segment">The segment of the item.</param>
         /// <returns>The item.</returns>
-        private static T GetItem(IndexStorageSegmentItem segment)
+        private T GetItem(IndexStorageSegmentItem segment)
         {
-            var bytes = segment?.Data;
+            var bytes = new List<byte>();
+            var addr = segment.NextChunkAddr;
 
-            if (bytes == null)
+            bytes.AddRange(segment.DataChunk);
+
+            while (addr != 0)
+            {
+                var chunk = IndexFile.Read<IndexStorageSegmentChunk>(addr, StorageContext);
+
+                if (chunk.DataChunk != null)
+                {
+                    bytes.AddRange(chunk.DataChunk);
+                }
+
+                addr = chunk.NextChunkAddr;
+            }
+
+            if (!bytes.Any())
             {
                 return default;
             }
 
-            var json = DecompressString(bytes);
+            var json = DecompressString([.. bytes]);
             var item = JsonSerializer.Deserialize<T>(json);
 
             return item;

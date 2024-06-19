@@ -9,7 +9,7 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Returns the amount of space required on the storage device.
         /// </summary>
-        public static uint SegmentSize => sizeof(uint);
+        public const uint SegmentSize = sizeof(uint);
 
         /// <summary>
         /// A hash bucket is a range of memory in a hash table that is associated with a 

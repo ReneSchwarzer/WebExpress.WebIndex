@@ -81,7 +81,7 @@ namespace WebExpress.WebIndex.Storage
 
             IndexFile = new IndexStorageFile(FileName);
             Header = new IndexStorageSegmentHeader(new IndexStorageContext(this)) { Identifier = "wri" };
-            Allocator = new IndexStorageSegmentAllocator(new IndexStorageContext(this));
+            Allocator = new IndexStorageSegmentAllocatorReverseIndex(new IndexStorageContext(this));
             Statistic = new IndexStorageSegmentStatistic(new IndexStorageContext(this));
             Term = new IndexStorageSegmentTerm(new IndexStorageContext(this));
 
@@ -179,7 +179,7 @@ namespace WebExpress.WebIndex.Storage
             IndexFile.NextFreeAddr = 0;
 
             Header = new IndexStorageSegmentHeader(new IndexStorageContext(this)) { Identifier = "wri" };
-            Allocator = new IndexStorageSegmentAllocator(new IndexStorageContext(this));
+            Allocator = new IndexStorageSegmentAllocatorReverseIndex(new IndexStorageContext(this));
             Statistic = new IndexStorageSegmentStatistic(new IndexStorageContext(this));
             Term = new IndexStorageSegmentTerm(new IndexStorageContext(this));
 

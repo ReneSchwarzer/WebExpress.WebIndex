@@ -1,47 +1,46 @@
 ﻿using System;
 using System.IO;
-using WebExpress.WebIndex.WebAttribute;
+using System.Linq;
 
 namespace WebExpress.WebIndex.Storage
 {
     /// <summary>
-    /// Free memory slots are stored in a linked list, which represents the free segments in the file. These can be reused for storing new data. Unused 
-    /// segments are replaced with the `Free`-Segment, and neighboring free segments are merged. This process creates room for larger segments but may 
-    /// lead to the formation of dead memory spaces too small for reuse. 
+    /// The class represents a segment of an index storage that is divided into chunks. Each chunk contains a 
+    /// portion of the data and a reference to the next chunk, creating an ordered list of chunks. 
     /// </summary>
-    [SegmentCached]
-    public class IndexStorageSegmentFree : IndexStorageSegment, IIndexStorageSegmentListItem
+    public class IndexStorageSegmentChunk : IndexStorageSegment, IIndexStorageSegmentChunk
     {
         /// <summary>
         /// Returns the amount of space required on the storage device.
         /// </summary>
-        public const uint SegmentSize = sizeof(uint) + sizeof(ulong);
+        public const uint ChunkSize = 256;
 
         /// <summary>
-        /// Returns or sets the size of free space.
+        /// Returns the amount of space required on the storage device.
         /// </summary>
-        public uint Lenght { get; set; }
+        public const uint SegmentSize = sizeof(uint) + ChunkSize + sizeof(ulong);
 
         /// <summary>
-        /// Returns or sets the address of the following free segment or 0 if the last.
+        /// Returns the number of characters in the term.
         /// </summary>
-        public ulong SuccessorAddr { get; set; }
+        public uint Length => (uint)DataChunk.Length;
+
+        /// <summary>
+        /// Returns or sets the item data. 
+        /// </summary>
+        public byte[] DataChunk { get; set; }
+
+        /// <summary>
+        /// Returns or sets the address of the next chunk element of a list or 0 if there is no element.
+        /// </summary>
+        public ulong NextChunkAddr { get; set; }
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="context">The reference to the context of the index.</param>
-        public IndexStorageSegmentFree(IndexStorageContext context)
-            : this(context, 0)
-        {
-        }
-
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="context">The reference to the context of the index.</param>
-        /// <param name="addr">The adress of the free segment.</param>
-        public IndexStorageSegmentFree(IndexStorageContext context, ulong addr)
+        /// <param name="addr">The adress of the segment.</param>
+        public IndexStorageSegmentChunk(IndexStorageContext context, ulong addr)
             : base(context, addr)
         {
         }
@@ -52,8 +51,9 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="reader">The reader for i/o operations.</param>
         public override void Read(BinaryReader reader)
         {
-            Lenght = reader.ReadUInt32();
-            SuccessorAddr = reader.ReadUInt64();
+            var length = reader.ReadUInt32();
+            DataChunk = reader.ReadBytes((int)Math.Min(length, ChunkSize));
+            NextChunkAddr = reader.ReadUInt64();
         }
 
         /// <summary>
@@ -62,8 +62,9 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="writer">The writer for i/o operations.</param>
         public override void Write(BinaryWriter writer)
         {
-            writer.Write(Lenght);
-            writer.Write(SuccessorAddr);
+            writer.Write(Length);
+            writer.Write(DataChunk);
+            writer.Write(NextChunkAddr);
         }
 
         /// <summary>
@@ -81,12 +82,12 @@ namespace WebExpress.WebIndex.Storage
         /// <exception cref="System.ArgumentException">Obj is not the same type as this instance.</exception>
         public int CompareTo(object obj)
         {
-            if (obj is IndexStorageSegmentFree free)
+            if (obj is IndexStorageSegmentItem item)
             {
-                return Addr.CompareTo(free.Addr);
+                return DataChunk.SequenceEqual(item.DataChunk) ? 0 : -1;
             }
 
-            throw new ArgumentException();
+            throw new System.ArgumentException();
         }
     }
 }

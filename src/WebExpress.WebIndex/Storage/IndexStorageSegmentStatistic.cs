@@ -8,14 +8,14 @@ namespace WebExpress.WebIndex.Storage
     public class IndexStorageSegmentStatistic : IndexStorageSegment
     {
         /// <summary>
+        /// Returns the amount of space required on the storage device.
+        /// </summary>
+        public const uint SegmentSize = sizeof(uint);
+
+        /// <summary>
         /// Returns the number of items stored.
         /// </summary>
         public uint Count { get; internal set; }
-
-        /// <summary>
-        /// Returns the amount of space required on the storage device.
-        /// </summary>
-        public static uint SegmentSize => sizeof(uint);
 
         /// <summary>
         /// Constructor

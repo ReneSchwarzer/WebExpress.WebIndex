@@ -16,7 +16,7 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Returns the amount of space required on the storage device.
         /// </summary>
-        public static uint SegmentSize => 16 + sizeof(ulong) + sizeof(ulong) + sizeof(ulong);
+        public const uint SegmentSize = 16 + sizeof(ulong) + sizeof(ulong) + sizeof(ulong);
 
         /// <summary>
         /// Returns or sets the document id.

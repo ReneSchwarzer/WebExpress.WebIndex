@@ -11,6 +11,11 @@ namespace WebExpress.WebIndex.Storage
     public class IndexStorageSegmentPosition : IndexStorageSegment, IIndexStorageSegmentListItem
     {
         /// <summary>
+        /// Returns the amount of space required on the storage device.
+        /// </summary>
+        public const uint SegmentSize = sizeof(ulong) + sizeof(int);
+
+        /// <summary>
         /// Returns or sets the position.
         /// </summary>
         public uint Position { get; set; }
@@ -19,11 +24,6 @@ namespace WebExpress.WebIndex.Storage
         /// Returns or sets the address of the following position.
         /// </summary>
         public ulong SuccessorAddr { get; set; }
-
-        /// <summary>
-        /// Returns the amount of space required on the storage device.
-        /// </summary>
-        public static uint SegmentSize => sizeof(ulong) + sizeof(int);
 
         /// <summary>
         /// Constructor
