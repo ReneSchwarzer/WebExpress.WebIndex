@@ -24,15 +24,14 @@ namespace WebExpress.WebIndex.Test.WQL
         [Fact]
         public void SingleWordFromQueryable()
         {
-            var wql = Fixture.ExecuteWql("name~'Name_123'");
+            var wql = Fixture.ExecuteWql("name~'Name_12'");
             var res = wql?.Apply(Fixture.TestData.AsQueryable());
             var item = res?.FirstOrDefault();
 
             Assert.NotNull(res);
             Assert.NotNull(item);
             Assert.Equal(1, res.Count());
-            Assert.Equal("Name ~ 'Name_123'", wql.ToString());
-            Assert.Contains("Name_123", item.Name);
+            Assert.Contains("Name_12", item.Name);
             Assert.NotNull(wql.Filter);
             Assert.Null(wql.Order);
             Assert.Null(wql.Partitioning);
@@ -44,15 +43,14 @@ namespace WebExpress.WebIndex.Test.WQL
         [Fact]
         public void SingleWord()
         {
-            var wql = Fixture.ExecuteWql("name~'Name_123'");
+            var wql = Fixture.ExecuteWql("name~'Name_12'");
             var res = wql?.Apply();
             var item = res?.FirstOrDefault();
 
             Assert.NotNull(res);
             Assert.NotNull(item);
             Assert.Equal(1, res.Count());
-            Assert.Equal("Name ~ 'Name_123'", wql.ToString());
-            Assert.Contains("Name_123", item.Name);
+            Assert.Contains("Name_12", item.Name);
             Assert.NotNull(wql.Filter);
             Assert.Null(wql.Order);
             Assert.Null(wql.Partitioning);

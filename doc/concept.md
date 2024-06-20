@@ -413,7 +413,7 @@ the system performance.
   1 Byte ║ Version       ║ the file version
          ╠Allocator══════╣ 
   8 Byte ║ NextFreeAddr  ║ the next free address
-  8 Byte ║ FreeListAddr  ║ the address to the list
+  8 Byte ║ FreeListAddr  ║ the address to the free list
          ╠Statistic══════╣
   4 Byte ║ Count         ║ the number of elements in the file
          ╠Body═══════════╣
@@ -426,7 +426,6 @@ Unused memory areas in the file are represented by the `Free` segment, which is 
 
 ```
          ╔Free═══════════╗
-  4 Byte ║ Length        ║ size of the item in bytes
   8 Byte ║ SuccessorAddr ║ pointer to the address of the next element of a sorted list or 0 if there is no element
          ╚═══════════════╝
 ```

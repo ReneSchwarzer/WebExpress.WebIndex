@@ -155,18 +155,7 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="item">The item.</param>
         public void Update(T item)
         {
-            var list = HashMap.GetBucket(item.Id);
-
-            if (!list.Any())
-            {
-                Add(item);
-
-                return;
-            }
-
-            var segment = list.SkipWhile(x => x.Id != item.Id).FirstOrDefault();
-
-            HashMap.Remove(segment);
+            Remove(item);
             Add(item);
         }
 
@@ -204,9 +193,13 @@ namespace WebExpress.WebIndex.Storage
                 throw new ArgumentException();
             }
 
-            var segmnt = list.SkipWhile(x => x.Id != item.Id).FirstOrDefault();
+            var segment = list.SkipWhile(x => x.Id != item.Id).FirstOrDefault();
 
-            HashMap.Remove(segmnt);
+            HashMap.Remove(segment);
+            foreach (var chunk in segment.ChunkSegments)
+            {
+                Allocator.Free(chunk);
+            }
         }
 
         /// <summary>

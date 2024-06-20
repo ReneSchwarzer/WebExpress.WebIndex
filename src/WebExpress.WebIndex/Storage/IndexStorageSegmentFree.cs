@@ -18,11 +18,6 @@ namespace WebExpress.WebIndex.Storage
         public const uint SegmentSize = sizeof(uint) + sizeof(ulong);
 
         /// <summary>
-        /// Returns or sets the size of free space.
-        /// </summary>
-        public uint Lenght { get; set; }
-
-        /// <summary>
         /// Returns or sets the address of the following free segment or 0 if the last.
         /// </summary>
         public ulong SuccessorAddr { get; set; }
@@ -52,7 +47,6 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="reader">The reader for i/o operations.</param>
         public override void Read(BinaryReader reader)
         {
-            Lenght = reader.ReadUInt32();
             SuccessorAddr = reader.ReadUInt64();
         }
 
@@ -62,7 +56,6 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="writer">The writer for i/o operations.</param>
         public override void Write(BinaryWriter writer)
         {
-            writer.Write(Lenght);
             writer.Write(SuccessorAddr);
         }
 

@@ -25,14 +25,14 @@ namespace WebExpress.WebIndex.Test.WQL
         public void SingleCharacterFirst()
         {
             // test execution
-            var wql = Fixture.ExecuteWql("name~'?ame_123'");
+            var wql = Fixture.ExecuteWql("name~'?ame_12'");
             var res = wql?.Apply();
             var item = res?.FirstOrDefault();
 
             Assert.NotNull(res);
             Assert.NotNull(item);
             Assert.Equal(1, res.Count());
-            Assert.Equal("Name_123", item.Name);
+            Assert.Equal("Name_12", item.Name);
         }
 
         /// <summary>

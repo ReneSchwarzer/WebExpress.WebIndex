@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -39,6 +40,30 @@ namespace WebExpress.WebIndex.Storage
         /// Returns or sets the address of the next bucket element of a sorted list or 0 if there is no element.
         /// </summary>
         public ulong SuccessorAddr { get; set; }
+
+        /// <summary>
+        /// Returns the a sorted list of the chunk segments.
+        /// </summary>
+        public IEnumerable<IndexStorageSegmentChunk> ChunkSegments
+        {
+            get
+            {
+                if (NextChunkAddr == 0)
+                {
+                    yield break;
+                }
+
+                var addr = NextChunkAddr;
+
+                while (addr != 0)
+                {
+                    var item = Context.IndexFile.Read<IndexStorageSegmentChunk>(addr, Context);
+                    yield return item;
+
+                    addr = item.NextChunkAddr;
+                }
+            }
+        }
 
         /// <summary>
         /// Constructor
