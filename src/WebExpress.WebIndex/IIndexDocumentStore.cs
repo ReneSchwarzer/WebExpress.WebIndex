@@ -38,7 +38,12 @@ namespace WebExpress.WebIndex
         /// </summary>
         /// <typeparam name="T">The data type. This must have the IIndexData interface.</typeparam>
         /// <param name="item">The data to be removed from the document store.</param>
-        void Remove(T item);
+        void Delete(T item);
+
+        /// <summary>
+        /// Drop the index document store.
+        /// </summary>
+        void Drop();
 
         /// <summary>
         /// Returns the item.

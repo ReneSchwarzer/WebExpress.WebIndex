@@ -141,12 +141,12 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         /// <typeparam name="T">The data type. This must have the IIndexData interface.</typeparam>
         /// <param name="item">The data to be removed from the field.</param>
-        public void Remove(T item)
+        public void Delete(T item)
         {
             var value = Property?.GetValue(item)?.ToString();
             var terms = Context.TokenAnalyzer.Analyze(value?.ToString(), Culture);
 
-            Remove(item, terms);
+            Delete(item, terms);
         }
 
         /// <summary>
@@ -154,7 +154,7 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         /// <param name="item">The data to be removed from the field.</param>
         /// <param name="terms">The terms to add to the reverse index for the given item.</param>
-        public void Remove(T item, IEnumerable<IndexTermToken> terms)
+        public void Delete(T item, IEnumerable<IndexTermToken> terms)
         {
             foreach (var term in terms)
             {
@@ -191,6 +191,14 @@ namespace WebExpress.WebIndex.Storage
             IndexFile.Write(Term);
 
             IndexFile.Flush();
+        }
+
+        /// <summary>
+        /// Drop the reverse index.
+        /// </summary>
+        public void Drop()
+        {
+            IndexFile.Delete();
         }
 
         /// <summary>

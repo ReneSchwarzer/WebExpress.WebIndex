@@ -296,7 +296,7 @@ namespace WebExpress.WebIndex
                     var deleteTerms = currentTerms.Except(changedTerms);
                     var addTerms = changedTerms.Except(currentTerms);
 
-                    reverseIndex.Remove(item, deleteTerms);
+                    reverseIndex.Delete(item, deleteTerms);
                     reverseIndex.Add(item, addTerms);
                 }
             }
@@ -347,7 +347,7 @@ namespace WebExpress.WebIndex
                         var deleteTerms = currentTerms.Except(changedTerms);
                         var addTerms = changedTerms.Except(currentTerms);
 
-                        index.Remove(item, deleteTerms);
+                        index.Delete(item, deleteTerms);
                         index.Add(item, addTerms);
                     }
 
@@ -372,11 +372,11 @@ namespace WebExpress.WebIndex
             {
                 if (GetReverseIndex(property) is IIndexReverse<T> reverseIndex)
                 {
-                    reverseIndex.Remove(item);
+                    reverseIndex.Delete(item);
                 }
             }
 
-            DocumentStore.Remove(item);
+            DocumentStore.Delete(item);
         }
 
         /// <summary>
@@ -393,14 +393,14 @@ namespace WebExpress.WebIndex
 
             var tasks = new List<Task>
             {
-                Task.Run(() => DocumentStore.Remove(item))
+                Task.Run(() => DocumentStore.Delete(item))
             };
 
             foreach (var property in typeof(T).GetProperties())
             {
                 if (GetReverseIndex(property) is IIndexReverse<T> reverseIndex)
                 {
-                    tasks.Add(Task.Run(() => reverseIndex.Remove(item)));
+                    tasks.Add(Task.Run(() => reverseIndex.Delete(item)));
                 }
             }
 
@@ -419,6 +419,46 @@ namespace WebExpress.WebIndex
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Drop all index documents of type T.
+        /// </summary>
+        public void Drop()
+        {
+            foreach (var property in typeof(T).GetProperties())
+            {
+                if (GetReverseIndex(property) is IIndexReverse<T> reverseIndex)
+                {
+                    reverseIndex.Drop();
+                }
+            }
+
+            DocumentStore.Drop();
+            Schema.Drop();
+        }
+
+        /// <summary>
+        /// Asynchronously drops all index documents of type T.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public async Task DropAsync()
+        {
+            var tasks = new List<Task>
+            {
+                Task.Run(() => DocumentStore.Drop()),
+                Task.Run(() => Schema.Drop())
+            };
+
+            foreach (var property in typeof(T).GetProperties())
+            {
+                if (GetReverseIndex(property) is IIndexReverse<T> reverseIndex)
+                {
+                    tasks.Add(Task.Run(() => reverseIndex.Drop()));
+                }
+            }
+
+            await Task.WhenAll(tasks);
         }
 
         /// <summary>

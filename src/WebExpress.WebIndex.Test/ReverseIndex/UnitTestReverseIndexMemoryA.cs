@@ -114,7 +114,7 @@ namespace WebExpress.WebIndex.Test.ReverseIndex
             var randomItem = items.Skip(new Random().Next() % items.Count()).FirstOrDefault();
 
             // test execution
-            reverseIndex.Remove(Fixture.TestData.Where(x => x.Id == randomItem).FirstOrDefault());
+            reverseIndex.Delete(Fixture.TestData.Where(x => x.Id == randomItem).FirstOrDefault());
 
             items = reverseIndex.Retrieve("Helena", new IndexRetrieveOptions());
             Assert.Equal(3, items.Count());
@@ -145,7 +145,7 @@ namespace WebExpress.WebIndex.Test.ReverseIndex
             reverseIndex.Add(randomItem, token.TakeLast(1));
 
             // test execution
-            reverseIndex.Remove(randomItem, token.TakeLast(1));
+            reverseIndex.Delete(randomItem, token.TakeLast(1));
 
             var items = reverseIndex.Retrieve("aurora", new IndexRetrieveOptions());
             Assert.Empty(items);

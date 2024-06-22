@@ -152,7 +152,7 @@ namespace WebExpress.WebIndex.Test.DocumentStore
             }
 
             // test execution
-            documentStore.Remove(Fixture.TestData[0]);
+            documentStore.Delete(Fixture.TestData[0]);
             var all = documentStore.All;
 
             Assert.Equal(all.Select(x => x.Id).OrderBy(x => x), Fixture.TestData.Where(x => x.Id != Fixture.TestData[0].Id).Select(x => x.Id).OrderBy(x => x));

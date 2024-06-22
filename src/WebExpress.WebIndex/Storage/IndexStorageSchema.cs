@@ -162,6 +162,16 @@ namespace WebExpress.WebIndex.Storage
         }
 
         /// <summary>
+        /// Delete this file from storage.
+        /// </summary>
+        public void Drop()
+        {
+            Dispose();
+
+            File.Delete(FileName);
+        }
+
+        /// <summary>
         /// Is called to free up resources.
         /// </summary>
         public virtual void Dispose()

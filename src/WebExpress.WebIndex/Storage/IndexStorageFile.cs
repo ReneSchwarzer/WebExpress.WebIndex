@@ -117,6 +117,16 @@ namespace WebExpress.WebIndex.Storage
         }
 
         /// <summary>
+        /// Delete this file from storage.
+        /// </summary>
+        public void Delete()
+        {
+            Dispose();
+
+            File.Delete(FileName);
+        }
+
+        /// <summary>
         /// Performs cache invalidation for a specific IndexStorageSegment object.
         /// </summary>
         /// <param name="segment">The IndexStorageSegment object to be invalidated.</param>

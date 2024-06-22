@@ -39,6 +39,14 @@
         }
 
         /// <summary>
+        /// Delete this file from storage.
+        /// </summary>
+        public void Drop()
+        {
+            Dispose();
+        }
+
+        /// <summary>
         /// Is called to free up resources.
         /// </summary>
         public virtual void Dispose()

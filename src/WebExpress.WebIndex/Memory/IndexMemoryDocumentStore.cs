@@ -62,7 +62,7 @@ namespace WebExpress.WebIndex.Memory
                 return;
             }
 
-            Remove(item);
+            Delete(item);
             Add(item);
         }
 
@@ -70,12 +70,19 @@ namespace WebExpress.WebIndex.Memory
         /// Remove an item.
         /// </summary>
         /// <param name="item">The item.</param>
-        public void Remove(T item)
+        public void Delete(T item)
         {
             if (ContainsKey(item.Id))
             {
                 Remove(item.Id, out _);
             }
+        }
+
+        /// <summary>
+        /// Drop the index document store.
+        /// </summary>
+        public void Drop()
+        {
         }
 
         /// <summary>

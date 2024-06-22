@@ -337,8 +337,8 @@ methods and properties of this class:
 - `void Create<T>(CultureInfo culture, IndexType type)`: Registers a data type in the index.
 - `void Close<T>()`: Closes the index file of type T.
 - `Task CloseAsync<T>()`: Asynchronously closes the index file of type T.
-- `void Drop<T>()`: Removes all index documents of type T.
-- `Task DropAsync<T>()`: Asynchronously removes all index documents of type T.
+- `void Drop<T>()`: Drops all index documents of type T.
+- `Task DropAsync<T>()`: Asynchronously drops all index documents of type T.
 - `void Insert<T>(T item)`: Adds an item to the index.
 - `Task InsertAsync<T>(T item)`: Performs an asynchronous addition of an item in the index.
 - `void Update<T>(T item)`: Updates an item in the index.

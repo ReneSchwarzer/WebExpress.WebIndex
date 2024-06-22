@@ -165,35 +165,37 @@ namespace WebExpress.WebIndex
         }
 
         /// <summary>
-        /// Removes all index documents of type T.
+        /// Drops all index documents of type T.
         /// </summary>
         /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
         public void Drop<T>() where T : IIndexItem
         {
-            if (GetIndexDocument<T>() != null)
+            if (GetIndexDocument<T>() is IIndexDocument<T> document)
             {
-                Documents.Remove(typeof(T), out IIndexDocument document);
+                Documents.Remove(typeof(T), out _);
 
+                document.Drop();
                 document.SchemaChanged -= OnSchemaChanged;
-                document.Dispose();
             }
         }
 
         /// <summary>
-        /// Asynchronously removes all index documents of type T.
+        /// Asynchronously drops all index documents of type T.
         /// </summary>
         /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
         /// <returns>A task representing the asynchronous operation.</returns>
         public async Task DropAsync<T>() where T : IIndexItem
         {
-            if (GetIndexDocument<T>() != null)
+            if (GetIndexDocument<T>() is IIndexDocument<T> document)
             {
                 await Task.Run(() =>
                 {
-                    Documents.Remove(typeof(T), out IIndexDocument document);
+                    Documents.Remove(typeof(T), out _);
 
+                    var res = document.DropAsync();
                     document.SchemaChanged -= OnSchemaChanged;
-                    document.Dispose();
+
+                    res.Wait();
                 });
             }
         }

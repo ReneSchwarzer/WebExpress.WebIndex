@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace WebExpress.WebIndex
@@ -80,10 +79,21 @@ namespace WebExpress.WebIndex
         Task RemoveAsync(T item);
 
         /// <summary>
+        /// Drop all index documents of type T.
+        /// </summary>
+        void Drop();
+
+        /// <summary>
+        /// Asynchronously drops all index documents of type T.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        Task DropAsync();
+
+        /// <summary>
         /// Removed all data from the index.
         /// </summary>
         void Clear();
-        
+
         /// <summary>
         /// Removed all data from the index asynchronously.
         /// </summary>

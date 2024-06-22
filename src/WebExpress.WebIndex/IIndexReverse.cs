@@ -13,7 +13,7 @@ namespace WebExpress.WebIndex
         /// <summary>
         /// Returns all items.
         /// </summary>
-        IEnumerable<Guid> All {get;}
+        IEnumerable<Guid> All { get; }
 
         /// <summary>
         /// Adds a item to the index.
@@ -32,18 +32,23 @@ namespace WebExpress.WebIndex
         /// The data to be removed from the index.
         /// </summary>
         /// <param name="item">The data to be removed from the index.</param>
-        void Remove(T item);
+        void Delete(T item);
 
         /// <summary>
         /// The data to be removed from the index.
         /// </summary>
         /// <param name="terms">The terms to add to the reverse index for the given item.</param>
-        void Remove(T item, IEnumerable<IndexTermToken> terms);
+        void Delete(T item, IEnumerable<IndexTermToken> terms);
 
         /// <summary>
         /// Removed all data from the index.
         /// </summary>
         void Clear();
+
+        /// <summary>
+        /// Drop the reverse index.
+        /// </summary>
+        void Drop();
 
         /// <summary>
         /// Return all items for a given string.

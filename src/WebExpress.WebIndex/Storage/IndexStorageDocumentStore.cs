@@ -155,7 +155,7 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="item">The item.</param>
         public void Update(T item)
         {
-            Remove(item);
+            Delete(item);
             Add(item);
         }
 
@@ -184,7 +184,7 @@ namespace WebExpress.WebIndex.Storage
         /// Remove an item.
         /// </summary>
         /// <param name="item">The item.</param>
-        public void Remove(T item)
+        public void Delete(T item)
         {
             var list = HashMap.GetBucket(item.Id);
 
@@ -200,6 +200,14 @@ namespace WebExpress.WebIndex.Storage
             {
                 Allocator.Free(chunk);
             }
+        }
+
+        /// <summary>
+        /// Drop the index document store.
+        /// </summary>
+        public void Drop()
+        {
+            IndexFile.Delete();
         }
 
         /// <summary>

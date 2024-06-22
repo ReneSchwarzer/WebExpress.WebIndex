@@ -11,6 +11,11 @@ namespace WebExpress.WebIndex
         /// Returns the index context.
         /// </summary>
         IIndexContext Context { get; }
+
+        /// <summary>
+        /// Delete this file from storage.
+        /// </summary>
+        void Drop();
     }
 
     /// <summary>
