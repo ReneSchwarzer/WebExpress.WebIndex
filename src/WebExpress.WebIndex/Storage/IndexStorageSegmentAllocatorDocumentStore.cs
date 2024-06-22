@@ -11,7 +11,7 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Returns the amount of space required on the storage device.
         /// </summary>
-        public new const uint SegmentSize = IndexStorageSegmentAllocator.SegmentSize + sizeof(ulong);
+        public new const uint SegmentSize = IndexStorageSegmentAllocator.SegmentSize + sizeof(ulong) + sizeof(ulong);
 
         /// <summary>
         /// Returns or sets the adress pointer to the free item list.
