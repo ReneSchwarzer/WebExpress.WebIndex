@@ -27,10 +27,10 @@ namespace WebExpress.WebIndex.Test.DocumentStore
         public void Create()
         {
             // preconditions
-            var context = new IndexContext();
+            Preconditions();
 
             // test execution
-            var documentStore = new IndexStorageDocumentStore<UnitTestIndexTestDocumentA>(context, 5);
+            var documentStore = new IndexStorageDocumentStore<UnitTestIndexTestDocumentA>(Context, 5);
 
             // postconditions
             documentStore.Dispose();

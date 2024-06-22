@@ -263,7 +263,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
         {
             var stopWatch = new Stopwatch();
 
-            var itemCount = Enumerable.Range(1, 1).Select(x => x * 100);
+            var itemCount = Enumerable.Range(1, 1).Select(x => x * 10000);
             var wordCount = Enumerable.Range(1, 1).Select(x => x * 100);
             var vocabulary = Enumerable.Range(1, 1).Select(x => x * 20000);
             var wordLength = Enumerable.Range(1, 1).Select(x => x * 15);
