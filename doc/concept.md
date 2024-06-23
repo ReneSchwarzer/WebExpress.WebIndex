@@ -332,8 +332,7 @@ methods and properties of this class:
 - `void Initialization(IIndexContext context)`: Initialization of the IndexManager.
 - `void Register(IIndexPipeStage pipeStage)`: Registers a pipe state for processing the tokens.
 - `void ReIndex<T>(IEnumerable<T> items)`: Reindexing of the index.
-- `Task ReIndexAsync<T>(IEnumerable<T> items, IProgress<int> progress, CancellationToken token)`: Performs an asynchronous reindexing 
-   of a collection of index items.
+- `Task ReIndexAsync<T>(IEnumerable<T> items, IProgress<int> progress, CancellationToken token)`: Performs an asynchronous reindexing of a collection of index items.
 - `void Create<T>(CultureInfo culture, IndexType type)`: Registers a data type in the index.
 - `void Close<T>()`: Closes the index file of type T.
 - `Task CloseAsync<T>()`: Asynchronously closes the index file of type T.
@@ -344,6 +343,8 @@ methods and properties of this class:
 - `void Update<T>(T item)`: Updates an item in the index.
 - `Task UpdateAsync<T>(T item)`: Performs an asynchronous update of an item in the index.
 - `void Delete<T>(T item)`: Removes an item from the index.
+- `uint Count<T>()`: Counts the number of items of the index.
+- `Task<int> CountAsync<T>()`:  Performs an asynchronous determination of the number of elements.
 - `Task DeleteAsync<T>(T item)`: Removes an item from the index asynchronously.
 - `void Clear<T>()`: Removed all data from the index.
 - `Task ClearAsync<T>()`: Removed all data from the index asynchronously.

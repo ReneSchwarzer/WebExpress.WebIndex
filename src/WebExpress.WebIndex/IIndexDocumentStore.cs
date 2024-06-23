@@ -41,6 +41,12 @@ namespace WebExpress.WebIndex
         void Delete(T item);
 
         /// <summary>
+        /// Returns the number of items.
+        /// </summary>
+        /// <returns>The number of items.</returns>
+        uint Count();
+
+        /// <summary>
         /// Drop the index document store.
         /// </summary>
         void Drop();

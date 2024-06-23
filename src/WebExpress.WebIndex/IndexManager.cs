@@ -255,6 +255,36 @@ namespace WebExpress.WebIndex
         }
 
         /// <summary>
+        /// Returns the number of items.
+        /// </summary>
+        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
+        /// <returns>The number of items.</returns>
+        public uint Count<T>() where T : IIndexItem
+        {
+            if (GetIndexDocument<T>() is IIndexDocument<T> document)
+            {
+                return document.Count();
+            }
+
+            return 0;
+        }
+
+        /// <summary>
+        /// Performs an asynchronous determination of the number of elements.
+        /// </summary>
+        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
+        /// <returns>A task representing the asynchronous operation with the number of items.</returns>
+        public async Task<uint> CountAsync<T>() where T : IIndexItem
+        {
+            if (GetIndexDocument<T>() is IIndexDocument<T> document)
+            {
+                return await document.CountAsync();
+            }
+
+            return 0;
+        }
+
+        /// <summary>
         /// Removes an item from the index.
         /// </summary>
         /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>

@@ -165,6 +165,7 @@ internal class WiApp
                         parser.Register("update", new CommandType() { Action = CommandAction.Update, Secret = false });
                         parser.Register("d", new CommandType() { Action = CommandAction.Delete, Secret = true });
                         parser.Register("delete", new CommandType() { Action = CommandAction.Delete, Secret = false });
+                        parser.Register("count", new CommandType() { Action = CommandAction.Count, Secret = false });
                         break;
                     }
                 case ProgrammState.OpenIndexField:
@@ -267,6 +268,11 @@ internal class WiApp
                 case CommandAction.Delete:
                     {
                         OnDeleteCommand(command);
+                        break;
+                    }
+                case CommandAction.Count:
+                    {
+                        OnCountCommand(command);
                         break;
                     }
                 case CommandAction.WQL:
@@ -641,6 +647,15 @@ internal class WiApp
     private void OnDeleteCommand(Command command)
     {
         PrintError("Sorry! Not implemented at the moment.");
+    }
+
+    /// <summary>
+    /// Execute the count command.
+    /// </summary>
+    /// <param name="command">The command to be executed.</param>
+    private void OnCountCommand(Command command)
+    {
+        Console.WriteLine(ViewModel.CurrentObjectType.Count);
     }
 
     /// <summary>

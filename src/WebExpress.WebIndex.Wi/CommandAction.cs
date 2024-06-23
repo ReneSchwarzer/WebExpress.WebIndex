@@ -86,6 +86,11 @@
         Update,
 
         /// <summary>
+        /// Returns the number of items of the index.
+        /// </summary>
+        Count,
+
+        /// <summary>
         /// Delete an item from the index.
         /// </summary>
         Delete,
@@ -139,6 +144,7 @@
                 CommandAction.Import => "Import from a file.",
                 CommandAction.Insert => "Inserting an item into the index.",
                 CommandAction.Update => "Update an item of the index.",
+                CommandAction.Count => "Counts the number of items of the index.",
                 CommandAction.Delete => "Delete an item from the index.",
                 CommandAction.Info => "Displays info about the application.",
                 CommandAction.Help => "Displays help with the currently available commands.",

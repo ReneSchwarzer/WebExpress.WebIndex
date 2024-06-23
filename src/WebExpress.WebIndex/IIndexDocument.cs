@@ -79,6 +79,18 @@ namespace WebExpress.WebIndex
         Task RemoveAsync(T item);
 
         /// <summary>
+        /// Returns the number of items.
+        /// </summary>
+        /// <returns>The number of items.</returns>
+        uint Count();
+
+        /// <summary>
+        /// Performs an asynchronous determination of the number of elements.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation with the number of items.</returns>
+        Task<uint> CountAsync();
+
+        /// <summary>
         /// Drop all index documents of type T.
         /// </summary>
         void Drop();

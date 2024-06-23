@@ -19,7 +19,7 @@ namespace WebExpress.WebIndex.Memory
         /// <summary>
         /// Returns the predicted capacity (number of items to store) of the document store.
         /// </summary>
-        public uint Capacity => (uint)Count;
+        public uint Capacity => (uint)base.Count;
 
         /// <summary>
         /// Returns the index context.
@@ -76,6 +76,15 @@ namespace WebExpress.WebIndex.Memory
             {
                 Remove(item.Id, out _);
             }
+        }
+
+        /// <summary>
+        /// Returns the number of items.
+        /// </summary>
+        /// <returns>The number of items.</returns>
+        public new uint Count()
+        {
+            return (uint)base.Count;
         }
 
         /// <summary>

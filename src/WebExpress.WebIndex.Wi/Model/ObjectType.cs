@@ -22,9 +22,14 @@ namespace WebExpress.WebIndex.Wi.Model
         public IEnumerable<Field> Fields { get; set; } = [];
 
         /// <summary>
-        /// Gets a collection of stored data objects.
+        /// Returns a collection of stored data objects.
         /// </summary>
         public List<object> All => new(WiApp.ViewModel.IndexManager.All(BuildRuntimeClass()));
+
+        /// <summary>
+        /// Returns the number of items of the index.
+        /// </summary>
+        public uint Count => WiApp.ViewModel.IndexManager.Count(BuildRuntimeClass());
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ObjectType"/> class.

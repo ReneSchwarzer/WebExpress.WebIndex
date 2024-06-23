@@ -101,10 +101,23 @@ namespace WebExpress.WebIndex.Wi
         }
 
         /// <summary>
+        /// Counts the number of items of the index.
+        /// </summary>
+        /// <param name="dataType">The data type. This must have the IIndexItem interface.</param>
+        /// <returns>The number of items.</returns>
+        public uint Count(Type dataType)
+        {
+            var genericMethod = typeof(IndexManager).GetMethod("Count", 1, []);
+            var specificMethod = genericMethod.MakeGenericMethod(dataType);
+
+            return (uint)specificMethod.Invoke(this, []);
+        }
+
+        /// <summary>
         /// Returns all documents from the index.
         /// </summary>
         /// <param name="dataType">The data type. This must have the IIndexItem interface.</param>
-        /// <returns>An enumeration of the documents</returns>
+        /// <returns>An enumeration of the documents.</returns>
         public IEnumerable<object> All(Type dataType)
         {
             var genericMethod = typeof(IndexManager).GetMethod("All", 1, []);

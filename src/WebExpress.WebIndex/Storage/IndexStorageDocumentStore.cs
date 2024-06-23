@@ -203,6 +203,15 @@ namespace WebExpress.WebIndex.Storage
         }
 
         /// <summary>
+        /// Returns the number of items.
+        /// </summary>
+        /// <returns>The number of items.</returns>
+        public uint Count()
+        {
+            return Statistic.Count;
+        }
+
+        /// <summary>
         /// Drop the index document store.
         /// </summary>
         public void Drop()

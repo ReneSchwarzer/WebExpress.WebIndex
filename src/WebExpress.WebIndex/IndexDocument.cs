@@ -406,6 +406,25 @@ namespace WebExpress.WebIndex
 
             await Task.WhenAll(tasks);
         }
+
+        /// <summary>
+        /// Returns the number of items.
+        /// </summary>
+        /// <returns>The number of items.</returns>
+        public new uint Count()
+        {
+            return DocumentStore.Count();
+        }
+
+        /// <summary>
+        /// Performs an asynchronous determination of the number of elements.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation with the number of items.</returns>
+        public async Task<uint> CountAsync()
+        {
+            return await Task.Run(() => DocumentStore.Count());
+        }
+
         /// <summary>
         /// Returns an index field based on its name.
         /// </summary>
