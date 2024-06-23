@@ -15,22 +15,10 @@ namespace WebExpress.WebIndex.Storage
         IndexStorageContext Context { get; }
 
         /// <summary>
-        /// Returns the amount of space required on the storage device.
-        /// </summary>
-        uint Size { get; }
-
-        /// <summary>
-        /// Assigns an address to the segment.
-        /// </summary>
-        /// <<param name="addr">The address of the segment.</param>
-        void OnAllocated(ulong addr);
-
-        /// <summary>
         /// Reads the record from the storage medium.
         /// </summary>
         /// <param name="reader">The reader for i/o operations.</param>
-        /// <param name="addr">The address of the segment.</param>
-        void Read(BinaryReader reader, ulong addr);
+        void Read(BinaryReader reader);
 
         /// <summary>
         /// Writes the record to the storage medium.

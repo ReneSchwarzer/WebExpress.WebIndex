@@ -1,6 +1,6 @@
 ﻿namespace WebExpress.WebIndex.Test
 {
-    internal class IndexManagerTest : IndexManager
+    internal class IndexManagerTest : WebIndex.IndexManager
     {
         /// <summary>
         /// Constructor

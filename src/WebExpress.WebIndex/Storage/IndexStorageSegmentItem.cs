@@ -1,73 +1,91 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace WebExpress.WebIndex.Storage
 {
-    public class IndexStorageSegmentItem : IndexStorageSegment, IIndexStorageSegmentListItem
+    /// <summary>
+    /// The items are stored in a segment. The size of the segment is variable and is determined by the size of the compressed 
+    /// item instance. The segment are stored in the variable memory area of the IndexDocumentStore.
+    /// </summary>
+    public class IndexStorageSegmentItem : IndexStorageSegment, IIndexStorageSegmentListItem, IIndexStorageSegmentChunk
     {
         /// <summary>
-        /// Returns or sets the address of the following term.
+        /// Returns the amount of space required on the storage device.
         /// </summary>
-        public ulong SuccessorAddr { get; set; }
-
-        /// <summary>
-        /// Returns the number of characters in the term.
-        /// </summary>
-        public uint Length => (uint)Data.Length;
-
-        /// <summary>
-        /// Returns or sets the number of times the term is used (postings).
-        /// </summary>
-        public uint Fequency { get; set; }
+        public const uint SegmentSize = 16 + sizeof(uint) + IndexStorageSegmentChunk.ChunkSize + sizeof(ulong) + sizeof(ulong);
 
         /// <summary>
         /// Returns or sets the id of the item.
         /// </summary>
-        public int Id { get; set; }
+        public Guid Id { get; set; }
 
         /// <summary>
-        /// Returns or sets the item data.
+        /// Returns the number of characters in the term.
         /// </summary>
-        public byte[] Data { get; set; }
+        public uint Length => (uint)DataChunk.Length;
 
         /// <summary>
-        /// Returns the amount of space required on the storage device.
+        /// Returns or sets the item data. 
         /// </summary>
-        public override uint Size => sizeof(ulong) + sizeof(uint) + sizeof(uint) + sizeof(int) + Length;
+        public byte[] DataChunk { get; set; }
+
+        /// <summary>
+        /// Returns or sets the address of the next chunk element of a list or 0 if there is no element.
+        /// </summary>
+        public ulong NextChunkAddr { get; set; }
+
+        /// <summary>
+        /// Returns or sets the address of the next bucket element of a sorted list or 0 if there is no element.
+        /// </summary>
+        public ulong SuccessorAddr { get; set; }
+
+        /// <summary>
+        /// Returns the a sorted list of the chunk segments.
+        /// </summary>
+        public IEnumerable<IndexStorageSegmentChunk> ChunkSegments
+        {
+            get
+            {
+                if (NextChunkAddr == 0)
+                {
+                    yield break;
+                }
+
+                var addr = NextChunkAddr;
+
+                while (addr != 0)
+                {
+                    var item = Context.IndexFile.Read<IndexStorageSegmentChunk>(addr, Context);
+                    yield return item;
+
+                    addr = item.NextChunkAddr;
+                }
+            }
+        }
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="context">The reference to the context of the index.</param>
-        public IndexStorageSegmentItem(IndexStorageContext context)
-            : base(context)
+        /// <param name="addr">The adress of the segment.</param>
+        public IndexStorageSegmentItem(IndexStorageContext context, ulong addr)
+            : base(context, addr)
         {
-        }
-
-        /// <summary>
-        /// Assigns an address to the segment.
-        /// </summary>
-        /// <param name="addr">The address of the segment.</param>
-        public override void OnAllocated(ulong addr)
-        {
-            base.OnAllocated(addr);
         }
 
         /// <summary>
         /// Reads the record from the storage medium.
         /// </summary>
         /// <param name="reader">The reader for i/o operations.</param>
-        /// <param name="addr">The address of the segment.</param>
-        public override void Read(BinaryReader reader, ulong addr)
+        public override void Read(BinaryReader reader)
         {
-            Addr = addr;
-            reader.BaseStream.Seek((long)Addr, SeekOrigin.Begin);
-
-            SuccessorAddr = reader.ReadUInt64();
-            Fequency = reader.ReadUInt32();
-            Id = reader.ReadInt32();
+            Id = new Guid(reader.ReadBytes(16));
             var length = reader.ReadUInt32();
-            Data = reader.ReadBytes((int)length);
+            DataChunk = reader.ReadBytes((int)Math.Min(length, IndexStorageSegmentChunk.ChunkSize));
+            NextChunkAddr = reader.ReadUInt64();
+            SuccessorAddr = reader.ReadUInt64();
         }
 
         /// <summary>
@@ -76,13 +94,11 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="writer">The writer for i/o operations.</param>
         public override void Write(BinaryWriter writer)
         {
-            writer.BaseStream.Seek((long)Addr, SeekOrigin.Begin);
-
-            writer.Write(SuccessorAddr);
-            writer.Write(Fequency);
-            writer.Write(Id);
+            writer.Write(Id.ToByteArray());
             writer.Write(Length);
-            writer.Write(Data);
+            writer.Write(DataChunk);
+            writer.Write(NextChunkAddr);
+            writer.Write(SuccessorAddr);
         }
 
         /// <summary>
@@ -102,7 +118,7 @@ namespace WebExpress.WebIndex.Storage
         {
             if (obj is IndexStorageSegmentItem item)
             {
-                return Data.SequenceEqual(item.Data) ? 0 : -1;
+                return DataChunk.SequenceEqual(item.DataChunk) ? 0 : -1;
             }
 
             throw new System.ArgumentException();

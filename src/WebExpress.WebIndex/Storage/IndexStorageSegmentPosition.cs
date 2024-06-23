@@ -2,12 +2,18 @@
 
 namespace WebExpress.WebIndex.Storage
 {
+    /// <summary>
+    /// The position segments form a linked list containing the position information of the associated terms. The position of a 
+    /// term refers to its original occurrence in the field value of a document. Each position segment has a fixed size and 
+    /// is created in the variable data area of the reverse index. This structure allows for efficient searching and retrieval 
+    /// of terms based on their position in the documents.
+    /// </summary>
     public class IndexStorageSegmentPosition : IndexStorageSegment, IIndexStorageSegmentListItem
     {
         /// <summary>
-        /// Returns or sets the address of the following position.
+        /// Returns the amount of space required on the storage device.
         /// </summary>
-        public ulong SuccessorAddr { get; set; }
+        public const uint SegmentSize = sizeof(ulong) + sizeof(int);
 
         /// <summary>
         /// Returns or sets the position.
@@ -15,16 +21,17 @@ namespace WebExpress.WebIndex.Storage
         public uint Position { get; set; }
 
         /// <summary>
-        /// Returns the amount of space required on the storage device.
+        /// Returns or sets the address of the following position.
         /// </summary>
-        public override uint Size => sizeof(ulong) + sizeof(int);
+        public ulong SuccessorAddr { get; set; }
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="context">The reference to the context of the index.</param>
-        public IndexStorageSegmentPosition(IndexStorageContext context)
-            : base(context)
+        /// <param name="addr">The address of the segment.</param>
+        public IndexStorageSegmentPosition(IndexStorageContext context, ulong addr)
+            : base(context, addr)
         {
         }
 
@@ -32,14 +39,10 @@ namespace WebExpress.WebIndex.Storage
         /// Reads the record from the storage medium.
         /// </summary>
         /// <param name="reader">The reader for i/o operations.</param>
-        /// <param name="addr">The address of the segment.</param>
-        public override void Read(BinaryReader reader, ulong addr)
+        public override void Read(BinaryReader reader)
         {
-            Addr = addr;
-            reader.BaseStream.Seek((long)Addr, SeekOrigin.Begin);
-
-            SuccessorAddr = reader.ReadUInt64();
             Position = reader.ReadUInt32();
+            SuccessorAddr = reader.ReadUInt64();
         }
 
         /// <summary>
@@ -48,10 +51,8 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="writer">The writer for i/o operations.</param>
         public override void Write(BinaryWriter writer)
         {
-            writer.BaseStream.Seek((long)Addr, SeekOrigin.Begin);
-
-            writer.Write(SuccessorAddr);
             writer.Write(Position);
+            writer.Write(SuccessorAddr);
         }
 
         /// <summary>

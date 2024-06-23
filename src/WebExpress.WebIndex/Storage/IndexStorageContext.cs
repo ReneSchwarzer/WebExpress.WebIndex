@@ -1,7 +1,13 @@
 ﻿namespace WebExpress.WebIndex.Storage
 {
+    /// <summary>
+    /// Provides a context for managing an index storage.
+    /// </summary>
     public class IndexStorageContext
     {
+        /// <summary>
+        /// The index storage instance.
+        /// </summary>
         private IIndexStorage Index { get; set; }
 
         /// <summary>
@@ -25,7 +31,7 @@
         public IndexStorageSegmentStatistic Statistic => Index.Statistic;
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the IndexStorageContext class.
         /// </summary>
         /// <param name="index">The index.</param>
         public IndexStorageContext(IIndexStorage index)

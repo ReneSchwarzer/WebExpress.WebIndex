@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace WebExpress.WebIndex.Wql
@@ -12,7 +13,7 @@ namespace WebExpress.WebIndex.Wql
         /// Applies the filter to the index.
         /// </summary>
         /// <returns>The data ids from the index.</returns>
-        IEnumerable<int> Apply();
+        IEnumerable<Guid> Apply();
 
         /// <summary>
         /// Applies the filter to the unfiltered data object.

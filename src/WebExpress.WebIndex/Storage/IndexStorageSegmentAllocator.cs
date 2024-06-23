@@ -5,70 +5,55 @@ namespace WebExpress.WebIndex.Storage
     /// <summary>
     /// The Allocator is a mechanism for reserving and freeing up space. 
     /// </summary>
-    public class IndexStorageSegmentAllocator : IndexStorageSegment
+    public abstract class IndexStorageSegmentAllocator : IndexStorageSegment
     {
-        /// <summary>
-        /// Returns or sets the next free memory address.
-        /// </summary>
-        private ulong NextFreeAddr { get; set; }
-
         /// <summary>
         /// Returns the amount of space required on the storage device.
         /// </summary>
-        public override uint Size => sizeof(ulong);
+        public const uint SegmentSize = sizeof(ulong);
+
+        /// <summary>
+        /// Returns or sets the next free address.
+        /// </summary>
+        public ulong NextFreeAddr { get; protected set; } = 0ul;
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="context">The reference to the context of the index.</param>
-        public IndexStorageSegmentAllocator(IndexStorageContext context)
-            : base(context)
+        /// <param name="addr">The address of the segment.</param>
+        public IndexStorageSegmentAllocator(IndexStorageContext context, ulong addr)
+            : base(context, addr)
         {
-            Addr = IndexStorageSegmentHeader.SegmentSize;
-            NextFreeAddr = Addr + Size;
+        }
+
+        /// <summary>
+        /// Initialization
+        /// </summary>
+        public virtual void Initialization()
+        {
+            NextFreeAddr = Context.IndexFile.NextFreeAddr;
         }
 
         /// <summary>
         /// Allocate the memory.
         /// </summary>
-        /// <param name="segment">The segment determines how much memory should be reserved.</param>
+        /// <param name="segment">The size determines how much memory should be reserved.</param>
         /// <returns>The start address of the reserved storage area.</returns>
-        public ulong Alloc(IIndexStorageSegment segment)
-        {
-            if (segment.Addr != 0)
-            {
-                // address has already been assigned.
-                return segment.Addr;
-            }
-
-            var addr = NextFreeAddr;
-
-            segment.OnAllocated(addr);
-
-            NextFreeAddr += segment.Size;
-
-            return addr;
-        }
+        public abstract ulong Alloc(uint size);
 
         /// <summary>
         /// Allocate the memory.
         /// </summary>
         /// <param name="segment">The segment determines how much memory should be reserved.</param>
-        public void Free(IIndexStorageSegment segment)
-        {
-            segment.OnAllocated(0);
-        }
+        public abstract void Free(IIndexStorageSegment segment);
 
         /// <summary>
         /// Reads the record from the storage medium.
         /// </summary>
         /// <param name="reader">The reader for i/o operations.</param>
-        /// <param name="addr">The address of the segment.</param>
-        public override void Read(BinaryReader reader, ulong addr)
+        public override void Read(BinaryReader reader)
         {
-            Addr = addr;
-            reader.BaseStream.Seek((long)Addr, SeekOrigin.Begin);
-
             NextFreeAddr = reader.ReadUInt64();
         }
 
@@ -78,9 +63,16 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="writer">The writer for i/o operations.</param>
         public override void Write(BinaryWriter writer)
         {
-            writer.BaseStream.Seek((long)Addr, SeekOrigin.Begin);
-
             writer.Write(NextFreeAddr);
+        }
+
+        /// <summary>
+        /// Converts the current object to a string.
+        /// </summary>
+        /// <returns>A string that represents the current object.</returns>
+        public override string ToString()
+        {
+            return base.ToString();
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using WebExpress.WebIndex.Wql.Condition;
 
@@ -25,9 +26,9 @@ namespace WebExpress.WebIndex.Wql
         /// Applies the filter to the index.
         /// </summary>
         /// <returns>The data from the index.</returns>
-        public virtual IEnumerable<int> Apply()
+        public virtual IEnumerable<Guid> Apply()
         {
-            return Condition?.Apply() ?? Enumerable.Empty<int>();
+            return Condition?.Apply() ?? [];
         }
 
         /// <summary>

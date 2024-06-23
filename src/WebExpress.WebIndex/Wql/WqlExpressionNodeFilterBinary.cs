@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace WebExpress.WebIndex.Wql
@@ -34,9 +35,9 @@ namespace WebExpress.WebIndex.Wql
         /// Applies the filter to the index.
         /// </summary>
         /// <returns>The data ids from the index.</returns>
-        public override IEnumerable<int> Apply()
+        public override IEnumerable<Guid> Apply()
         {
-            var filtered = Enumerable.Empty<int>();
+            var filtered = Enumerable.Empty<Guid>();
             var leftFiltered = LeftFilter.Apply();
             var rightFiltered = RightFilter.Apply();
 

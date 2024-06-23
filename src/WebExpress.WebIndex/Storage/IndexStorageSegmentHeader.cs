@@ -5,42 +5,37 @@ namespace WebExpress.WebIndex.Storage
     public class IndexStorageSegmentHeader : IndexStorageSegment
     {
         /// <summary>
+        /// Returns the amount of space required on the storage device.
+        /// </summary>
+        public const uint SegmentSize = 3;
+
+        /// <summary>
         /// Returns or sets the file identifire.
         /// </summary>
         public string Identifier { get; internal set; }
 
         /// <summary>
-        /// Returns the amount of space required on the storage device.
+        /// Returns or sets the file version.
         /// </summary>
-        public override uint Size => SegmentSize;
-
-        /// <summary>
-        /// Returns the amount of space required on the storage device.
-        /// </summary>
-        public static uint SegmentSize => 3;
+        public byte Version { get; internal set; }
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="context">The reference to the context of the index.</param>
         public IndexStorageSegmentHeader(IndexStorageContext context)
-            : base(context)
+            : base(context, context.IndexFile.Alloc(SegmentSize))
         {
-            Addr = 0;
-            Identifier = "wri";
         }
 
         /// <summary>
         /// Reads the record from the storage medium.
         /// </summary>
         /// <param name="reader">The reader for i/o operations.</param>
-        /// <param name="addr">The address of the segment.</param>
-        public override void Read(BinaryReader reader, ulong addr)
+        public override void Read(BinaryReader reader)
         {
-            Addr = addr;
-            reader.BaseStream.Seek((long)Addr, SeekOrigin.Begin);
-
-            Identifier = new string(reader.ReadChars(3));
+            Identifier = new string(reader.ReadChars((int)SegmentSize));
+            Version = reader.ReadByte();
         }
 
         /// <summary>
@@ -49,9 +44,8 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="writer">The writer for i/o operations.</param>
         public override void Write(BinaryWriter writer)
         {
-            writer.BaseStream.Seek((long)Addr, SeekOrigin.Begin);
-
-            writer.Write(Identifier.ToCharArray(0, 3));
+            writer.Write(Identifier.ToCharArray(0, (int)SegmentSize));
+            writer.Write(Version);
         }
     }
 }
