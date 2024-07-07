@@ -236,6 +236,11 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>The item.</returns>
         private T GetItem(IndexStorageSegmentItem segment)
         {
+            if (segment == null)
+            {
+                return default;
+            }
+
             var bytes = new List<byte>();
             var addr = segment.NextChunkAddr;
 
