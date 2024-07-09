@@ -1,6 +1,5 @@
 ﻿using System.Globalization;
 using System.Reflection;
-using WebExpress.WebIndex.Memory;
 using WebExpress.WebIndex.Storage;
 using WebExpress.WebIndex.Test.Document;
 using WebExpress.WebIndex.Test.Fixture;
@@ -56,6 +55,36 @@ namespace WebExpress.WebIndex.Test.ReverseIndex
             }
 
             Assert.NotNull(reverseIndex);
+
+            // postconditions
+            reverseIndex.Dispose();
+            Postconditions();
+        }
+
+        /// <summary>
+        /// Adds items with surrogate character to a reverse index.
+        /// </summary>
+        [Fact]
+        public void AddSurrogate()
+        {
+            // preconditions
+            Preconditions();
+            var reverseIndex = new IndexStorageReverse<UnitTestIndexTestDocumentA>(Context, Property, CultureInfo.GetCultureInfo("en"));
+
+            reverseIndex.Clear();
+
+            var chars = new char[] { '\uD800', '\uDC00' }; // this is a surrogate pair
+
+            var item = new UnitTestIndexTestDocumentA()
+            {
+                Id = Guid.NewGuid(),
+                Text = $"abc{new string(chars)}def"
+            };
+
+            // test execution
+            reverseIndex.Add(item);
+
+            Assert.Empty(reverseIndex.All);
 
             // postconditions
             reverseIndex.Dispose();

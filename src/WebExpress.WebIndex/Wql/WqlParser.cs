@@ -123,6 +123,11 @@ namespace WebExpress.WebIndex.Wql
                 IndexDocument = IndexDocument
             };
 
+            if (input == null)
+            {
+                return wql;
+            }
+
             try
             {
                 var tokens = Tokenize(input);

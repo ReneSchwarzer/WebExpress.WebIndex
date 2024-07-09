@@ -23,7 +23,7 @@ namespace WebExpress.WebIndex.Term
         /// specific task, such as stemming, lemmatization, or stopword filtering. The data is sequentially passed through each 'PipeStage',
         /// with each stage applying its specific processing to the data.
         /// </summary>
-        private List<IIndexPipeStage> TextProcessingPipeline { get; } = new List<IIndexPipeStage>();
+        private List<IIndexPipeStage> TextProcessingPipeline { get; } = [];
 
         /// <summary>
         /// Constructor
@@ -89,6 +89,7 @@ namespace WebExpress.WebIndex.Term
             Register(new IndexPipeStageConverterSingular(Context));
             Register(new IndexPipeStageConverterSynonym(Context));
             Register(new IndexPipeStageFilterEmpty(Context));
+            Register(new IndexPipeStageFilterSurrogateCharacter(Context));
             Register(new IndexPipeStageFilterStopWord(Context));
         }
 
