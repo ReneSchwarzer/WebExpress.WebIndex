@@ -26,7 +26,7 @@ namespace WebExpress.WebIndex.Term
         private List<IIndexPipeStage> TextProcessingPipeline { get; } = [];
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="context">The reference to the context.</param>
         public IndexTokenAnalyzer(IIndexContext context)

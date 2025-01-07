@@ -15,7 +15,7 @@ namespace WebExpress.WebIndex.Wql
         public IReadOnlyList<WqlExpressionNodeOrderAttribute<T>> Attributes { get; internal set; }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         internal WqlExpressionNodeOrder()
         {

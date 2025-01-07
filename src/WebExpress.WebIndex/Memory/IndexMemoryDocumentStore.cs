@@ -27,7 +27,7 @@ namespace WebExpress.WebIndex.Memory
         public IIndexContext Context { get; private set; }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="context">The index context.</param>
         /// <param name="capacity">The predicted capacity (number of items to store) of the document store.</param>

@@ -26,7 +26,7 @@ namespace WebExpress.WebIndex.Wql
         public CultureInfo Culture { get; internal set; }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         internal WqlExpressionNodeValue()
         {

@@ -79,7 +79,7 @@ namespace WebExpress.WebIndex.Wql
         protected IIndexDocument<T> IndexDocument { get; private set; }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         internal WqlParser()
         {
@@ -99,7 +99,7 @@ namespace WebExpress.WebIndex.Wql
         }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="indexFiled">The index field.</param>
         internal WqlParser(IIndexDocument<T> indexFiled)

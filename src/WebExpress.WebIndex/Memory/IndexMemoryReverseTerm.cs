@@ -92,7 +92,7 @@ namespace WebExpress.WebIndex.Memory
         }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         internal IndexMemoryReverseTerm()
         {
@@ -197,7 +197,7 @@ namespace WebExpress.WebIndex.Memory
         {
             foreach (var node in GetLeafs(term))
             {
-                foreach (var posting in node.Postings)
+                foreach (var posting in node.Postings ?? [])
                 {
                     yield return posting;
                 }

@@ -37,7 +37,7 @@ namespace WebExpress.WebIndex
         protected IndexTokenAnalyzer TokenAnalyzer { get; private set; }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         public IndexManager()
         {

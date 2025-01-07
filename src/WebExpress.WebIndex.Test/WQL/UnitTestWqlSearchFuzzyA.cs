@@ -120,8 +120,8 @@ namespace WebExpress.WebIndex.Test.WQL
 
             Assert.NotNull(res);
             Assert.NotNull(item);
-            Assert.Equal(3, res.Count());
-            Assert.Equal("Text = 'Hel' ~50", wql.ToString());
+            Assert.Equal(4, res.Count());
+            Assert.Equal("Text ~ 'Helena' ~50", wql.ToString());
             Assert.NotNull(wql.Filter);
             Assert.Null(wql.Order);
             Assert.Null(wql.Partitioning);
@@ -140,8 +140,8 @@ namespace WebExpress.WebIndex.Test.WQL
 
             Assert.NotNull(res);
             Assert.NotNull(item);
-            Assert.Equal(3, res.Count());
-            Assert.Equal("Text = 'Hel~' ~50", wql.ToString());
+            Assert.Equal(6, res.Count());
+            Assert.Equal("Text ~ 'Hel' ~50", wql.ToString());
             Assert.NotNull(wql.Filter);
             Assert.Null(wql.Order);
             Assert.Null(wql.Partitioning);

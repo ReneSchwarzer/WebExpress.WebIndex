@@ -7,7 +7,7 @@ namespace WebExpress.WebIndex.Wql.Condition
     public class WqlExpressionNodeFilterConditionBinaryLessThan<T> : WqlExpressionNodeFilterConditionBinary<T> where T : IIndexItem
     {
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="op">The operator.</param>
         public WqlExpressionNodeFilterConditionBinaryLessThan()

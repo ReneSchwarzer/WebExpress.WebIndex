@@ -10,7 +10,7 @@ namespace WebExpress.WebIndex.Wql
         public WqlToken Token { get; private set; }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="message">The massage.</param>
         /// <param name="token">The token that caused the exception.</param>

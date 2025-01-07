@@ -15,7 +15,7 @@ namespace WebExpress.WebIndex.Term.Pipeline
         public string Name => "SurrogateCharacter";
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="context">The reference to the context.</param>
         public IndexPipeStageFilterSurrogateCharacter(IIndexContext context)

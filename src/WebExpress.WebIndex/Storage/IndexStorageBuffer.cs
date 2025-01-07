@@ -52,7 +52,7 @@ namespace WebExpress.WebIndex.Storage
         private object Guard { get; } = new object();
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="file">A stream for the index file.</param>
         public IndexStorageBuffer(IndexStorageFile file)

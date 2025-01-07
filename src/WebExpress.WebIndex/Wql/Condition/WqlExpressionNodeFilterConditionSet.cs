@@ -14,7 +14,7 @@ namespace WebExpress.WebIndex.Wql.Condition
         public IEnumerable<WqlExpressionNodeParameter<T>> Parameters { get; internal set; }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="token">One or more tokens that determine the operation. Multiple tokens are separated by spaces.</param>
         protected WqlExpressionNodeFilterConditionSet(string token)

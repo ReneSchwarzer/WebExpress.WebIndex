@@ -58,7 +58,7 @@ namespace WebExpress.WebIndex
         public IEnumerable<T> All => DocumentStore.All;
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="context">The index context.</param>
         /// <param name="indexType">The index type.</param>

@@ -25,7 +25,7 @@ namespace WebExpress.WebIndex.Wql
         public WqlExpressionNodeFilter<T> RightFilter { get; internal set; }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         internal WqlExpressionNodeFilterBinary()
         {

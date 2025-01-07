@@ -10,7 +10,7 @@ namespace WebExpress.WebIndex.Wql.Function
     public class WqlExpressionNodeFilterFunctionDay<T> : WqlExpressionNodeFilterFunction<T> where T : IIndexItem
     {
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         public WqlExpressionNodeFilterFunctionDay()
             : base("day")

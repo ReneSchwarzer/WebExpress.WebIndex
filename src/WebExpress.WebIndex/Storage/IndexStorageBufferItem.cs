@@ -29,7 +29,7 @@ namespace WebExpress.WebIndex.Storage
         public IIndexStorageSegment Segment { get; private set; }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="segment">The segment to be cached.</param>
         public IndexStorageBufferItem(IIndexStorageSegment segment)

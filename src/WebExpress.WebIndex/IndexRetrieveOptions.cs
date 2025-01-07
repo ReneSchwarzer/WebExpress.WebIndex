@@ -21,14 +21,14 @@
         public uint Distance { get; internal set; } = 0;
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         public IndexRetrieveOptions()
         {
         }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="maxResults">The maximum results.</param>
         public IndexRetrieveOptions(uint maxResults)

@@ -106,7 +106,7 @@ namespace WebExpress.WebIndex.Storage
         }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="context">The reference to the context of the index.</param>
         public IndexStorageSegmentAllocatorReverseIndex(IndexStorageContext context)

@@ -19,7 +19,7 @@ namespace WebExpress.WebIndex.Memory
         public IndexMemoryReversePosition Positions { get; private set;} = [];
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="id">The item.</param>
         /// <param name="position">The position of the term in the input value.</param>

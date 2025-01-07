@@ -77,7 +77,7 @@ namespace WebExpress.WebIndex.Wql
         }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="raw">The original wql statement.</param>
         internal WqlStatement(string raw)

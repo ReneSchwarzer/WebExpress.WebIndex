@@ -23,7 +23,7 @@ namespace WebExpress.WebIndex.Wql
         public int Position { get; internal set; }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         internal WqlExpressionNodeOrderAttribute()
         {

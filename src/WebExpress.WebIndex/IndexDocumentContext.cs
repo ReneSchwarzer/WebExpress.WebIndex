@@ -13,14 +13,14 @@ namespace WebExpress.WebIndex
         public IndexTokenAnalyzer TokenAnalyzer { get; private set; }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         public IndexDocumemntContext()
         {
         }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="context">The base context.</param>
         /// <param name="tokenAnalyzer">The tike analyzer.</param>

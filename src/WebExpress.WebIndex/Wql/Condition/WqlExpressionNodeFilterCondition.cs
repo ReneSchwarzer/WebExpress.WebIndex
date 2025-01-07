@@ -26,7 +26,7 @@ namespace WebExpress.WebIndex.Wql.Condition
         public CultureInfo Culture { get; internal set; }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="token">One or more tokens that determine the operation. Multiple tokens are separated by spaces.</param>
         protected WqlExpressionNodeFilterCondition(string token)

@@ -34,7 +34,7 @@ namespace WebExpress.WebIndex.Storage
         public ulong NextFreeAddr { get; internal set; } = 0ul;
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="fileName">The file name.</param>
         public IndexStorageFile(string fileName)

@@ -19,7 +19,7 @@ namespace WebExpress.WebIndex.Wql
         public int Value { get; internal set; }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         internal WqlExpressionNodePartitioningFunction()
         {

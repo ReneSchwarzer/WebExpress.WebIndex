@@ -17,7 +17,7 @@ namespace WebExpress.WebIndex.Test.Fixture
         public IEnumerable<UnitTestIndexTestDocumentB> TestData { get; } = UnitTestIndexTestDocumentFactoryB.GenerateTestData();
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         public UnitTestIndexFixtureWqlB()
         {

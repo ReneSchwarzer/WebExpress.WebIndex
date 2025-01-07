@@ -19,7 +19,7 @@ namespace WebExpress.WebIndex.Wql.Function
         public IEnumerable<WqlExpressionNodeParameter<T>> Parameters { get; internal set; }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="name">The function name</param>
         protected WqlExpressionNodeFilterFunction(string name)

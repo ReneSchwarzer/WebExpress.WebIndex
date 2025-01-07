@@ -65,7 +65,7 @@ namespace WebExpress.WebIndex.Storage
         public IEnumerable<Guid> All => Term.All.Distinct();
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="context">The index context.</param>
         /// <param name="property">The property that makes up the index.</param>

@@ -17,7 +17,7 @@ namespace WebExpress.WebIndex.Test.Token
         protected UnitTestIndexFixtureToken Fixture { get; set; }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="fixture">The test context.</param>
         /// <param name="output">The log.</param>

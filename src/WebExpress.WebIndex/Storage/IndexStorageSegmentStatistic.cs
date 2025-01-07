@@ -18,7 +18,7 @@ namespace WebExpress.WebIndex.Storage
         public uint Count { get; internal set; }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="context">The reference to the context of the index.</param>
         public IndexStorageSegmentStatistic(IndexStorageContext context)

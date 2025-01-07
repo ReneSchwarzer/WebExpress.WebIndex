@@ -18,7 +18,7 @@ namespace WebExpress.WebIndex.Wql
         public WqlExpressionNodeFilterFunction<T> Function { get; internal set; }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         internal WqlExpressionNodeParameter()
         {

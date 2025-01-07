@@ -52,7 +52,7 @@ namespace WebExpress.WebIndex.Storage
         }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="context">The reference to the context of the index.</param>
         /// <param name="capacity">The number of elements to be stored in the hash map.</param>
