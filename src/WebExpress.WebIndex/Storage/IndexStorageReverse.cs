@@ -14,6 +14,9 @@ namespace WebExpress.WebIndex.Storage
     /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
     public class IndexStorageReverse<T> : IIndexReverse<T>, IIndexStorage where T : IIndexItem
     {
+        private readonly string _extentions = "wri";
+        private readonly int _version = 1;
+
         /// <summary>
         /// The property that makes up the index.
         /// </summary>
@@ -75,12 +78,12 @@ namespace WebExpress.WebIndex.Storage
             Context = context;
             Property = property;
             Culture = culture;
-            FileName = Path.Combine(Context.IndexDirectory, $"{typeof(T).Name}.{property.Name}.wri");
+            FileName = Path.Combine(Context.IndexDirectory, $"{typeof(T).Name}.{property.Name}.{_extentions}");
 
             var exists = File.Exists(FileName);
 
             IndexFile = new IndexStorageFile(FileName);
-            Header = new IndexStorageSegmentHeader(new IndexStorageContext(this)) { Identifier = "wri" };
+            Header = new IndexStorageSegmentHeader(new IndexStorageContext(this)) { Identifier = _extentions, Version = (byte)_version };
             Allocator = new IndexStorageSegmentAllocatorReverseIndex(new IndexStorageContext(this));
             Statistic = new IndexStorageSegmentStatistic(new IndexStorageContext(this));
             Term = new IndexStorageSegmentTerm(new IndexStorageContext(this));
@@ -178,7 +181,7 @@ namespace WebExpress.WebIndex.Storage
         {
             IndexFile.NextFreeAddr = 0;
 
-            Header = new IndexStorageSegmentHeader(new IndexStorageContext(this)) { Identifier = "wri" };
+            Header = new IndexStorageSegmentHeader(new IndexStorageContext(this)) { Identifier = _extentions, Version = (byte)_version };
             Allocator = new IndexStorageSegmentAllocatorReverseIndex(new IndexStorageContext(this));
             Statistic = new IndexStorageSegmentStatistic(new IndexStorageContext(this));
             Term = new IndexStorageSegmentTerm(new IndexStorageContext(this));

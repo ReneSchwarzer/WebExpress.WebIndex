@@ -14,6 +14,9 @@ namespace WebExpress.WebIndex.Storage
     /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
     public class IndexStorageDocumentStore<T> : IIndexDocumentStore<T>, IIndexStorage where T : IIndexItem
     {
+        private readonly string _extentions = "wds";
+        private readonly int _version = 1;
+
         /// <summary>
         /// Returns the file name for the reverse index.
         /// </summary>
@@ -74,11 +77,11 @@ namespace WebExpress.WebIndex.Storage
             Context = context;
             StorageContext = new IndexStorageContext(this);
             Capacity = capacity;
-            FileName = Path.Combine(Context.IndexDirectory, $"{typeof(T).Name}.wds");
+            FileName = Path.Combine(Context.IndexDirectory, $"{typeof(T).Name}.{_extentions}");
 
             var exists = File.Exists(FileName);
             IndexFile = new IndexStorageFile(FileName);
-            Header = new IndexStorageSegmentHeader(StorageContext) { Identifier = "wds" };
+            Header = new IndexStorageSegmentHeader(StorageContext) { Identifier = _extentions, Version = (byte)_version };
             Allocator = new IndexStorageSegmentAllocatorDocumentStore(StorageContext);
             Statistic = new IndexStorageSegmentStatistic(StorageContext);
             HashMap = new IndexStorageSegmentHashMap(StorageContext, Capacity);
@@ -165,7 +168,7 @@ namespace WebExpress.WebIndex.Storage
         public void Clear()
         {
             IndexFile.NextFreeAddr = 0;
-            Header = new IndexStorageSegmentHeader(StorageContext) { Identifier = "wfi" };
+            Header = new IndexStorageSegmentHeader(StorageContext) { Identifier = _extentions, Version = (byte)_version };
             Allocator = new IndexStorageSegmentAllocatorDocumentStore(StorageContext);
             Statistic = new IndexStorageSegmentStatistic(StorageContext);
             HashMap = new IndexStorageSegmentHashMap(StorageContext, Capacity);

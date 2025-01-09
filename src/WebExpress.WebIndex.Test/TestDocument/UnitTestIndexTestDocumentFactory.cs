@@ -2,6 +2,9 @@
 
 namespace WebExpress.WebIndex.Test.Document
 {
+    /// <summary>
+    /// Abstract factory class for creating unit test documents for indexing.
+    /// </summary>
     public abstract class UnitTestIndexTestDocumentFactory
     {
         /// <summary>

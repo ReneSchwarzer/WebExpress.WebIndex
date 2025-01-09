@@ -23,7 +23,7 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Returns the amount of space required on the storage device.
         /// </summary>
-        public const uint SegmentSize = sizeof(char) + sizeof(ulong) + sizeof(ulong) + sizeof(uint) + sizeof(ulong);
+        public const uint SegmentSize = sizeof(uint) + sizeof(ulong) + sizeof(ulong) + sizeof(uint) + sizeof(ulong);
 
         /// <summary>
         /// Returns or sets the character of the node.
@@ -72,9 +72,9 @@ namespace WebExpress.WebIndex.Storage
                 while (addr != 0)
                 {
                     var item = Context.IndexFile.Read<IndexStorageSegmentTermNode>(addr, Context);
-                    yield return item;
-
                     addr = item.SiblingAddr;
+
+                    yield return item;
                 }
             }
         }
@@ -390,6 +390,7 @@ namespace WebExpress.WebIndex.Storage
                     ChildAddr = node.Addr;
 
                     Context.IndexFile.Write(this);
+                    Context.IndexFile.Write(node);
                 }
                 else
                 {
@@ -464,7 +465,7 @@ namespace WebExpress.WebIndex.Storage
         {
             foreach (var node in GetLeafs(term))
             {
-                foreach (var posting in node.Posting?.PreOrder ?? Enumerable.Empty<IndexStorageSegmentPostingNode>())
+                foreach (var posting in node.Posting?.PreOrder ?? [])
                 {
                     yield return posting;
                 }
@@ -533,7 +534,7 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="reader">The reader for i/o operations.</param>
         public override void Read(BinaryReader reader)
         {
-            Character = reader.ReadChar();
+            Character = (char)reader.ReadUInt32();
             SiblingAddr = reader.ReadUInt64();
             ChildAddr = reader.ReadUInt64();
             Fequency = reader.ReadUInt32();
@@ -546,7 +547,7 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="writer">The writer for i/o operations.</param>
         public override void Write(BinaryWriter writer)
         {
-            writer.Write(Character);
+            writer.Write((uint)Character);
             writer.Write(SiblingAddr);
             writer.Write(ChildAddr);
             writer.Write(Fequency);

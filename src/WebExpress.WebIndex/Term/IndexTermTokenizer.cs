@@ -13,7 +13,7 @@ namespace WebExpress.WebIndex.Term
         /// <summary>
         /// Enumeration of separators.
         /// </summary>
-        private static char[] Delimiters { get; } = ['?', '!', ':', '<', '>', '=', '%', '(', ')', '"', '“', '”', '\''];
+        private static char[] Delimiters { get; } = ['?', '!', '&', ':', ';', '<', '>', '=', '|', '%', '(', ')', '"', '“', '”', '/', '.', '␦', '\''];
 
         /// <summary>
         /// Enumeration of wildcards.

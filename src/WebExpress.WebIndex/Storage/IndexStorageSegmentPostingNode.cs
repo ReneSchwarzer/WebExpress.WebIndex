@@ -426,10 +426,11 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="reader">The reader for i/o operations.</param>
         public override void Read(BinaryReader reader)
         {
-            DocumentID = new Guid(reader.ReadBytes(16));
+            var guid = reader.ReadBytes(16);
             LeftAddr = reader.ReadUInt64();
             RightAddr = reader.ReadUInt64();
             PositionAddr = reader.ReadUInt64();
+            DocumentID = new Guid(guid);
         }
 
         /// <summary>

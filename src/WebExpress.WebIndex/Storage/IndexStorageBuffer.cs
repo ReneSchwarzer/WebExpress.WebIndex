@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 
 namespace WebExpress.WebIndex.Storage
@@ -61,8 +62,8 @@ namespace WebExpress.WebIndex.Storage
             _imperishableCache = new Dictionary<ulong, IndexStorageBufferItem>((int)MaxCachedSegments);
             _writeCache = new Dictionary<ulong, IIndexStorageSegment>((int)MaxCachedSegments);
 
-            Reader = new BinaryReader(file.FileStream);
-            Writer = new BinaryWriter(file.FileStream);
+            Reader = new BinaryReader(file.FileStream, Encoding.UTF8);
+            Writer = new BinaryWriter(file.FileStream, Encoding.UTF8);
 
             Timer = new Timer((state) =>
             {
@@ -84,7 +85,10 @@ namespace WebExpress.WebIndex.Storage
             {
                 if (GetSegment(addr, out IIndexStorageSegment readCached))
                 {
-                    return (T)readCached;
+                    if (readCached is T cachedSegment)
+                    {
+                        return cachedSegment;
+                    }
                 }
 
                 var segment = (T)Activator.CreateInstance(typeof(T), context, addr);

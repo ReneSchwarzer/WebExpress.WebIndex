@@ -1,8 +1,10 @@
-﻿using System.Text;
-using WebExpress.WebIndex.WebAttribute;
+﻿using WebExpress.WebIndex.WebAttribute;
 
 namespace WebExpress.WebIndex.Test.Document
 {
+    /// <summary>
+    /// Abstract class representing a unit test document for index testing.
+    /// </summary>
     public abstract class UnitTestIndexTestDocument : IIndexItem
     {
         /// <summary>

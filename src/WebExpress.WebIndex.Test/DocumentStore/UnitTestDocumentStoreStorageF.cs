@@ -8,14 +8,14 @@ namespace WebExpress.WebIndex.Test.DocumentStore
     /// <summary>
     /// Test class for testing the storage-based document store.
     /// </summary>
-    public class UnitTestDocumentStoreStorageE : UnitTestDocumentStore<UnitTestIndexFixtureIndexE>
+    public class UnitTestDocumentStoreStorageF : UnitTestDocumentStore<UnitTestIndexFixtureIndexF>
     {
         /// <summary>
         /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="fixture">The log.</param>
         /// <param name="output">The test context.</param>
-        public UnitTestDocumentStoreStorageE(UnitTestIndexFixtureIndexE fixture, ITestOutputHelper output)
+        public UnitTestDocumentStoreStorageF(UnitTestIndexFixtureIndexF fixture, ITestOutputHelper output)
             : base(fixture, output)
         {
         }
@@ -30,7 +30,7 @@ namespace WebExpress.WebIndex.Test.DocumentStore
             Preconditions();
 
             // test execution
-            var documentStore = new IndexStorageDocumentStore<UnitTestIndexTestDocumentE>(Context, (uint)Fixture.TestData.Count);
+            var documentStore = new IndexStorageDocumentStore<UnitTestIndexTestDocumentF>(Context, (uint)Fixture.TestData.Count);
 
             // postconditions
             documentStore.Dispose();
@@ -44,7 +44,7 @@ namespace WebExpress.WebIndex.Test.DocumentStore
         {
             // preconditions
             Preconditions();
-            var documentStore = new IndexStorageDocumentStore<UnitTestIndexTestDocumentE>(Context, (uint)Fixture.TestData.Count);
+            var documentStore = new IndexStorageDocumentStore<UnitTestIndexTestDocumentF>(Context, (uint)Fixture.TestData.Count);
 
             documentStore.Clear();
 
@@ -71,8 +71,8 @@ namespace WebExpress.WebIndex.Test.DocumentStore
         {
             // preconditions
             Preconditions();
-            var documentStore = new IndexStorageDocumentStore<UnitTestIndexTestDocumentE>(Context, (uint)Fixture.TestData.Count);
-            var randomItem = Fixture.TestData.LastOrDefault();
+            var documentStore = new IndexStorageDocumentStore<UnitTestIndexTestDocumentF>(Context, (uint)Fixture.TestData.Count);
+            var randomItem = Fixture.RandomItem;
 
             documentStore.Clear();
             foreach (var item in Fixture.TestData)
@@ -81,7 +81,7 @@ namespace WebExpress.WebIndex.Test.DocumentStore
             }
 
             var name = "Update_" + randomItem.Name;
-            var changed = new UnitTestIndexTestDocumentE
+            var changed = new UnitTestIndexTestDocumentF
             {
                 Id = randomItem.Id,
                 Name = name
@@ -108,7 +108,7 @@ namespace WebExpress.WebIndex.Test.DocumentStore
         {
             // preconditions
             Preconditions();
-            var documentStore = new IndexStorageDocumentStore<UnitTestIndexTestDocumentE>(Context, (uint)Fixture.TestData.Count);
+            var documentStore = new IndexStorageDocumentStore<UnitTestIndexTestDocumentF>(Context, (uint)Fixture.TestData.Count);
             var randomItem = Fixture.RandomItem;
 
             documentStore.Clear();
@@ -137,7 +137,7 @@ namespace WebExpress.WebIndex.Test.DocumentStore
         {
             // preconditions
             Preconditions();
-            var documentStore = new IndexStorageDocumentStore<UnitTestIndexTestDocumentE>(Context, (uint)Fixture.TestData.Count);
+            var documentStore = new IndexStorageDocumentStore<UnitTestIndexTestDocumentF>(Context, (uint)Fixture.TestData.Count);
 
             documentStore.Clear();
             foreach (var item in Fixture.TestData)
@@ -164,7 +164,7 @@ namespace WebExpress.WebIndex.Test.DocumentStore
         {
             // preconditions
             Preconditions();
-            var documentStore = new IndexStorageDocumentStore<UnitTestIndexTestDocumentE>(Context, (uint)Fixture.TestData.Count);
+            var documentStore = new IndexStorageDocumentStore<UnitTestIndexTestDocumentF>(Context, (uint)Fixture.TestData.Count);
 
             documentStore.Clear();
             foreach (var document in Fixture.TestData)
@@ -191,7 +191,7 @@ namespace WebExpress.WebIndex.Test.DocumentStore
         {
             // preconditions
             Preconditions();
-            var documentStore = new IndexStorageDocumentStore<UnitTestIndexTestDocumentE>(Context, (uint)Fixture.TestData.Count);
+            var documentStore = new IndexStorageDocumentStore<UnitTestIndexTestDocumentF>(Context, (uint)Fixture.TestData.Count);
 
             documentStore.Clear();
             foreach (var item in Fixture.TestData)
@@ -202,6 +202,36 @@ namespace WebExpress.WebIndex.Test.DocumentStore
             // test execution
             var all = documentStore.All;
 
+            Assert.Equal(all.Select(x => x.Id).OrderBy(x => x), Fixture.TestData.Select(x => x.Id).OrderBy(x => x));
+
+            // postconditions
+            documentStore.Dispose();
+            Postconditions();
+        }
+
+        /// <summary>
+        /// Reopen the document store.
+        /// </summary>
+        [Fact]
+        public void Reopen()
+        {
+            // preconditions
+            Preconditions();
+            var documentStore = new IndexStorageDocumentStore<UnitTestIndexTestDocumentF>(Context, (uint)Fixture.TestData.Count);
+
+            documentStore.Clear();
+            foreach (var item in Fixture.TestData)
+            {
+                documentStore.Add(item);
+            }
+
+            documentStore.Dispose();
+            documentStore = new IndexStorageDocumentStore<UnitTestIndexTestDocumentF>(Context, (uint)Fixture.TestData.Count);
+
+            // test execution
+            var all = documentStore.All;
+
+            Assert.Equal("wds", documentStore.Header.Identifier);
             Assert.Equal(all.Select(x => x.Id).OrderBy(x => x), Fixture.TestData.Select(x => x.Id).OrderBy(x => x));
 
             // postconditions

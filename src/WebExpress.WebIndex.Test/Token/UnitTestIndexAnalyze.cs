@@ -30,100 +30,39 @@ namespace WebExpress.WebIndex.Test.Token
         /// <summary>
         /// Tests the analysis function of an supported language.
         /// </summary>
-        [Fact]
-        public void Analyze1_En()
+        [Theory]
+        [InlineData("en", "abc def, ghi jkl mno-p.", "abc", "def", "ghi", "jkl", "mno-p")]
+        [InlineData("en", "abc 😊🌸🐼, ghi jkl mno-p.", "abc", "ghi", "jkl", "mno-p")]
+        [InlineData("en", "??? ??")]
+        [InlineData("en", "???...&nbsp;")]
+        [InlineData("en", "theya??r", "theya")]
+        [InlineData("en", "http://example.com/abc", "http", "example", "com", "abc")]
+        public void Token(string culture, string input, params string[] expected)
         {
-            // preconditions
-            var input = "abc def, ghi jkl mno-p.";
-
             // test execution
-            var tokens = Fixture.TokenAnalyzer.Analyze(input, CultureInfo.GetCultureInfo("en"));
+            var tokens = Fixture.TokenAnalyzer.Analyze(input, CultureInfo.GetCultureInfo(culture));
 
-            Assert.Equal(5, tokens.Count());
-            Assert.True(tokens.First().Position == 0);
-            Assert.Equal("abc", tokens.First().Value);
-            Assert.True(tokens.Skip(1).First().Position == 1);
-            Assert.Equal("def", tokens.Skip(1).First().Value);
-            Assert.True(tokens.Skip(2).First().Position == 2);
-            Assert.Equal("ghi", tokens.Skip(2).First().Value);
-            Assert.True(tokens.Skip(3).First().Position == 3);
-            Assert.Equal("jkl", tokens.Skip(3).First().Value);
-            Assert.True(tokens.Skip(4).First().Position == 4);
-            Assert.Equal("mno-p", tokens.Skip(4).First().Value);
+            Assert.Equal(expected, tokens.Select(x => x.Value));
         }
 
         /// <summary>
         /// Tests the analysis function of an supported language.
         /// </summary>
-        [Fact]
-        public void Analyze2_En()
+        [Theory]
+        [InlineData("en", "JourneyThroughTheUniverse.en", 241)]
+        [InlineData("en", "InterstellarConversations.en", 165)]
+        [InlineData("de", "BotanischeBindungenMicrosReiseZuVerdantia.de", 392)]
+        [InlineData("de-DE", "BotanischeBindungenMicrosReiseZuVerdantia.de", 392)]
+        [InlineData("fr", "BotanischeBindungenMicrosReiseZuVerdantia.de", 716)]
+        public void Ressource(string culture, string ressource, int count)
         {
             // preconditions
-            var input = Fixture.GetRessource("JourneyThroughTheUniverse.en");
+            var input = Fixture.GetRessource(ressource);
 
             // test execution
-            var tokens = Fixture.TokenAnalyzer.Analyze(input, CultureInfo.GetCultureInfo("en"));
+            var tokens = Fixture.TokenAnalyzer.Analyze(input, CultureInfo.GetCultureInfo(culture));
 
-            Assert.Equal(241, tokens.Count());  // of 546
-        }
-
-        /// <summary>
-        /// Tests the analysis function of an supported language.
-        /// </summary>
-        [Fact]
-        public void Analyze3_En()
-        {
-            var input = Fixture.GetRessource("InterstellarConversations.en");
-
-            // test execution
-            var tokens = Fixture.TokenAnalyzer.Analyze(input, CultureInfo.GetCultureInfo("en"));
-
-            Assert.Equal(170, tokens.Count()); // of 281
-        }
-
-        /// <summary>
-        /// Tests the analysis function of an supported language.
-        /// </summary>
-        [Fact]
-        public void Analyze_De()
-        {
-            // preconditions
-            var input = Fixture.GetRessource("BotanischeBindungenMicrosReiseZuVerdantia.de");
-
-            // test execution
-            var tokens = Fixture.TokenAnalyzer.Analyze(input, CultureInfo.GetCultureInfo("de"));
-
-            Assert.Equal(418, tokens.Count()); // of 731
-        }
-
-        /// <summary>
-        /// Tests the analysis function of a regional language.
-        /// </summary>
-        [Fact]
-        public void Analyze_DeDE()
-        {
-            // preconditions
-            var input = Fixture.GetRessource("BotanischeBindungenMicrosReiseZuVerdantia.de");
-
-            // test execution
-            var tokens = Fixture.TokenAnalyzer.Analyze(input, CultureInfo.GetCultureInfo("de-DE"));
-
-            Assert.Equal(418, tokens.Count()); // of 731
-        }
-
-        /// <summary>
-        /// Tests the analysis function of an unsupported language.
-        /// </summary>
-        [Fact]
-        public void Analyze_Fr()
-        {
-            // preconditions
-            var input = Fixture.GetRessource("BotanischeBindungenMicrosReiseZuVerdantia.de");
-
-            // test execution
-            var tokens = Fixture.TokenAnalyzer.Analyze(input, CultureInfo.GetCultureInfo("fr"));
-
-            Assert.Equal(719, tokens.Count()); // of 731
+            Assert.Equal(count, tokens.Count());
         }
     }
 }

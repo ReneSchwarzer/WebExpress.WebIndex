@@ -13,6 +13,9 @@ namespace WebExpress.WebIndex.Storage
     /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
     public class IndexStorageSchema<T> : IIndexSchema<T> where T : IIndexItem
     {
+        private readonly string _extentions = "ws";
+        private readonly int _version = 1;
+
         /// <summary>
         /// Returns the file name.
         /// </summary>
@@ -24,13 +27,13 @@ namespace WebExpress.WebIndex.Storage
         public IIndexContext Context { get; private set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="IndexSchema"/> class.
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="context">The index context.</param>
         public IndexStorageSchema(IIndexContext context)
         {
             Context = context;
-            FileName = Path.Combine(Context.IndexDirectory, $"{typeof(T).Name}.ws");
+            FileName = Path.Combine(Context.IndexDirectory, $"{typeof(T).Name}.{_extentions}");
 
             if (!File.Exists(FileName))
             {
@@ -121,17 +124,6 @@ namespace WebExpress.WebIndex.Storage
             }
 
             return "Object";
-
-            //return new
-            //{ 
-            //Name = property.PropertyType.Name, 
-            //Fields = property.PropertyType.GetProperties().Select(x => new 
-            //{ 
-            //    Name = x.Name, 
-            //    Type = GetType(x), 
-            //    Ignore = Attribute.IsDefined(x, typeof(IndexIgnoreAttribute))
-            //})
-            //};
         }
 
         /// <summary>

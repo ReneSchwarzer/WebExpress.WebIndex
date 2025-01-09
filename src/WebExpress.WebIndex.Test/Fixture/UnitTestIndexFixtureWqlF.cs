@@ -5,7 +5,10 @@ using WebExpress.WebIndex.Wql;
 
 namespace WebExpress.WebIndex.Test.Fixture
 {
-    public class UnitTestIndexFixtureWqlD : UnitTestIndexFixture
+    /// <summary>
+    /// Provides a fixture for unit tests that involve the IndexManager and WQL statements for unicode testing.
+    /// </summary>
+    public class UnitTestIndexFixtureWqlF : UnitTestIndexFixture
     {
         /// <summary>
         /// Returns the index manager.
@@ -15,12 +18,12 @@ namespace WebExpress.WebIndex.Test.Fixture
         /// <summary>
         /// Returns the test data.
         /// </summary>
-        public IEnumerable<UnitTestIndexTestDocumentD> TestData { get; } = UnitTestIndexTestDocumentFactoryD.GenerateTestData();
+        public IEnumerable<UnitTestIndexTestDocumentE> TestData { get; } = UnitTestIndexTestDocumentFactoryE.GenerateTestData();
 
         /// <summary>
         /// Initializes a new instance of the class.
         /// </summary>
-        public UnitTestIndexFixtureWqlD()
+        public UnitTestIndexFixtureWqlF()
         {
             var context = new IndexContext();
             context.IndexDirectory = Path.Combine(context.IndexDirectory, Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
@@ -29,7 +32,7 @@ namespace WebExpress.WebIndex.Test.Fixture
             var method = typeof(IndexManagerTest).GetMethod("Initialization", BindingFlags.Instance | BindingFlags.NonPublic);
             method.Invoke(IndexManager, [context]);
 
-            IndexManager.Create<UnitTestIndexTestDocumentD>(CultureInfo.GetCultureInfo("en"), IndexType.Memory);
+            IndexManager.Create<UnitTestIndexTestDocumentF>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
             IndexManager.ReIndex(TestData);
         }
 
@@ -47,9 +50,9 @@ namespace WebExpress.WebIndex.Test.Fixture
         /// </summary>
         /// <param name="wql">The wql statement.</param>
         /// <returns>The WQL parser.</returns>
-        public IWqlStatement<UnitTestIndexTestDocumentD> ExecuteWql(string wql)
+        public IWqlStatement<UnitTestIndexTestDocumentF> ExecuteWql(string wql)
         {
-            return IndexManager.Retrieve<UnitTestIndexTestDocumentD>(wql);
+            return IndexManager.Retrieve<UnitTestIndexTestDocumentF>(wql);
         }
     }
 }

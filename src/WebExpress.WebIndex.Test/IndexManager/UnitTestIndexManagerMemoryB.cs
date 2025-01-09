@@ -41,13 +41,17 @@ namespace WebExpress.WebIndex.Test.IndexManager
         /// <summary>
         /// Tests the reindex function from the index manager.
         /// </summary>
-        [Fact]
-        public void ReIndex_En()
+        [Theory]
+        [InlineData("en")]
+        [InlineData("de")]
+        [InlineData("de-DE")]
+        [InlineData("fr")]
+        public void ReIndex(string culture)
         {
             // preconditions
             Preconditions();
             var randomItem = Fixture.RandomItem;
-            IndexManager.Create<UnitTestIndexTestDocumentB>(CultureInfo.GetCultureInfo("en"), IndexType.Memory);
+            IndexManager.Create<UnitTestIndexTestDocumentB>(CultureInfo.GetCultureInfo(culture), IndexType.Memory);
 
             // test execution
             IndexManager.ReIndex(Fixture.TestData);
@@ -65,88 +69,20 @@ namespace WebExpress.WebIndex.Test.IndexManager
         /// <summary>
         /// Tests the reindex function from the index manager.
         /// </summary>
-        [Fact]
-        public async Task ReIndexAsync_En()
+        [Theory]
+        [InlineData("en")]
+        [InlineData("de")]
+        [InlineData("de-DE")]
+        [InlineData("fr")]
+        public async Task ReIndexAsync(string culture)
         {
             // preconditions
             Preconditions();
             var randomItem = Fixture.RandomItem;
-            IndexManager.Create<UnitTestIndexTestDocumentB>(CultureInfo.GetCultureInfo("en"), IndexType.Memory);
+            IndexManager.Create<UnitTestIndexTestDocumentB>(CultureInfo.GetCultureInfo(culture), IndexType.Memory);
 
             // test execution
             await IndexManager.ReIndexAsync(Fixture.TestData);
-
-            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentB>($"name = '{randomItem.Name}'");
-            Assert.NotNull(wql);
-
-            var item = wql.Apply();
-            Assert.NotEmpty(item);
-
-            // postconditions
-            Postconditions();
-        }
-
-        /// <summary>
-        /// Tests the reindex function from the index manager.
-        /// </summary>
-        [Fact]
-        public void ReIndex_De()
-        {
-            // preconditions
-            Preconditions();
-            var randomItem = Fixture.RandomItem;
-            IndexManager.Create<UnitTestIndexTestDocumentB>(CultureInfo.GetCultureInfo("de"), IndexType.Memory);
-
-            // test execution
-            IndexManager.ReIndex(Fixture.TestData);
-
-            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentB>($"name = '{randomItem.Name}'");
-            Assert.NotNull(wql);
-
-            var item = wql.Apply();
-            Assert.NotEmpty(item);
-
-            // postconditions
-            Postconditions();
-        }
-
-        /// <summary>
-        /// Tests the reindex function from the index manager.
-        /// </summary>
-        [Fact]
-        public void ReIndex_DeDE()
-        {
-            // preconditions
-            Preconditions();
-            var randomItem = Fixture.RandomItem;
-            IndexManager.Create<UnitTestIndexTestDocumentB>(CultureInfo.GetCultureInfo("de-DE"), IndexType.Memory);
-
-            // test execution
-            IndexManager.ReIndex(Fixture.TestData);
-
-            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentB>($"name = '{randomItem.Name}'");
-            Assert.NotNull(wql);
-
-            var item = wql.Apply();
-            Assert.NotEmpty(item);
-
-            // postconditions
-            Postconditions();
-        }
-
-        /// <summary>
-        /// Tests the reindex function from the index manager.
-        /// </summary>
-        [Fact]
-        public void ReIndex_Fr()
-        {
-            // preconditions
-            Preconditions();
-            var randomItem = Fixture.RandomItem;
-            IndexManager.Create<UnitTestIndexTestDocumentB>(CultureInfo.GetCultureInfo("fr"), IndexType.Memory);
-
-            // test execution
-            IndexManager.ReIndex(Fixture.TestData);
 
             var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentB>($"name = '{randomItem.Name}'");
             Assert.NotNull(wql);

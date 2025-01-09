@@ -1,4 +1,5 @@
 ﻿# Stoppwörter. Ein Stoppwort pro Zeile.
+a
 aber
 abermals
 absolut
@@ -68,6 +69,7 @@ außerdem
 ähnlichsten
 ähnlichster
 ähnlichstes
+b
 beide
 beidem
 beiden
@@ -136,6 +138,7 @@ bricht
 bringt
 baut
 brennt
+c
 circa
 charakterisiert
 charmant
@@ -150,6 +153,7 @@ cooperativ
 couragiert
 creativ
 cynisch
+d
 dabei
 dadurch
 dafür
@@ -325,6 +329,7 @@ durchschnittlich
 durchsichtig
 durstig
 dynamisch
+e
 eben
 ebenso
 ehrlich
@@ -439,6 +444,7 @@ exotisch
 exquisit
 extrem
 extravagant
+f
 falls
 fast
 ferner
@@ -481,6 +487,7 @@ funktional
 furchtlos
 fürsorglich
 füllig
+g
 gegen
 gegenüber
 gehabt
@@ -551,6 +558,7 @@ grün
 günstig
 gut
 gültig
+h
 hab
 habe
 haben
@@ -595,6 +603,7 @@ hohl
 hungrig
 hurtig
 hygienisch
+i
 ich
 ihm
 ihn
@@ -660,6 +669,7 @@ irreal
 irrelevant
 irritierend
 isoliert
+j
 ja
 jahr
 jahre
@@ -704,7 +714,8 @@ jüngst
 jüngste
 jüngsten
 jüngster
-jüngstes,
+jüngstes
+k
 kam
 kann
 konnte
@@ -738,6 +749,7 @@ kurze
 kurzen
 kurzer
 kurzes
+l
 lange
 länger
 längst
@@ -748,7 +760,8 @@ lediglich
 leider
 ließ
 liegt
-los,
+los
+m
 machen
 macht
 machte
@@ -796,10 +809,12 @@ müssen
 musste
 müssen
 müsste
+n
 nach
 nachdem
 nahm
 natürlich
+nbsp
 neben
 nein
 neue
@@ -818,20 +833,25 @@ niemanden
 noch
 nun
 nur
+o
 ob
 oben
 oder
 offen
 oft
-ohne,
+ohne
+p
 per
 pfui
 plötzlich
 prinzipiell
 pro
+q
 quasi
+r
 rund
 rief
+s
 sagte
 sah
 satt
@@ -890,6 +910,7 @@ such
 suche
 suchen
 sucht
+t
 tage
 tagen
 tat
@@ -898,6 +919,7 @@ tel
 tritt
 trotzdem
 tun
+u
 über
 überhaupt
 übrigens
@@ -906,6 +928,7 @@ und
 uns
 unserer
 unter
+v
 vergangenen
 vergangener
 vergangenes
@@ -917,6 +940,7 @@ vor
 vorbei
 vorher
 völlig
+w
 während
 wann
 war
@@ -948,6 +972,9 @@ wohl
 wollen
 wollte
 würden
+x
+y
+z
 zehn
 zehnte
 zehnten

@@ -2,6 +2,9 @@
 
 namespace WebExpress.WebIndex.Storage
 {
+    /// <summary>
+    /// Interface for managing index storage segment list items.
+    /// </summary>
     public interface IIndexStorageSegmentListItem : IIndexStorageSegment, IComparable
     {
         /// <summary>

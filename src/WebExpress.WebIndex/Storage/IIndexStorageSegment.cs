@@ -2,6 +2,9 @@
 
 namespace WebExpress.WebIndex.Storage
 {
+    /// <summary>
+    /// Interface for managing index storage segments.
+    /// </summary>
     public interface IIndexStorageSegment
     {
         /// <summary>

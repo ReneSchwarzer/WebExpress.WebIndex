@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using WebExpress.WebIndex.Term;
 using WebExpress.WebIndex.Term.Pipeline;
 using WebExpress.WebIndex.Wql;
+
+[assembly: InternalsVisibleTo("WebExpress.WebIndex.Test")]
 
 namespace WebExpress.WebIndex
 {
@@ -47,7 +50,7 @@ namespace WebExpress.WebIndex
         /// Initialization of the IndexManager.
         /// </summary>
         /// <param name="context">The reference to the context.</param>
-        public void Initialization(IIndexContext context)
+        protected void Initialization(IIndexContext context)
         {
             Context = context;
             Directory.CreateDirectory(Context.IndexDirectory);

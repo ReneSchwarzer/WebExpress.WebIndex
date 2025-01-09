@@ -4,6 +4,9 @@ using System.IO;
 
 namespace WebExpress.WebIndex.Storage
 {
+    /// <summary>
+    /// Represents a hash map segment in the index storage.
+    /// </summary>
     public class IndexStorageSegmentHashMap : IndexStorageSegment
     {
         /// <summary>

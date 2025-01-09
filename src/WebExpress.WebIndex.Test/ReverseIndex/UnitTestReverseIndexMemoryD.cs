@@ -198,9 +198,9 @@ namespace WebExpress.WebIndex.Test.ReverseIndex
             }
 
             // test execution
-            //var all = reverseIndex.All;
+            var all = reverseIndex.All;
 
-            //Assert.True(all.Select(x => x.DocumentID).SequenceEqual(data.Select(x => x.DocumentID)));
+            Assert.Equal(all.OrderBy(x => x), Fixture.TestData.Select(x => x.Id).OrderBy(x => x));
 
             // postconditions
             reverseIndex.Dispose();
