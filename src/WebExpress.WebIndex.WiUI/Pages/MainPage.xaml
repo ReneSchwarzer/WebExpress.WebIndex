@@ -1,0 +1,193 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="WebExpress.WebIndex.WiUI.Pages.MainPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:WebExpress.WebIndex.WiUI"
+    xmlns:pages="clr-namespace:WebExpress.WebIndex.WiUI.Pages"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    Title="{Binding SelectedProject.ProjectName}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <VerticalStackLayout
+            Grid.Row="0"
+            Grid.Column="0"
+            BackgroundColor="LightGoldenrodYellow">
+            <Label
+                Padding="10"
+                FontAttributes="Bold"
+                FontSize="Title"
+                Text="Index files"
+                TextColor="DarkBlue" />
+            <!--  index files from project  -->
+            <ListView
+                x:Name="IndexListView"
+                ItemSelected="OnIndexSelected"
+                ItemsSource="{Binding Indexes}"
+                SelectedItem="{Binding SelectedIndex}">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <StackLayout
+                                Padding="10"
+                                Orientation="Horizontal"
+                                Spacing="10">
+                                <StackLayout Orientation="Vertical" VerticalOptions="Center">
+                                    <Label
+                                        Margin="10,0,5,0"
+                                        FontSize="Small"
+                                        Text="{Binding Name}"
+                                        TextColor="Black" />
+                                </StackLayout>
+                            </StackLayout>
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <Label
+                Padding="10"
+                FontAttributes="Bold"
+                FontSize="Title"
+                Text="Fields "
+                TextColor="DarkBlue" />
+
+            <!--  fields from selected index files  -->
+            <ListView
+                x:Name="FieldListView"
+                ItemSelected="OnFieldSelected"
+                ItemsSource="{Binding Fields}"
+                SelectedItem="{Binding SelectedField}">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <StackLayout
+                                Padding="10"
+                                Orientation="Horizontal"
+                                Spacing="10">
+                                <StackLayout Orientation="Vertical" VerticalOptions="Center">
+                                    <Label
+                                        Margin="10,0,5,0"
+                                        FontSize="Small"
+                                        Text="{Binding Name}"
+                                        TextColor="Black" />
+                                </StackLayout>
+                            </StackLayout>
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </VerticalStackLayout>
+
+        <Grid
+            Grid.Row="0"
+            Grid.Column="1"
+            BackgroundColor="LightYellow">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Label
+                Grid.Row="0"
+                Grid.Column="0"
+                Padding="10"
+                FontAttributes="Bold"
+                FontSize="Title"
+                Text="Reverse Index"
+                TextColor="DarkBlue" />
+
+            <ListView
+                x:Name="TermListView"
+                Grid.Row="1"
+                Grid.Column="0"
+                ItemSelected="OnTermSelected"
+                ItemsSource="{Binding Terms}"
+                SelectedItem="{Binding SelectedTerm}">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <Grid Padding="5">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Label
+                                    Grid.Row="0"
+                                    Grid.Column="0"
+                                    Margin="0,0,50,0"
+                                    FontSize="Small"
+                                    Text="{Binding Value}"
+                                    TextColor="Black" />
+
+                                <VerticalStackLayout Grid.Row="0" Grid.Column="1">
+                                    <HorizontalStackLayout HorizontalOptions="End">
+                                        <Label
+                                            Margin="10,0,5,0"
+                                            FontAttributes="Bold"
+                                            FontSize="Small"
+                                            Text="Fequency:"
+                                            TextColor="Gray" />
+                                        <Label
+                                            Margin="0,0,5,0"
+                                            FontSize="Small"
+                                            Text="{Binding Fequency}"
+                                            TextColor="Gray" />
+                                        <Label
+                                            Margin="0,0,5,0"
+                                            FontAttributes="Bold"
+                                            FontSize="Small"
+                                            Text="Height:"
+                                            TextColor="Gray" />
+                                        <Label
+                                            Margin="0,0,5,0"
+                                            FontSize="Small"
+                                            Text="{Binding Height}"
+                                            TextColor="Gray" />
+                                        <Label
+                                            FontAttributes="Bold"
+                                            FontSize="Small"
+                                            Text="Balance:"
+                                            TextColor="Gray" />
+                                        <Label
+                                            Margin="0,0,5,0"
+                                            FontSize="Small"
+                                            Text="{Binding Balance}"
+                                            TextColor="Gray" />
+                                    </HorizontalStackLayout>
+                                    <HorizontalStackLayout HorizontalOptions="End">
+                                        <Label
+                                            Margin="10,0,5,0"
+                                            FontAttributes="Bold"
+                                            FontSize="Small"
+                                            Text="Documents:"
+                                            TextColor="Gray" />
+                                        <Label
+                                            Margin="0,0,5,0"
+                                            FontSize="Small"
+                                            Text="{Binding Documents}"
+                                            TextColor="Gray" />
+                                    </HorizontalStackLayout>
+                                </VerticalStackLayout>
+                            </Grid>
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
+    </Grid>
+</ContentPage>

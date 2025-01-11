@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebExpress.WebIndex.Test", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebExpress.WebIndex.Wi", "WebExpress.WebIndex.Wi\WebExpress.WebIndex.Wi.csproj", "{9BCC7D64-E95E-449B-AFD8-1B0A7F142BC8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebExpress.WebIndex.WiUI", "WebExpress.WebIndex.WiUI\WebExpress.WebIndex.WiUI.csproj", "{ED80B6BA-3B69-4F09-9367-CE1F9D1FECE9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,11 @@ Global
 		{9BCC7D64-E95E-449B-AFD8-1B0A7F142BC8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9BCC7D64-E95E-449B-AFD8-1B0A7F142BC8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9BCC7D64-E95E-449B-AFD8-1B0A7F142BC8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ED80B6BA-3B69-4F09-9367-CE1F9D1FECE9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED80B6BA-3B69-4F09-9367-CE1F9D1FECE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED80B6BA-3B69-4F09-9367-CE1F9D1FECE9}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{ED80B6BA-3B69-4F09-9367-CE1F9D1FECE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED80B6BA-3B69-4F09-9367-CE1F9D1FECE9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

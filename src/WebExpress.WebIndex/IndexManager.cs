@@ -53,7 +53,12 @@ namespace WebExpress.WebIndex
         protected void Initialization(IIndexContext context)
         {
             Context = context;
-            Directory.CreateDirectory(Context.IndexDirectory);
+
+            if (!Directory.Exists(Context.IndexDirectory))
+            {
+                Directory.CreateDirectory(Context.IndexDirectory);
+            }
+
             TokenAnalyzer = new IndexTokenAnalyzer(context);
         }
 

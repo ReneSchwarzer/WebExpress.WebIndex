@@ -6,6 +6,9 @@ using WebExpress.WebIndex.Wi.Converter;
 
 namespace WebExpress.WebIndex.Wi.Model
 {
+    /// <summary>
+    /// Represents the ViewModel for managing the indexing of project objects.
+    /// </summary>
     internal class ViewModel
     {
         /// <summary>
@@ -143,7 +146,7 @@ namespace WebExpress.WebIndex.Wi.Model
         public IEnumerable<(string, uint, uint, uint, IEnumerable<Guid>)> GetIndexTerms()
         {
             var runtimeClass = CurrentObjectType.BuildRuntimeClass();
-            var document = WiApp.ViewModel.IndexManager.GetIndexDocument(runtimeClass);
+            var document = IndexManager.GetIndexDocument(runtimeClass);
             var fieldProperty = runtimeClass.GetProperty(CurrentIndexField?.Name);
             var methodInfo = document.GetType().GetMethod("GetReverseIndex");
             var reverseIndex = methodInfo.Invoke(document, [fieldProperty]);

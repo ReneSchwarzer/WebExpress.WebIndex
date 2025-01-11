@@ -28,15 +28,15 @@ allows for a fast and efficient search, as the time-consuming part is carried ou
 search consists only of quick lookup operations in the reverse index.
 
 ```
- ┌──────────┐       indexing
- │ document ├──────────────┐
- └──────────┘              │
-                           ▼
- ┌───────┐ searching ┌───────────┐       ┌─────────────────────────────────────────────────┐       ╔══════════╗
- │ query ├──────────>│ tokenizer ├──────>│ stemming, lemmatization & stoppword filter pipe ├──────>║ WebIndex ║
- └───────┘           └───────────┘       └─────────────────────────────────────────────────┘       ╚══════════╝
-     ▲                                           results                                                 │
-     └───────────────────────────────────────────────────────────────────────────────────────────────────┘
+┌──────────┐       indexing
+│ document ├──────────────┐
+└──────────┘              │
+                          ▼
+┌───────┐ searching ┌───────────┐       ┌─────────────────────────────────────────────────┐       ╔══════════╗
+│ query ├──────────>│ tokenizer ├──────>│ stemming, lemmatization & stoppword filter pipe ├──────>║ WebIndex ║
+└───────┘           └───────────┘       └─────────────────────────────────────────────────┘       ╚══════════╝
+    ▲                                           results                                                 │
+    └───────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 Stemming and lemmatization are text preprocessing techniques in natural language processing (NLP). They reduce the inflected forms of 
@@ -58,131 +58,131 @@ In this instance, indexing is performed on two documents by executing a series o
 stop-word removal. The outcome of these operations is a multi-dimensional table, which serves as a representation of the reverse index.
 
 ```
- ┌document a────────────────────────────────────────┐      ┌document b────────────────────────────────────────┐
- │ No, fine, no , good, fine, good. You know Marty, │      │ Thanks a lot, kid. Now, of course not, Biff, now,│
- │ you look so familiar, do I know your mother? Hey │      │ I wouldn't want that to happen. I'm gonna ram    │
- │ man, the dance is over. Unless you know someone  │      │ him. Well, Marty, I want to thank you for all    │
- │ else who could play the guitar. Who's are these? │      │ your good advice, I'll never forget it. Doc,     │
- │ Maybe you were adopted.                          │      │ look, all we need is a little plutonium.         │
- └──────────────────────┬───────────────────────────┘      └──────────────────────┬───────────────────────────┘
-                        │                                                         │
-                        │                                                         │
-                        ▼                                                         ▼
- ┌normalized document a─────────────────────────────┐      ┌normalized document b─────────────────────────────┐
- │ no fine no good fine good you know marty         │      │ thank a lot kid now of course not biff now       │
- │ you look so familiar do i know your mother hey   │      │ i would not want that to happen i am gonna ram   │
- │ man the dance is over unless you know someone    │      │ him well marty i want to thank you for all       │
- │ else who could play the guitar who is are these  │      │ your good advice i will never forget it doc      │
- │ maybe you were adopted                           │      │ look all we need is a little plutonium           │
- └──────────────────────┬───────────────────────────┘      └──────────────────────┬───────────────────────────┘
-                        │                                                         │
-                        │                                                         │
-                        ▼                                                         ▼
- ┌stopword cleaned document a───────────────────────┐      ┌stopword cleaned document b───────────────────────┐
- │ fine good fine good know marty                   │      │ thank lot kid course biff                        │
- │ look familiar know mother                        │      │ would want happen gonna ram                      │
- │ dance unless know someone                        │      │ well marty want thank                            │
- │ else could play guitar these                     │      │ good advice never forget doc                     │
- │ maybe adopted                                    │      │ look need little plutonium                       │
- └─────────────────────┬────────────────────────────┘      └─────────────────────┬────────────────────────────┘
+┌document a────────────────────────────────────────┐      ┌document b────────────────────────────────────────┐
+│ No, fine, no , good, fine, good. You know Marty, │      │ Thanks a lot, kid. Now, of course not, Biff, now,│
+│ you look so familiar, do I know your mother? Hey │      │ I wouldn't want that to happen. I'm gonna ram    │
+│ man, the dance is over. Unless you know someone  │      │ him. Well, Marty, I want to thank you for all    │
+│ else who could play the guitar. Who's are these? │      │ your good advice, I'll never forget it. Doc,     │
+│ Maybe you were adopted.                          │      │ look, all we need is a little plutonium.         │
+└──────────────────────┬───────────────────────────┘      └──────────────────────┬───────────────────────────┘
                        │                                                         │
                        │                                                         │
-                       └───────────────┐                       ┌─────────────────┘
-                                       ▼                       ▼
-                           ╔WebIndex═══════════════════════════════════════╗
-                           ║ Term      │ Fequency │ Documnet │ Position    ║
-                           ║═══════════════════════════════════════════════║
-                           ║ adopted   │ 1        │ a        │ 211         ║
-                           ║───────────┼──────────┼──────────┼─────────────║
-                           ║ advice    │ 1        │ b        │ 153         ║
-                           ║───────────┼──────────┼──────────┼─────────────║
-                           ║ biff      │ 1        │ b        │ 40          ║
-                           ║───────────┼──────────┼──────────┼─────────────║
-                           ║ could     │ 1        │ a        │ 156         ║
-                           ║───────────┼──────────┼──────────┼─────────────║
-                           ║ course    │ 1        │ b        │ 28          ║
-                           ║───────────┼──────────┼──────────┼─────────────║
-                           ║ dance     │ 1        │ a        │ 108         ║
-                           ║───────────┼──────────┼──────────┼─────────────║
-                           ║ doc       │ 1        │ b        │ 183         ║
-                           ║───────────┼──────────┼──────────┼─────────────║
-                           ║ else      │ 1        │ a        │ 147         ║
-                           ║───────────┼──────────┼──────────┼─────────────║
-                           ║ familiar  │ 1        │ a        │ 62          ║
-                           ║───────────┼──────────┼──────────┼─────────────║
-                           ║ fine      │ 2        │ a        │ 5           ║
-                           ║───────────┼──────────┼──────────┼─────────────║
-                           ║ forget    │ 1        │ b        │ 22          ║
-                           ║───────────┼──────────┼──────────┼─────────────║
-                           ║ gonna     │ 1        │ b        │ 87          ║
-                           ║───────────┼──────────┼──────────┼─────────────║
-                           ║ good      │ 3        │ a        │ 16, 28      ║
-                           ║           │          │ b        │ 148         ║
-                           ║───────────┼──────────┼──────────┼─────────────║
-                           ║ guitar    │ 1        │ a        │ 171         ║
-                           ║───────────┼──────────┼──────────┼─────────────║
-                           ║ happen    │ 1        │ b        │ 75          ║
-                           ║───────────┼──────────┼──────────┼─────────────║
-                           ║ kid       │ 1        │ b        │ 15          ║
-                           ║───────────┼──────────┼──────────┼─────────────║
-                           ║ know      │ 3        │ a        │ 38, 77, 134 ║
-                           ║───────────┼──────────┼──────────┼─────────────║
-                           ║ little    │ 1        │ b        │ 211         ║
-                           ║───────────┼──────────┼──────────┼─────────────║
-                           ║ look      │ 2        │ a        │ 54          ║
-                           ║           │          │ b        │ 188         ║
-                           ║───────────┼──────────┼──────────┼─────────────║
-                           ║ lot       │ 1        │ b        │ 10          ║
-                           ║───────────┼──────────┼──────────┼─────────────║
-                           ║ marty     │ 2        │ a        │ 43          ║
-                           ║           │          │ b        │ 108         ║
-                           ║───────────┼──────────┼──────────┼─────────────║
-                           ║ maybe     │ 1        │ a        │ 196         ║
-                           ║───────────┼──────────┼──────────┼─────────────║
-                           ║ mother    │ 1        │ a        │ 87          ║
-                           ║───────────┼──────────┼──────────┼─────────────║
-                           ║ need      │ 1        │ b        │ 201         ║
-                           ║───────────┼──────────┼──────────┼─────────────║
-                           ║ never     │ 1        │ b        │ 166         ║
-                           ║───────────┼──────────┼──────────┼─────────────║
-                           ║ play      │ 1        │ a        │ 162         ║
-                           ║───────────┼──────────┼──────────┼─────────────║
-                           ║ plutonium │ 1        │ b        │ 218         ║
-                           ║───────────┼──────────┼──────────┼─────────────║
-                           ║ ram       │ 1        │ b        │ 93          ║
-                           ║───────────┼──────────┼──────────┼─────────────║
-                           ║ someone   │ 1        │ a        │ 139         ║
-                           ║───────────┼──────────┼──────────┼─────────────║
-                           ║ thank     │ 2        │ b        │ 0, 125      ║
-                           ║───────────┼──────────┼──────────┼─────────────║
-                           ║ these     │ 1        │ a        │ 189         ║
-                           ║───────────┼──────────┼──────────┼─────────────║
-                           ║ unless    │ 1        │ a        │ 123         ║
-                           ║───────────┼──────────┼──────────┼─────────────║
-                           ║ want      │ 2        │ b        │ 62, 117     ║
-                           ║───────────┼──────────┼──────────┼─────────────║
-                           ║ well      │ 1        │ b        │ 102         ║
-                           ║───────────┼──────────┼──────────┼─────────────║
-                           ║ would     │ 1        │ b        │ 53          ║
-                           ╚═══════════════════════════════════════════════╝
-                                                  ▲
-                                                  │
-                                                  │
-                                     ┌stop word cleaned query──┐
-                                     │ marty play guitar       │
-                                     └─────────────────────────┘
-                                                  ▲
-                                                  │
-                                                  │
-                                     ┌normalized query─────────┐
-                                     │ marty play the guitar   │
-                                     └─────────────────────────┘
-                                                  ▲
-                                                  │
-                                                  │
-                                     ┌query───────┴─────────────┐
-                                     │ 'Marty play the guitar.' │
-                                     └──────────────────────────┘
+                       ▼                                                         ▼
+┌normalized document a─────────────────────────────┐      ┌normalized document b─────────────────────────────┐
+│ no fine no good fine good you know marty         │      │ thank a lot kid now of course not biff now       │
+│ you look so familiar do i know your mother hey   │      │ i would not want that to happen i am gonna ram   │
+│ man the dance is over unless you know someone    │      │ him well marty i want to thank you for all       │
+│ else who could play the guitar who is are these  │      │ your good advice i will never forget it doc      │
+│ maybe you were adopted                           │      │ look all we need is a little plutonium           │
+└──────────────────────┬───────────────────────────┘      └──────────────────────┬───────────────────────────┘
+                       │                                                         │
+                       │                                                         │
+                       ▼                                                         ▼
+┌stopword cleaned document a───────────────────────┐      ┌stopword cleaned document b───────────────────────┐
+│ fine good fine good know marty                   │      │ thank lot kid course biff                        │
+│ look familiar know mother                        │      │ would want happen gonna ram                      │
+│ dance unless know someone                        │      │ well marty want thank                            │
+│ else could play guitar these                     │      │ good advice never forget doc                     │
+│ maybe adopted                                    │      │ look need little plutonium                       │
+└─────────────────────┬────────────────────────────┘      └─────────────────────┬────────────────────────────┘
+                      │                                                         │
+                      │                                                         │
+                      └───────────────┐                       ┌─────────────────┘
+                                      ▼                       ▼
+                          ╔WebIndex═══════════════════════════════════════╗
+                          ║ Term      │ Fequency │ Documnet │ Position    ║
+                          ║═══════════════════════════════════════════════║
+                          ║ adopted   │ 1        │ a        │ 211         ║
+                          ║───────────┼──────────┼──────────┼─────────────║
+                          ║ advice    │ 1        │ b        │ 153         ║
+                          ║───────────┼──────────┼──────────┼─────────────║
+                          ║ biff      │ 1        │ b        │ 40          ║
+                          ║───────────┼──────────┼──────────┼─────────────║
+                          ║ could     │ 1        │ a        │ 156         ║
+                          ║───────────┼──────────┼──────────┼─────────────║
+                          ║ course    │ 1        │ b        │ 28          ║
+                          ║───────────┼──────────┼──────────┼─────────────║
+                          ║ dance     │ 1        │ a        │ 108         ║
+                          ║───────────┼──────────┼──────────┼─────────────║
+                          ║ doc       │ 1        │ b        │ 183         ║
+                          ║───────────┼──────────┼──────────┼─────────────║
+                          ║ else      │ 1        │ a        │ 147         ║
+                          ║───────────┼──────────┼──────────┼─────────────║
+                          ║ familiar  │ 1        │ a        │ 62          ║
+                          ║───────────┼──────────┼──────────┼─────────────║
+                          ║ fine      │ 2        │ a        │ 5           ║
+                          ║───────────┼──────────┼──────────┼─────────────║
+                          ║ forget    │ 1        │ b        │ 22          ║
+                          ║───────────┼──────────┼──────────┼─────────────║
+                          ║ gonna     │ 1        │ b        │ 87          ║
+                          ║───────────┼──────────┼──────────┼─────────────║
+                          ║ good      │ 3        │ a        │ 16, 28      ║
+                          ║           │          │ b        │ 148         ║
+                          ║───────────┼──────────┼──────────┼─────────────║
+                          ║ guitar    │ 1        │ a        │ 171         ║
+                          ║───────────┼──────────┼──────────┼─────────────║
+                          ║ happen    │ 1        │ b        │ 75          ║
+                          ║───────────┼──────────┼──────────┼─────────────║
+                          ║ kid       │ 1        │ b        │ 15          ║
+                          ║───────────┼──────────┼──────────┼─────────────║
+                          ║ know      │ 3        │ a        │ 38, 77, 134 ║
+                          ║───────────┼──────────┼──────────┼─────────────║
+                          ║ little    │ 1        │ b        │ 211         ║
+                          ║───────────┼──────────┼──────────┼─────────────║
+                          ║ look      │ 2        │ a        │ 54          ║
+                          ║           │          │ b        │ 188         ║
+                          ║───────────┼──────────┼──────────┼─────────────║
+                          ║ lot       │ 1        │ b        │ 10          ║
+                          ║───────────┼──────────┼──────────┼─────────────║
+                          ║ marty     │ 2        │ a        │ 43          ║
+                          ║           │          │ b        │ 108         ║
+                          ║───────────┼──────────┼──────────┼─────────────║
+                          ║ maybe     │ 1        │ a        │ 196         ║
+                          ║───────────┼──────────┼──────────┼─────────────║
+                          ║ mother    │ 1        │ a        │ 87          ║
+                          ║───────────┼──────────┼──────────┼─────────────║
+                          ║ need      │ 1        │ b        │ 201         ║
+                          ║───────────┼──────────┼──────────┼─────────────║
+                          ║ never     │ 1        │ b        │ 166         ║
+                          ║───────────┼──────────┼──────────┼─────────────║
+                          ║ play      │ 1        │ a        │ 162         ║
+                          ║───────────┼──────────┼──────────┼─────────────║
+                          ║ plutonium │ 1        │ b        │ 218         ║
+                          ║───────────┼──────────┼──────────┼─────────────║
+                          ║ ram       │ 1        │ b        │ 93          ║
+                          ║───────────┼──────────┼──────────┼─────────────║
+                          ║ someone   │ 1        │ a        │ 139         ║
+                          ║───────────┼──────────┼──────────┼─────────────║
+                          ║ thank     │ 2        │ b        │ 0, 125      ║
+                          ║───────────┼──────────┼──────────┼─────────────║
+                          ║ these     │ 1        │ a        │ 189         ║
+                          ║───────────┼──────────┼──────────┼─────────────║
+                          ║ unless    │ 1        │ a        │ 123         ║
+                          ║───────────┼──────────┼──────────┼─────────────║
+                          ║ want      │ 2        │ b        │ 62, 117     ║
+                          ║───────────┼──────────┼──────────┼─────────────║
+                          ║ well      │ 1        │ b        │ 102         ║
+                          ║───────────┼──────────┼──────────┼─────────────║
+                          ║ would     │ 1        │ b        │ 53          ║
+                          ╚═══════════════════════════════════════════════╝
+                                                 ▲
+                                                 │
+                                                 │
+                                    ┌stop word cleaned query──┐
+                                    │ marty play guitar       │
+                                    └─────────────────────────┘
+                                                 ▲
+                                                 │
+                                                 │
+                                    ┌normalized query─────────┐
+                                    │ marty play the guitar   │
+                                    └─────────────────────────┘
+                                                 ▲
+                                                 │
+                                                 │
+                                    ┌query───────┴─────────────┐
+                                    │ 'Marty play the guitar.' │
+                                    └──────────────────────────┘
 ```
 
 `WebIndex` is an efficient system that combines document store and reverse indices to support a variety of search options. The 
@@ -195,42 +195,42 @@ posting. When searching for one or more terms, the IDs of the instances and thei
 determined.
 
 ```
- ╔═══════════════════════════════════════ IndexManager ═╗
- ║   ┌──────────┐                                       ║
- ║   │ WebIndex │                                       ║
- ║   └────┬─────┘                                       ║
- ║        │ 1                                           ║
- ║        │            ╔══════ IndexDocumentStore ═╗    ║
- ║        │ *          ║                           ║    ║
- ║ ┌──────┴────────┐ 1 ║ * ┌──────┐                ║    ║
- ║ │ IndexDocument ├───────┤ Item │                ║    ║
- ║ └──────┬────────┘   ║   └──────┘                ║    ║
- ║        │ 1          ╚═══════════════════════════╝    ║
- ║        │                                             ║
- ║        │ *                                           ║
- ║  ┌─────┴──────┐                                      ║
- ║  │ IndexField │                                      ║
- ║  └─────┬──────┘                                      ║
- ║        │ 1                                           ║
- ║ ╔══════│═════ IndexReverse ═╗                        ║
- ║ ║      │ *                  ║                        ║
- ║ ║  ┌───┴──┐                 ║                        ║
- ║ ║  │ Term │                 ║                        ║
- ║ ║  └───┬──┘                 ║                        ║
- ║ ║      │ 1                  ║                        ║
- ║ ║      │                    ║                        ║
- ║ ║      │ *                  ║                        ║
- ║ ║ ┌────┴────┐               ║                        ║
- ║ ║ │ Posting │               ║                        ║
- ║ ║ └────┬────┘               ║                        ║
- ║ ║      │ 1                  ║                        ║
- ║ ║      │                    ║                        ║
- ║ ║      │ *                  ║                        ║
- ║ ║ ┌────┴─────┐              ║                        ║
- ║ ║ │ Position │              ║                        ║
- ║ ║ └──────────┘              ║                        ║
- ║ ╚═══════════════════════════╝                        ║
- ╚══════════════════════════════════════════════════════╝
+╔IndexManager══════════════════════════════════════════╗
+║   ┌──────────┐                                       ║
+║   │ WebIndex │                                       ║
+║   └────┬─────┘                                       ║
+║      1 │                                             ║
+║        │            ┌IndexDocumentStore---------┐    ║
+║      * ▼            ¦                           ¦    ║
+║ ┌───────────────┐ 1 ¦ * ┌──────┐                ¦    ║
+║ │ IndexDocument ├──────►│ Item │                ¦    ║
+║ └──────┬────────┘   ¦   └──────┘                ¦    ║
+║      1 │            └---------------------------┘    ║
+║        │                                             ║
+║      * ▼                                             ║
+║  ┌────────────┐                                      ║
+║  │ IndexField │                                      ║
+║  └─────┬──────┘                                      ║
+║      1 │                                             ║
+║ ┌------│--------IndexReverse┐                        ║
+║ ¦    * ▼                    ¦                        ║
+║ ¦  ┌──────┐                 ¦                        ║
+║ ¦  │ Term │                 ¦                        ║
+║ ¦  └───┬──┘                 ¦                        ║
+║ ¦    1 │                    ¦                        ║
+║ ¦      │                    ¦                        ║
+║ ¦    * ▼                    ¦                        ║
+║ ¦ ┌─────────┐               ¦                        ║
+║ ¦ │ Posting │               ¦                        ║
+║ ¦ └────┬────┘               ¦                        ║
+║ ¦    1 │                    ¦                        ║
+║ ¦      │                    ¦                        ║
+║ ¦    * ▼                    ¦                        ║
+║ ¦ ┌──────────┐              ¦                        ║
+║ ¦ │ Position │              ¦                        ║
+║ ¦ └──────────┘              ¦                        ║
+║ └---------------------------┘                        ║
+╚══════════════════════════════════════════════════════╝
 ```
 
 # IndexManager
@@ -369,21 +369,21 @@ positional data in the reverse index. The name and type of the field are essenti
 If a field is marked with the IndexIgnore attribute, it will be excluded from the indexing process.
 
 ```
-                                                                                         ┌───────────────┐
-                                ┌───────────────┐       ┌────────────────────┐           │ <<interface>> │
-                                │ IndexDocument ├───────┤ IndexDocumentStore │           │ IIndexItem    │
-                                └──────┬────────┘       └────────────────────┘           └───────────────┘
-                                       │                                                         ▲
-          ┌──────────────────┬─────────┴────────┬──────────────────┐                             ¦
-          │ Property 1       │ Property 2       │ Property …       │ Property n           ┌─────────────┐
-   ┌──────┴───────┐   ┌──────┴───────┐   ┌──────┴───────┐   ┌──────┴───────┐              │ MyIndexItem │
-   │ IndexField 1 │   │ IndexField 2 │   │ IndexField … │   │ IndexField n │       <-->   ├─────────────┤
-   └──────┬───────┘   └──────┬───────┘   └──────┬───────┘   └──────┬───────┘              │ Property 1  │
-          │                  │                  │                  │                      │ Property 2  │
-  ┌───────┴────────┐ ┌───────┴────────┐ ┌───────┴────────┐ ┌───────┴────────┐             │ Property …  │
-  │ IndexReverse 1 │ │ IndexReverse 2 │ │ IndexReverse … │ │ IndexReverse n │             │ Property n  │
-  └────────────────┘ └────────────────┘ └────────────────┘ └────────────────┘             ├─────────────┤
-                                                                                          └─────────────┘
+                                                                                       ┌───────────────┐
+                              ┌───────────────┐       ┌────────────────────┐           │ <<interface>> │
+                              │ IndexDocument ├───────┤ IndexDocumentStore │           │ IIndexItem    │
+                              └──────┬────────┘       └────────────────────┘           └───────────────┘
+                                     │                                                         ▲
+        ┌──────────────────┬─────────┴────────┬──────────────────┐                             ¦
+        │ Property 1       │ Property 2       │ Property …       │ Property n           ┌─────────────┐
+ ┌──────┴───────┐   ┌──────┴───────┐   ┌──────┴───────┐   ┌──────┴───────┐              │ MyIndexItem │
+ │ IndexField 1 │   │ IndexField 2 │   │ IndexField … │   │ IndexField n │       <-->   ├─────────────┤
+ └──────┬───────┘   └──────┬───────┘   └──────┬───────┘   └──────┬───────┘              │ Property 1  │
+        │                  │                  │                  │                      │ Property 2  │
+┌───────┴────────┐ ┌───────┴────────┐ ┌───────┴────────┐ ┌───────┴────────┐             │ Property …  │
+│ IndexReverse 1 │ │ IndexReverse 2 │ │ IndexReverse … │ │ IndexReverse n │             │ Property n  │
+└────────────────┘ └────────────────┘ └────────────────┘ └────────────────┘             ├─────────────┤
+                                                                                        └─────────────┘
 ```
 ## IndexSchema
 The index schema file contains important metadata, which provides detailed information about the structure and characteristics of 
@@ -593,22 +593,22 @@ This process ensures efficient use of storage space without compromising the int
 this method allows for faster data transmission and enhances the overall performance of the `IndexDocumentStore`. Access to the 
 original data can be obtained at any time through decompression and deserialization.
 ```
-  ┌──────────────────────────────┐
-  │ start                        │
-  │ ┌────────────────────────────┤
-  │ │ if !contains(id)           │ look up document id in hash map
-  │ │ ┌──────────────────────────┤
-  │ │ │ gzip(data)               │ gzip the data
-  │ │ │ add item                 │ adding an items segment
-  │ │ └──────────────────────────┤
-  │ │ else                       │
-  │ │ ┌──────────────────────────┤
-  │ │ │ throw ArgumentException  │
-  │ │ └──────────────────────────┤
-  │ │ end if                     │
-  │ └────────────────────────────┤
-  │ end                          │
-  └──────────────────────────────┘
+┌──────────────────────────────┐
+│ start                        │
+│ ┌────────────────────────────┤
+│ │ if !contains(id)           │ look up document id in hash map
+│ │ ┌──────────────────────────┤
+│ │ │ gzip(data)               │ gzip the data
+│ │ │ add item                 │ adding an items segment
+│ │ └──────────────────────────┤
+│ │ else                       │
+│ │ ┌──────────────────────────┤
+│ │ │ throw ArgumentException  │
+│ │ └──────────────────────────┤
+│ │ end if                     │
+│ └────────────────────────────┤
+│ end                          │
+└──────────────────────────────┘
 ```
 
 **Update**: The update process consists of a combination of delete and add operations. If the data is of the same size, the existing item 
@@ -616,45 +616,45 @@ segment is reused. Otherwise, a new item segment is created and used. This appro
 system efficiency by avoiding unnecessary storage allocations.
 
 ```
-  ┌──────────────────────────────┐
-  │ start                        │
-  │ ┌────────────────────────────┤
-  │ │ if contains(id)            │ look up document id in hash map
-  │ │ ┌──────────────────────────┤
-  │ │ │ delete                   │ delete item
-  │ │ │ gzip(data)               │ gzip the data
-  │ │ │ delete item              │ remove the existing item segment
-  │ │ │ add item                 │ adding the updated item segment
-  │ │ └──────────────────────────┤
-  │ │ else                       │
-  │ │ ┌──────────────────────────┤
-  │ │ │ add                      │ add item
-  │ │ └──────────────────────────┤
-  │ │ end if                     │
-  │ └────────────────────────────┤
-  │ end                          │
-  └──────────────────────────────┘
+┌──────────────────────────────┐
+│ start                        │
+│ ┌────────────────────────────┤
+│ │ if contains(id)            │ look up document id in hash map
+│ │ ┌──────────────────────────┤
+│ │ │ delete                   │ delete item
+│ │ │ gzip(data)               │ gzip the data
+│ │ │ delete item              │ remove the existing item segment
+│ │ │ add item                 │ adding the updated item segment
+│ │ └──────────────────────────┤
+│ │ else                       │
+│ │ ┌──────────────────────────┤
+│ │ │ add                      │ add item
+│ │ └──────────────────────────┤
+│ │ end if                     │
+│ └────────────────────────────┤
+│ end                          │
+└──────────────────────────────┘
 ```
 
 **Remove**: Documents that are no longer needed can be securely removed from the document storage by using the delete function. This 
 ensures efficient use of storage and keeps the document storage tidy and well-organized.
 
 ```
-  ┌──────────────────────────────┐
-  │ start                        │
-  │ ┌────────────────────────────┤
-  │ │ if !contains(id)           │ look up document id in hash map
-  │ │ ┌──────────────────────────┤
-  │ │ │ delete item              │ remove the existing item segment
-  │ │ └──────────────────────────┤
-  │ │ else                       │
-  │ │ ┌──────────────────────────┤
-  │ │ │ throw ArgumentException  │
-  │ │ └──────────────────────────┤
-  │ │ end if                     │
-  │ └────────────────────────────┤
-  │ end                          │
-  └──────────────────────────────┘
+┌──────────────────────────────┐
+│ start                        │
+│ ┌────────────────────────────┤
+│ │ if !contains(id)           │ look up document id in hash map
+│ │ ┌──────────────────────────┤
+│ │ │ delete item              │ remove the existing item segment
+│ │ └──────────────────────────┤
+│ │ else                       │
+│ │ ┌──────────────────────────┤
+│ │ │ throw ArgumentException  │
+│ │ └──────────────────────────┤
+│ │ end if                     │
+│ └────────────────────────────┤
+│ end                          │
+└──────────────────────────────┘
 ```
 
 ### IndexReverse
@@ -737,41 +737,41 @@ position in the documents.
 is as follows:
 
 ```
-  ┌──────────────────────────────┐
-  │ start                        │
-  │ ┌────────────────────────────┤
-  │ │ loop over terms            │ retrieve all terms from the new IndexField
-  │ │ ┌──────────────────────────┤
-  │ │ │ tn := gettermnode(term)  │
-  │ │ │ if tn != null            │
-  │ │ │ ┌────────────────────────┤
-  │ │ │ │ p := getposting(id)    │
-  │ │ │ │ if p != null           │
-  │ │ │ │ ┌──────────────────────┤
-  │ │ │ │ │ add position         │ add position associated with the existing posting
-  │ │ │ │ └──────────────────────┤
-  │ │ │ │ else                   │
-  │ │ │ │ ┌──────────────────────┤
-  │ │ │ │ │ add posting          │ add posting with the document id
-  │ │ │ │ │ ┌────────────────────┤
-  │ │ │ │ │ │ add position       │ add position associated with the new posting
-  │ │ │ │ └─┴────────────────────┤
-  │ │ │ │ end if                 │
-  │ │ │ └────────────────────────┤
-  │ │ │ else                     │
-  │ │ │ ┌────────────────────────┤
-  │ │ │ │ add term node          │ add new term node
-  │ │ │ │ ┌──────────────────────┤
-  │ │ │ │ │ add posting          │ add posting with the document id
-  │ │ │ │ │ ┌────────────────────┤
-  │ │ │ │ │ │ add position       │ add position associated with the new posting
-  │ │ │ └─┴─┴────────────────────┤
-  │ │ │ end if                   │
-  │ │ └──────────────────────────┤
-  │ │ end loop                   │
-  │ └────────────────────────────┤
-  │ end                          │
-  └──────────────────────────────┘
+┌──────────────────────────────┐
+│ start                        │
+│ ┌────────────────────────────┤
+│ │ loop over terms            │ retrieve all terms from the new IndexField
+│ │ ┌──────────────────────────┤
+│ │ │ tn := gettermnode(term)  │
+│ │ │ if tn != null            │
+│ │ │ ┌────────────────────────┤
+│ │ │ │ p := getposting(id)    │
+│ │ │ │ if p != null           │
+│ │ │ │ ┌──────────────────────┤
+│ │ │ │ │ add position         │ add position associated with the existing posting
+│ │ │ │ └──────────────────────┤
+│ │ │ │ else                   │
+│ │ │ │ ┌──────────────────────┤
+│ │ │ │ │ add posting          │ add posting with the document id
+│ │ │ │ │ ┌────────────────────┤
+│ │ │ │ │ │ add position       │ add position associated with the new posting
+│ │ │ │ └─┴────────────────────┤
+│ │ │ │ end if                 │
+│ │ │ └────────────────────────┤
+│ │ │ else                     │
+│ │ │ ┌────────────────────────┤
+│ │ │ │ add term node          │ add new term node
+│ │ │ │ ┌──────────────────────┤
+│ │ │ │ │ add posting          │ add posting with the document id
+│ │ │ │ │ ┌────────────────────┤
+│ │ │ │ │ │ add position       │ add position associated with the new posting
+│ │ │ └─┴─┴────────────────────┤
+│ │ │ end if                   │
+│ │ └──────────────────────────┤
+│ │ end loop                   │
+│ └────────────────────────────┤
+│ end                          │
+└──────────────────────────────┘
 ```
 
 **Update**: Updating an `IndexField` in a document is done by determining the difference between the saved and changed terms. All 
@@ -779,65 +779,65 @@ postings (including positions) will be deleted if they no longer exist in the ch
 new postings (including positions) are created for terms that were not included in the original `IndexField`.
 
 ```
-  ┌──────────────────────────────┐
-  │ current                      │
-  │                              │
-  │ to delete =        ┌─────────┼─────────────────┐
-  │ current\changed    │         │         changed │
-  └────────────────────┼─────────┘                 │
-                       │                  to add = │
-                       │           changed\current │
-                       └───────────────────────────┘
+┌──────────────────────────────┐
+│ current                      │
+│                              │
+│ to delete =        ┌─────────┼─────────────────┐
+│ current\changed    │         │         changed │
+└────────────────────┼─────────┘                 │
+                     │                  to add = │
+                     │           changed\current │
+                     └───────────────────────────┘
 ```
 This results in the following process:
 ```
-  ┌──────────────────────────────────┐
-  │ start                            │
-  │ ┌────────────────────────────────┤
-  │ │ deleteTerms := current\changed │
-  │ │ addTerms := changed\current    │
-  │ │ ┌──────────────────────────────┤
-  │ │ │ loop over deleteTerms        │
-  │ │ │ ┌────────────────────────────┤
-  │ │ │ │ delete posting             │ remove all postings with the document id
-  │ │ │ │ ┌──────────────────────────┤
-  │ │ │ │ │ delete position          │ remove all positions associated with the deleted postings
-  │ │ │ └─┴──────────────────────────┤
-  │ │ │ end loop                     │
-  │ │ └──────────────────────────────┤
-  │ │ ┌──────────────────────────────┤
-  │ │ │ loop over addTerms           │
-  │ │ │ ┌────────────────────────────┤
-  │ │ │ │ add posting                │ add posting with the document id
-  │ │ │ │ ┌──────────────────────────┤
-  │ │ │ │ │ add position             │ add position associated with the posting
-  │ │ │ └─┴──────────────────────────┤
-  │ │ │ end loop                     │
-  │ └─┴──────────────────────────────┤
-  │ end                              │
-  └──────────────────────────────────┘
+┌──────────────────────────────────┐
+│ start                            │
+│ ┌────────────────────────────────┤
+│ │ deleteTerms := current\changed │
+│ │ addTerms := changed\current    │
+│ │ ┌──────────────────────────────┤
+│ │ │ loop over deleteTerms        │
+│ │ │ ┌────────────────────────────┤
+│ │ │ │ delete posting             │ remove all postings with the document id
+│ │ │ │ ┌──────────────────────────┤
+│ │ │ │ │ delete position          │ remove all positions associated with the deleted postings
+│ │ │ └─┴──────────────────────────┤
+│ │ │ end loop                     │
+│ │ └──────────────────────────────┤
+│ │ ┌──────────────────────────────┤
+│ │ │ loop over addTerms           │
+│ │ │ ┌────────────────────────────┤
+│ │ │ │ add posting                │ add posting with the document id
+│ │ │ │ ┌──────────────────────────┤
+│ │ │ │ │ add position             │ add position associated with the posting
+│ │ │ └─┴──────────────────────────┤
+│ │ │ end loop                     │
+│ └─┴──────────────────────────────┤
+│ end                              │
+└──────────────────────────────────┘
 ```
 
 **Remove**: The removal of an IndexField from a reverse index is carried out according to the following procedure:
 
 ```
-  ┌──────────────────────────────┐
-  │ start                        │
-  │ ┌────────────────────────────┤
-  │ │ loop over terms            │ retrieve all terms from the stored IndexField
-  │ │ ┌──────────────────────────┤
-  │ │ │ loop over termnode(term) │ retrieve all TermNodes that correspond to the term
-  │ │ │ ┌────────────────────────┤
-  │ │ │ │ delete posting         │ remove all postings with the document id
-  │ │ │ │ ┌──────────────────────┤
-  │ │ │ │ │ delete position      │ remove all positions associated with the deleted postings
-  │ │ │ └─┴──────────────────────┤
-  │ │ │ end loop                 │
-  │ │ └──────────────────────────┤
-  │ │ end loop                   │
-  │ └────────────────────────────┤
-  │ end                          │
-  └──────────────────────────────┘
+┌──────────────────────────────┐
+│ start                        │
+│ ┌────────────────────────────┤
+│ │ loop over terms            │ retrieve all terms from the stored IndexField
+│ │ ┌──────────────────────────┤
+│ │ │ loop over termnode(term) │ retrieve all TermNodes that correspond to the term
+│ │ │ ┌────────────────────────┤
+│ │ │ │ delete posting         │ remove all postings with the document id
+│ │ │ │ ┌──────────────────────┤
+│ │ │ │ │ delete position      │ remove all positions associated with the deleted postings
+│ │ │ └─┴──────────────────────┤
+│ │ │ end loop                 │
+│ │ └──────────────────────────┤
+│ │ end loop                   │
+│ └────────────────────────────┤
+│ end                          │
+└──────────────────────────────┘
 ```
 
 ## Indexing
@@ -855,7 +855,7 @@ public class Greetings : IIndexItem
 }
  
 // somewhere in the code...
-IndexManager.Register<Test>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
+IndexManager.Register<Greetings>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
 
 var greetings = new []
 {
@@ -865,46 +865,47 @@ var greetings = new []
 
 IndexManager.ReIndex(greetings);
 ```
+
 ```
- ┌Term: 23┐
- │ null   │ root
- │ 0      │ 
- │ 53     │────►┌Term: 53┐
- │ 0      │     │ 'h'    │ first letter from helge and helena
- │ 0      │     │ 0      │
- └────────┘     │ 83     │────►┌Term: 83┐
-                │ 0      │     │ 'e'    │ second letter from helge and helena
-                │ 0      │     │ 0      │
-                └────────┘     │ 113    │────►┌Term:113┐
-                               │ 0      │     │ 'l'    │ third letter from helge and helena
-                               │ 0      │     │ 0      │
-                               └────────┘     │ 321    │────►┌Term:143┐
-                                              │ 0      │     │ 'e'    │ fourth letter from helena
-                                              │ 0      │  ┌──│ 321    │
-                                              └────────┘  │  │ 173    │────►┌Term:173┐
-                                                          │  │ 0      │     │ 'n'    │ fifth letter from helena
-                                                          │  │ 0      │     │ 0      │
-                                        ┌Term:321┐◄───────┘  └────────┘     │ 203    │────►┌Term:203┐
-                                        │ 'g'    │ fourth letter from helge │ 0      │     │ 'a'    │ sixth letter from helena
-                                        │ 0      │                          │ 0      │     │ 0      │
-                                        │ 351    │────►┌Term:351┐           └────────┘     │ 0      │
-                                        │ 0      │     │ 'e'    │ fifth letter from helge  │ 2      │
-                                        │ 0      │     │ 0      │                        ┌─│ 233    │
-                                        └────────┘     │ 0      │                        │ └────────┘
-                                                       │ 1      │                        │
-                                                     ┌─│ 381    │                        │
-                                                     │ └────────┘                        ▼
-                                                     ▼                                  ┌Post:233┐
-                                                    ┌Post:381┐                          │ 'b2..' │
-                                                    │ 'c7..' │                          │ 0      │
-                                                    │ 0      │                          │ 277    │────►┌Post:277┐
-                                                    │ 0      │           ┌Pos: 265┐◄────│ 265    │     │ 'c7..' │
-                                     ┌Pos: 413┐◄────│ 413    │           │ 1      │     └────────┘     │ 0      │
-                                     │ 3      │     └────────┘           │ 0      │                    │ 0      │
-                                     │ 0      │                          └────────┘                    │ 309    │────►┌Pos: 309┐
-                                     └────────┘                                                        └────────┘     │ 1      │
-                                                                                                                      │ 0      │
-                                                                                                                      └────────┘
+┌Term: 23┐
+│ null   │ root
+│ 0      │ 
+│ 53     │────►┌Term: 53┐
+│ 0      │     │ 'h'    │ first letter from helge and helena
+│ 0      │     │ 0      │
+└────────┘     │ 83     │────►┌Term: 83┐
+               │ 0      │     │ 'e'    │ second letter from helge and helena
+               │ 0      │     │ 0      │
+               └────────┘     │ 113    │────►┌Term:113┐
+                              │ 0      │     │ 'l'    │ third letter from helge and helena
+                              │ 0      │     │ 0      │
+                              └────────┘     │ 321    │────►┌Term:143┐
+                                             │ 0      │     │ 'e'    │ fourth letter from helena
+                                             │ 0      │  ┌──│ 321    │
+                                             └────────┘  │  │ 173    │────►┌Term:173┐
+                                                         │  │ 0      │     │ 'n'    │ fifth letter from helena
+                                                         │  │ 0      │     │ 0      │
+                                       ┌Term:321┐◄───────┘  └────────┘     │ 203    │────►┌Term:203┐
+                                       │ 'g'    │ fourth letter from helge │ 0      │     │ 'a'    │ sixth letter from helena
+                                       │ 0      │                          │ 0      │     │ 0      │
+                                       │ 351    │────►┌Term:351┐           └────────┘     │ 0      │
+                                       │ 0      │     │ 'e'    │ fifth letter from helge  │ 2      │
+                                       │ 0      │     │ 0      │                        ┌─│ 233    │
+                                       └────────┘     │ 0      │                        │ └────────┘
+                                                      │ 1      │                        │
+                                                    ┌─│ 381    │                        │
+                                                    │ └────────┘                        ▼
+                                                    ▼                                  ┌Post:233┐
+                                                   ┌Post:381┐                          │ 'b2..' │
+                                                   │ 'c7..' │                          │ 0      │
+                                                   │ 0      │                          │ 277    │────►┌Post:277┐
+                                                   │ 0      │           ┌Pos: 265┐◄────│ 265    │     │ 'c7..' │
+                                    ┌Pos: 413┐◄────│ 413    │           │ 1      │     └────────┘     │ 0      │
+                                    │ 3      │     └────────┘           │ 0      │                    │ 0      │
+                                    │ 0      │                          └────────┘                    │ 309    │────►┌Pos: 309┐
+                                    └────────┘                                                        └────────┘     │ 1      │
+                                                                                                                     │ 0      │
+                                                                                                                     └────────┘
 ```
 
 # WQL

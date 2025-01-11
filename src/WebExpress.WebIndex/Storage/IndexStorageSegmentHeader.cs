@@ -47,7 +47,7 @@ namespace WebExpress.WebIndex.Storage
 
             if (!Version.Equals(version))
             {
-                throw new IOException($"The expected file version is '{Version}', but version '{version}' was read.");
+                //throw new IOException($"The expected file version is '{Version}', but version '{version}' was read.");
             }
         }
 
