@@ -8,6 +8,7 @@ namespace WebExpress.WebIndex.Test.DocumentStore
     /// <summary>
     /// Test class for testing the memory-based document store.
     /// </summary>
+    [Collection("NonParallelTests")]
     public class UnitTestDocumentStoreMemoryB : UnitTestDocumentStore<UnitTestIndexFixtureIndexB>
     {
         /// <summary>

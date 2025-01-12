@@ -4,6 +4,9 @@ using Xunit.Abstractions;
 
 namespace WebExpress.WebIndex.Test.Token
 {
+    /// <summary>
+    /// A unit test class for analyzing tokens.
+    /// </summary>
     public class UnitTestIndexAnalyze : IClassFixture<UnitTestIndexFixtureToken>
     {
         /// <summary>
@@ -31,11 +34,12 @@ namespace WebExpress.WebIndex.Test.Token
         /// Tests the analysis function of an supported language.
         /// </summary>
         [Theory]
-        [InlineData("en", "abc def, ghi jkl mno-p.", "abc", "def", "ghi", "jkl", "mno-p")]
-        [InlineData("en", "abc 😊🌸🐼, ghi jkl mno-p.", "abc", "ghi", "jkl", "mno-p")]
+        [InlineData("en", "abc def, ghi jkl mno-pip.", "abc", "def", "ghi", "jkl", "mno", "pip")]
+        [InlineData("en", "Be the change that you wish to see in the world. 😊🌸🐼", "change", "wish", "world")]
         [InlineData("en", "??? ??")]
         [InlineData("en", "???...&nbsp;")]
         [InlineData("en", "theya??r", "theya")]
+        [InlineData("en", "Life is like riding a bicycle. To keep your balance, you must keep moving.", "life", "riding", "bicycle", "balance", "moving")]
         [InlineData("en", "http://example.com/abc", "http", "example", "com", "abc")]
         public void Token(string culture, string input, params string[] expected)
         {

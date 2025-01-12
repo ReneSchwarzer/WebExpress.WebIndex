@@ -1,5 +1,7 @@
 ﻿# Stoppwörter. Ein Stoppwort pro Zeile.
 a
+aa
+aaa
 aber
 abermals
 absolut
@@ -70,6 +72,8 @@ außerdem
 ähnlichster
 ähnlichstes
 b
+bb
+bbb
 beide
 beidem
 beiden
@@ -139,6 +143,8 @@ bringt
 baut
 brennt
 c
+cc
+ccc
 circa
 charakterisiert
 charmant
@@ -154,6 +160,8 @@ couragiert
 creativ
 cynisch
 d
+dd
+ddd
 dabei
 dadurch
 dafür
@@ -330,6 +338,8 @@ durchsichtig
 durstig
 dynamisch
 e
+ee
+eee
 eben
 ebenso
 ehrlich
@@ -445,6 +455,8 @@ exquisit
 extrem
 extravagant
 f
+ff
+fff
 falls
 fast
 ferner
@@ -488,6 +500,8 @@ furchtlos
 fürsorglich
 füllig
 g
+gg
+ggg
 gegen
 gegenüber
 gehabt
@@ -559,6 +573,8 @@ günstig
 gut
 gültig
 h
+hh
+hhh
 hab
 habe
 haben
@@ -604,6 +620,8 @@ hungrig
 hurtig
 hygienisch
 i
+ii
+iii
 ich
 ihm
 ihn
@@ -670,6 +688,8 @@ irrelevant
 irritierend
 isoliert
 j
+jj
+jjj
 ja
 jahr
 jahre
@@ -716,6 +736,8 @@ jüngsten
 jüngster
 jüngstes
 k
+kk
+kkk
 kam
 kann
 konnte
@@ -750,6 +772,8 @@ kurzen
 kurzer
 kurzes
 l
+ll
+lll
 lange
 länger
 längst
@@ -762,6 +786,8 @@ ließ
 liegt
 los
 m
+mm
+mmm
 machen
 macht
 machte
@@ -810,6 +836,8 @@ musste
 müssen
 müsste
 n
+nn
+nnn
 nach
 nachdem
 nahm
@@ -834,6 +862,8 @@ noch
 nun
 nur
 o
+oo
+ooo
 ob
 oben
 oder
@@ -841,17 +871,25 @@ offen
 oft
 ohne
 p
+pp
+ppp
 per
 pfui
 plötzlich
 prinzipiell
 pro
 q
+qq
+qqq
 quasi
 r
+rr
+rrr
 rund
 rief
 s
+ss
+sss
 sagte
 sah
 satt
@@ -911,6 +949,8 @@ suche
 suchen
 sucht
 t
+tt
+ttt
 tage
 tagen
 tat
@@ -920,6 +960,8 @@ tritt
 trotzdem
 tun
 u
+uu
+uuu
 über
 überhaupt
 übrigens
@@ -929,6 +971,8 @@ uns
 unserer
 unter
 v
+vv
+vvv
 vergangenen
 vergangener
 vergangenes
@@ -941,6 +985,8 @@ vorbei
 vorher
 völlig
 w
+ww
+www
 während
 wann
 war
@@ -973,8 +1019,14 @@ wollen
 wollte
 würden
 x
+xx
+xxx
 y
+yy
+yyy
 z
+zz
+zzz
 zehn
 zehnte
 zehnten

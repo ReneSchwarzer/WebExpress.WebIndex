@@ -78,5 +78,22 @@ namespace WebExpress.WebIndex.WiUI.Pages
             var selectedTerm = e.SelectedItem as Model.Term;
             var context = BindingContext as MainViewModel;
         }
+
+        /// <summary>
+        /// Handles the event when a term is added to the clipboard.
+        /// Copies the selected term's value to the clipboard and displays an alert.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The event data.</param>
+        private async void OnAddClipboard(object sender, EventArgs e)
+        {
+            var button = sender as ImageButton;
+
+            if (button?.BindingContext is Model.Term selectedTerm)
+            {
+                await Clipboard.Default.SetTextAsync(selectedTerm.Value);
+                await DisplayAlert("Copied", $"'{selectedTerm.Value}' copied to clipboard", "OK");
+            }
+        }
     }
 }

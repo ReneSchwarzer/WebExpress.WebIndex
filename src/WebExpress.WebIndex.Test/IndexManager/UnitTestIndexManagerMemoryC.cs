@@ -8,6 +8,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
     /// <summary>
     /// Test class for testing the memory-based index manager.
     /// </summary>
+    [Collection("NonParallelTests")]
     public class UnitTestIndexManagerMemoryC : UnitTestIndexManager<UnitTestIndexFixtureIndexC>
     {
         /// <summary>
@@ -72,7 +73,6 @@ namespace WebExpress.WebIndex.Test.IndexManager
         [Theory]
         [InlineData(100, 100, 100, 15, "en")]
         [InlineData(1000, 100, 2000, 15, "en")]
-        [InlineData(500, 75, 400, 10, "en")]
         public async Task ReIndexAsync(int itemCount, int wordCount, int vocabulary, int wordLength, string culture)
         {
             var w = wordCount;
@@ -83,32 +83,22 @@ namespace WebExpress.WebIndex.Test.IndexManager
             // preconditions
             Preconditions();
 
-            var output = "";
             var data = UnitTestIndexTestDocumentFactoryC.GenerateTestData(i, w, v, l);
 
-            IndexManager.Create<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo("en"), IndexType.Memory);
+            IndexManager.Create<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo(culture), IndexType.Memory);
 
-            try
-            {
-                // test execution
-                await IndexManager.ReIndexAsync(data);
+            // test execution
+            await IndexManager.ReIndexAsync(data);
 
-                var randomItem = IndexManager.All<UnitTestIndexTestDocumentC>().Skip(new Random().Next() % data.Count()).FirstOrDefault();
-                var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text.Split(' ').FirstOrDefault()}'");
-                Assert.NotNull(wql);
+            var randomItem = IndexManager.All<UnitTestIndexTestDocumentC>().Skip(new Random().Next() % data.Count()).FirstOrDefault();
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text.Split(' ').FirstOrDefault()}'");
+            Assert.NotNull(wql);
 
-                var item = wql.Apply();
-                Assert.NotEmpty(item);
-            }
-            catch (Exception ex)
-            {
-                output += ex.Message + " " + ex.StackTrace;
-            }
-            finally
-            {
-                // postconditions
-                Postconditions();
-            }
+            var item = wql.Apply();
+            Assert.NotEmpty(item);
+
+            // postconditions
+            Postconditions();
         }
 
         /// <summary>

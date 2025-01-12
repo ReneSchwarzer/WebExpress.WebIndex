@@ -125,6 +125,7 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                                 <Label
                                     Grid.Row="0"
@@ -168,6 +169,7 @@
                                             FontSize="Small"
                                             Text="{Binding Balance}"
                                             TextColor="Gray" />
+
                                     </HorizontalStackLayout>
                                     <HorizontalStackLayout HorizontalOptions="End">
                                         <Label
@@ -182,7 +184,16 @@
                                             Text="{Binding Documents}"
                                             TextColor="Gray" />
                                     </HorizontalStackLayout>
+
                                 </VerticalStackLayout>
+
+                                <ImageButton
+                                    Grid.Row="0"
+                                    Grid.Column="2"
+                                    Margin="5"
+                                    BackgroundColor="Transparent"
+                                    Clicked="OnAddClipboard"
+                                    Source="clipboard.png" />
                             </Grid>
                         </ViewCell>
                     </DataTemplate>
