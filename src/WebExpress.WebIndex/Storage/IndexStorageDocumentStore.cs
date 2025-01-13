@@ -74,9 +74,9 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="capacity">The predicted capacity (number of items to store) of the document store.</param>
         public IndexStorageDocumentStore(IIndexContext context, uint capacity)
         {
+            Capacity = capacity;
             Context = context;
             StorageContext = new IndexStorageContext(this);
-            Capacity = capacity;
             FileName = Path.Combine(Context.IndexDirectory, $"{typeof(T).Name}.{_extentions}");
 
             var exists = File.Exists(FileName);
@@ -86,22 +86,10 @@ namespace WebExpress.WebIndex.Storage
             Statistic = new IndexStorageSegmentStatistic(StorageContext);
             HashMap = new IndexStorageSegmentHashMap(StorageContext, Capacity);
 
-            Allocator.Initialization();
-
-            if (exists)
-            {
-                Header = IndexFile.Read(Header);
-                Allocator = IndexFile.Read(Allocator);
-                Statistic = IndexFile.Read(Statistic);
-                HashMap = IndexFile.Read(HashMap);
-            }
-            else
-            {
-                IndexFile.Write(Header);
-                IndexFile.Write(Allocator);
-                IndexFile.Write(Statistic);
-                IndexFile.Write(HashMap);
-            }
+            Header.Initialization(exists);
+            Statistic.Initialization(exists);
+            HashMap.Initialization(exists);
+            Allocator.Initialization(exists);
 
             IndexFile.Flush();
         }
@@ -173,12 +161,10 @@ namespace WebExpress.WebIndex.Storage
             Statistic = new IndexStorageSegmentStatistic(StorageContext);
             HashMap = new IndexStorageSegmentHashMap(StorageContext, Capacity);
 
-            Allocator.Initialization();
-
-            IndexFile.Write(Header);
-            IndexFile.Write(Allocator);
-            IndexFile.Write(Statistic);
-            IndexFile.Write(HashMap);
+            Header.Initialization(false);
+            Statistic.Initialization(false);
+            HashMap.Initialization(false);
+            Allocator.Initialization(false);
 
             IndexFile.Flush();
         }
@@ -193,7 +179,7 @@ namespace WebExpress.WebIndex.Storage
 
             if (!list.Any())
             {
-                throw new ArgumentException();
+                throw new ArgumentException("The item was not found.");
             }
 
             var segment = list.SkipWhile(x => x.Id != item.Id).FirstOrDefault();
@@ -261,7 +247,7 @@ namespace WebExpress.WebIndex.Storage
                 addr = chunk.NextChunkAddr;
             }
 
-            if (!bytes.Any())
+            if (bytes.Count == 0)
             {
                 return default;
             }
@@ -279,6 +265,8 @@ namespace WebExpress.WebIndex.Storage
         public void Dispose()
         {
             IndexFile.Dispose();
+
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>

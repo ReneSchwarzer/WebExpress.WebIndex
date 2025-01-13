@@ -47,8 +47,6 @@ namespace WebExpress.WebIndex.Test.DocumentStore
             Preconditions();
             var documentStore = new IndexStorageDocumentStore<UnitTestIndexTestDocumentA>(Context, 5);
 
-            documentStore.Clear();
-
             // test execution
             documentStore.Add(Fixture.TestData[0]);
             documentStore.Add(Fixture.TestData[1]);
@@ -182,11 +180,36 @@ namespace WebExpress.WebIndex.Test.DocumentStore
             Preconditions();
             var documentStore = new IndexStorageDocumentStore<UnitTestIndexTestDocumentA>(Context, 5);
 
-            documentStore.Clear();
             documentStore.Add(Fixture.TestData[0]);
             documentStore.Add(Fixture.TestData[1]);
 
             // test execution
+            var all = documentStore.All;
+
+            Assert.Equal(all.Select(x => x.Id).OrderBy(x => x), Fixture.TestData.Take(2).Select(x => x.Id).OrderBy(x => x));
+
+            // postconditions
+            documentStore.Dispose();
+            Postconditions();
+        }
+
+        /// <summary>
+        /// Clear the document store.
+        /// </summary>
+        [Fact]
+        public void Clear()
+        {
+            // preconditions
+            Preconditions();
+            var documentStore = new IndexStorageDocumentStore<UnitTestIndexTestDocumentA>(Context, 5);
+            documentStore.Add(Fixture.TestData[2]);
+            documentStore.Add(Fixture.TestData[3]);
+
+            // test execution
+            documentStore.Clear();
+            documentStore.Add(Fixture.TestData[0]);
+            documentStore.Add(Fixture.TestData[1]);
+
             var all = documentStore.All;
 
             Assert.Equal(all.Select(x => x.Id).OrderBy(x => x), Fixture.TestData.Take(2).Select(x => x.Id).OrderBy(x => x));

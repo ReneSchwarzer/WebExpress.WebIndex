@@ -88,22 +88,10 @@ namespace WebExpress.WebIndex.Storage
             Statistic = new IndexStorageSegmentStatistic(new IndexStorageContext(this));
             Term = new IndexStorageSegmentTerm(new IndexStorageContext(this));
 
-            Allocator.Initialization();
-
-            if (exists)
-            {
-                Header = IndexFile.Read(Header);
-                Allocator = IndexFile.Read(Allocator);
-                Statistic = IndexFile.Read(Statistic);
-                Term = IndexFile.Read(Term);
-            }
-            else
-            {
-                IndexFile.Write(Header);
-                IndexFile.Write(Allocator);
-                IndexFile.Write(Statistic);
-                IndexFile.Write(Term);
-            }
+            Header.Initialization(exists);
+            Statistic.Initialization(exists);
+            Term.Initialization(exists);
+            Allocator.Initialization(exists);
 
             IndexFile.Flush();
         }
@@ -186,12 +174,10 @@ namespace WebExpress.WebIndex.Storage
             Statistic = new IndexStorageSegmentStatistic(new IndexStorageContext(this));
             Term = new IndexStorageSegmentTerm(new IndexStorageContext(this));
 
-            Allocator.Initialization();
-
-            IndexFile.Write(Header);
-            IndexFile.Write(Allocator);
-            IndexFile.Write(Statistic);
-            IndexFile.Write(Term);
+            Header.Initialization(false);
+            Statistic.Initialization(false);
+            Term.Initialization(false);
+            Allocator.Initialization(false);
 
             IndexFile.Flush();
         }

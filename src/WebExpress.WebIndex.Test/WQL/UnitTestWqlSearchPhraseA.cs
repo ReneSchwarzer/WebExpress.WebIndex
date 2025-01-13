@@ -1,5 +1,4 @@
-﻿using WebExpress.WebIndex.Test.Document;
-using WebExpress.WebIndex.Test.Fixture;
+﻿using WebExpress.WebIndex.Test.Fixture;
 using Xunit.Abstractions;
 
 namespace WebExpress.WebIndex.Test.WQL
@@ -154,7 +153,7 @@ namespace WebExpress.WebIndex.Test.WQL
             Assert.Equal(1, res.Count());
             Assert.Contains("c7d8f9e0-3a2b-4c5d-8e6f-9a1b0c2d4e5f", res.Select(x => x.Id.ToString()));
         }
-        
+
         /// <summary>
         /// Tests phrase search, which retrieves content from documents that contain a specific order and combination of words defined by the phrase.
         /// The test produces an unexpected positive result even though there is no exact match. This is because stop words are removed but are 
@@ -164,7 +163,8 @@ namespace WebExpress.WebIndex.Test.WQL
         public void UnexpectedMatch()
         {
             // test execution
-            var wql = Fixture.ExecuteWql("text='Hello Helena, hello Helge!'");
+            // Hello Helena and Helge!
+            var wql = Fixture.ExecuteWql("text='Hello Helena hello Helge!'");
             var res = wql?.Apply();
 
             Assert.NotNull(res);

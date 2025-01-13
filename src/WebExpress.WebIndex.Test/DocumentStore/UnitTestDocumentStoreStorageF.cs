@@ -219,17 +219,16 @@ namespace WebExpress.WebIndex.Test.DocumentStore
             // preconditions
             Preconditions();
             var documentStore = new IndexStorageDocumentStore<UnitTestIndexTestDocumentF>(Context, (uint)Fixture.TestData.Count);
-
-            documentStore.Clear();
             foreach (var item in Fixture.TestData)
             {
                 documentStore.Add(item);
             }
 
             documentStore.Dispose();
-            documentStore = new IndexStorageDocumentStore<UnitTestIndexTestDocumentF>(Context, (uint)Fixture.TestData.Count);
 
             // test execution
+            documentStore = new IndexStorageDocumentStore<UnitTestIndexTestDocumentF>(Context, (uint)Fixture.TestData.Count);
+
             var all = documentStore.All;
 
             Assert.Equal("wds", documentStore.Header.Identifier);

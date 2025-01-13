@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using WebExpress.WebIndex.WebAttribute;
 
 namespace WebExpress.WebIndex.Storage
@@ -20,6 +21,8 @@ namespace WebExpress.WebIndex.Storage
     [SegmentCached]
     public class IndexStorageSegmentTermNode(IndexStorageContext context, ulong addr) : IndexStorageSegment(context, addr)
     {
+        private readonly Lock _guard = new();
+
         /// <summary>
         /// Returns the amount of space required on the storage device.
         /// </summary>
@@ -49,11 +52,6 @@ namespace WebExpress.WebIndex.Storage
         /// Returns the adress of the first posting element of a sorted list or 0 if there is no element.
         /// </summary>
         public ulong PostingAddr { get; private set; }
-
-        /// <summary>
-        /// Returns a guard to protect against concurrent access.
-        /// </summary>
-        private object Guard { get; } = new object();
 
         /// <summary>
         /// Returns the children list.
@@ -243,7 +241,7 @@ namespace WebExpress.WebIndex.Storage
         {
             var item = default(IndexStorageSegmentPostingNode);
 
-            lock (Guard)
+            lock (_guard)
             {
                 if (PostingAddr == 0)
                 {
@@ -286,7 +284,7 @@ namespace WebExpress.WebIndex.Storage
                 return false;
             }
 
-            lock (Guard)
+            lock (_guard)
             {
                 if (PostingAddr != 0)
                 {
@@ -383,7 +381,7 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>The child node.<returns>
         private IndexStorageSegmentTermNode AddChild(IndexStorageSegmentTermNode node)
         {
-            lock (Guard)
+            lock (_guard)
             {
                 if (ChildAddr == 0)
                 {

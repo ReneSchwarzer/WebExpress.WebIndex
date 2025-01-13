@@ -1,4 +1,4 @@
-﻿![WebExpress](https://raw.githubusercontent.com/ReneSchwarzer/WebExpress.Doc/main/assets/banner.png)
+![WebExpress](https://raw.githubusercontent.com/ReneSchwarzer/WebExpress.Doc/main/assets/banner.png)
 
 # WebExpress.WebIndex
 The index model provides a reverse index to enable fast and efficient searching. A reverse index can significantly speed up access 
@@ -549,19 +549,28 @@ instances that contain the desired terms. The internal structure of the document
          ╚~~~~~~~~~~~~~~~╝
 ```
 
-Access to the document instances is done via a HashMap, where the id serves as the key. 
+Access to the document instances is done via a HashMap, where the document id serves as the key. 
 
 ```
          ╔HashMap════════╗
   4 Byte ║ BucketCount   ║ number of buckets (the next prime number of capacity)
-         ╠Data═══════════╣
-         ║ Bucket 0      ║ pointer to the address of the first element of a sorted list that has the same hash values (collisions) or 0 if there is no element
+         ╠Buckets════════╣
+         ║ Bucket 0      ║ slot in which items with the same hash value are stored
   n *    ║ Bucket 1      ║
   8 Byte ║~~~~~~~~~~~~~~~║
          ║~~~~~~~~~~~~~~~║
          ║ Bucket n      ║
+         ╠Data═══════════╣
          ║               ║ a variable memory area in which the data is stored
          ╚~~~~~~~~~~~~~~~╝
+```
+
+Each bucket contains a pointer to blocks of a list, with the elements of the bucket.
+
+```
+         ╔Bucket═════════╗
+  8 Byte ║ ItemAddr      ║ pointer to the address of the first element of a sorted list that has the same hash values (collisions) or 0 if there is no element
+         ╚═══════════════╝
 ```
 
 The document instances are stored in one or more segments. The size of the segment is fixed and the number of segments per record is 
@@ -579,6 +588,7 @@ determined by the size of the compressed document instance. The segment is store
 
 If the data is larger than what can fit in a chunk, additional chunks are created and the data is divided among them. The last chunk 
 may not be completely filled. All chunks are linked in an ordered list.
+
 ```
          ╔Chunk══════════╗
   4 Byte ║ Length        ║ size of the DataChunk in bytes
@@ -855,7 +865,7 @@ public class Greetings : IIndexItem
 }
  
 // somewhere in the code...
-IndexManager.Register<Greetings>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
+IndexManager.Create<Greetings>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
 
 var greetings = new []
 {

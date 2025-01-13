@@ -8,7 +8,23 @@
     /// useful in search queries.
     /// </summary>
     /// <param name="context">The reference to the context of the index.</param>
-    public class IndexStorageSegmentTerm(IndexStorageContext context) : IndexStorageSegmentTermNode(context, context.IndexFile.Alloc(SegmentSize))
+    public class IndexStorageSegmentTerm(IndexStorageContext context)
+        : IndexStorageSegmentTermNode(context, context.IndexFile.Alloc(SegmentSize))
     {
+        /// <summary>
+        /// Initialization method for the header segment.
+        /// </summary>
+        /// <param name="initializationFromFile">If true, initializes from file. Otherwise, initializes and writes to file.</param>
+        public virtual void Initialization(bool initializationFromFile)
+        {
+            if (initializationFromFile)
+            {
+                Context.IndexFile.Read(this);
+            }
+            else
+            {
+                Context.IndexFile.Write(this);
+            }
+        }
     }
 }

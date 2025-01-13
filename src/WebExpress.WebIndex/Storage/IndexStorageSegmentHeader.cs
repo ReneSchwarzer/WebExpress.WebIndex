@@ -32,6 +32,22 @@ namespace WebExpress.WebIndex.Storage
         }
 
         /// <summary>
+        /// Initialization method for the header segment.
+        /// </summary>
+        /// <param name="initializationFromFile">If true, initializes from file. Otherwise, initializes and writes to file.</param>
+        public virtual void Initialization(bool initializationFromFile)
+        {
+            if (initializationFromFile)
+            {
+                Context.IndexFile.Read(this);
+            }
+            else
+            {
+                Context.IndexFile.Write(this);
+            }
+        }
+
+        /// <summary>
         /// Reads the record from the storage medium.
         /// </summary>
         /// <param name="reader">The reader for i/o operations.</param>
@@ -47,7 +63,7 @@ namespace WebExpress.WebIndex.Storage
 
             if (!Version.Equals(version))
             {
-                //throw new IOException($"The expected file version is '{Version}', but version '{version}' was read.");
+                throw new IOException($"The expected file version is '{Version}', but version '{version}' was read.");
             }
         }
 
@@ -57,7 +73,9 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="writer">The writer for i/o operations.</param>
         public override void Write(BinaryWriter writer)
         {
-            writer.Write(Identifier.ToCharArray(0, 3));
+            writer.Write((byte)Identifier[0]);
+            writer.Write((byte)Identifier[1]);
+            writer.Write((byte)Identifier[2]);
             writer.Write(Version);
         }
     }

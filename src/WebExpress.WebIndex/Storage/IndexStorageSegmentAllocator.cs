@@ -28,11 +28,21 @@ namespace WebExpress.WebIndex.Storage
         }
 
         /// <summary>
-        /// Initialization
+        /// Initializes the allocator segment.
         /// </summary>
-        public virtual void Initialization()
+        /// <param name="initializationFromFile">If true, initializes from file. Otherwise, initializes and writes to file.</param>
+        public virtual void Initialization(bool initializationFromFile)
         {
             NextFreeAddr = Context.IndexFile.NextFreeAddr;
+
+            if (initializationFromFile)
+            {
+                Context.IndexFile.Read(this);
+            }
+            else
+            {
+                Context.IndexFile.Write(this);
+            }
         }
 
         /// <summary>

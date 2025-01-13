@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 
 namespace WebExpress.WebIndex.Storage
 {
@@ -13,6 +14,8 @@ namespace WebExpress.WebIndex.Storage
     /// <param name="addr">The adress of the segment.</param>
     public class IndexStorageSegmentPostingNode(IndexStorageContext context, ulong addr) : IndexStorageSegment(context, addr)
     {
+        private readonly Lock _guard = new();
+
         /// <summary>
         /// Returns the amount of space required on the storage device.
         /// </summary>
@@ -37,11 +40,6 @@ namespace WebExpress.WebIndex.Storage
         /// Returns the adress of the first position element of a sorted list or 0 if there is no element.
         /// </summary>
         public ulong PositionAddr { get; private set; }
-
-        /// <summary>
-        /// Returns a guard to protect against concurrent access.
-        /// </summary>
-        private object Guard { get; } = new object();
 
         /// <summary>
         /// Returns the left child of the node.
@@ -330,7 +328,7 @@ namespace WebExpress.WebIndex.Storage
         {
             var item = default(IndexStorageSegmentPosition);
 
-            lock (Guard)
+            lock (_guard)
             {
                 if (PositionAddr == 0)
                 {
@@ -408,7 +406,7 @@ namespace WebExpress.WebIndex.Storage
                 return;
             }
 
-            lock (Guard)
+            lock (_guard)
             {
                 foreach (var position in Positions)
                 {

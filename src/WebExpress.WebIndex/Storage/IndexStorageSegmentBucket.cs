@@ -3,31 +3,32 @@
 namespace WebExpress.WebIndex.Storage
 {
     /// <summary>
-    /// Records statistical values that can be help to optimize the index.
+    /// Represents a bucket segment in the hash map.
     /// </summary>
-    public class IndexStorageSegmentStatistic : IndexStorageSegment
+    public class IndexStorageSegmentBucket : IndexStorageSegment
     {
         /// <summary>
         /// Returns the amount of space required on the storage device.
         /// </summary>
-        public const uint SegmentSize = sizeof(uint);
+        public const uint SegmentSize = sizeof(ulong);
 
         /// <summary>
-        /// Returns the number of items stored.
+        /// Returns or sets the address to the first element in the bucket.
         /// </summary>
-        public uint Count { get; internal set; }
+        public ulong ItemAddr { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="context">The reference to the context of the index.</param>
-        public IndexStorageSegmentStatistic(IndexStorageContext context)
-            : base(context, context.IndexFile.Alloc(SegmentSize))
+        /// <param name="addr">The address of the segment.</param>
+        public IndexStorageSegmentBucket(IndexStorageContext context, ulong addr)
+            : base(context, addr)
         {
         }
 
         /// <summary>
-        /// Initialization method for the statistic segment.
+        /// Initialization method for the hash map segment.
         /// </summary>
         /// <param name="initializationFromFile">If true, initializes from file. Otherwise, initializes and writes to file.</param>
         public virtual void Initialization(bool initializationFromFile)
@@ -45,10 +46,9 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Reads the record from the storage medium.
         /// </summary>
-        /// <param name="reader">The reader for i/o operations.</param>
         public override void Read(BinaryReader reader)
         {
-            Count = reader.ReadUInt32();
+            ItemAddr = reader.ReadUInt64();
         }
 
         /// <summary>
@@ -57,7 +57,7 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="writer">The writer for i/o operations.</param>
         public override void Write(BinaryWriter writer)
         {
-            writer.Write(Count);
+            writer.Write(ItemAddr);
         }
     }
 }

@@ -12,6 +12,8 @@ namespace WebExpress.WebIndex.Storage
     /// </summary>
     public class IndexStorageBuffer : IDisposable
     {
+        private readonly Lock _guard = new();
+
         /// <summary>
         /// Returns the maximum upper limit of the cached segments
         /// </summary>
@@ -48,11 +50,6 @@ namespace WebExpress.WebIndex.Storage
         private Timer Timer { get; set; }
 
         /// <summary>
-        /// Returns a guard to protect against concurrent access.
-        /// </summary>
-        private object Guard { get; } = new object();
-
-        /// <summary>
         /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="file">A stream for the index file.</param>
@@ -81,7 +78,7 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>The segment, how it was read by the storage medium.</returns>
         public T Read<T>(ulong addr, IndexStorageContext context) where T : IIndexStorageSegment
         {
-            lock (Guard)
+            lock (_guard)
             {
                 if (GetSegment(addr, out IIndexStorageSegment readCached))
                 {
@@ -108,7 +105,7 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="segment">The segment.</param>
         public T Read<T>(IIndexStorageSegment segment) where T : IIndexStorageSegment
         {
-            lock (Guard)
+            lock (_guard)
             {
                 if (GetSegment(segment.Addr, out IIndexStorageSegment readCached))
                 {
@@ -135,7 +132,7 @@ namespace WebExpress.WebIndex.Storage
                 return;
             }
 
-            lock (Guard)
+            lock (_guard)
             {
                 if (!_writeCache.TryAdd(segment.Addr, segment))
                 {
@@ -220,7 +217,7 @@ namespace WebExpress.WebIndex.Storage
         {
             if (_readCache.Count < 0.8 * MaxCachedSegments)
             {
-                lock (Guard)
+                lock (_guard)
                 {
                     // under 80% remove as needed
                     foreach (var item in _readCache)
@@ -236,7 +233,7 @@ namespace WebExpress.WebIndex.Storage
             else
             {
                 // over 80% remove below average
-                lock (Guard)
+                lock (_guard)
                 {
                     var average = _readCache.Average(x => x.Value.Counter);
                     _readCache = new Dictionary<ulong, IndexStorageBufferItem>(_readCache.Where(x => x.Value.Counter <= average));
@@ -249,7 +246,7 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         public void Flush()
         {
-            lock (Guard)
+            lock (_guard)
             {
                 foreach (var segment in _writeCache.Values)
                 {

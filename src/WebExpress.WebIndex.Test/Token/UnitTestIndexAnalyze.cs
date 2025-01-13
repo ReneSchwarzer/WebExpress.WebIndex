@@ -40,6 +40,9 @@ namespace WebExpress.WebIndex.Test.Token
         [InlineData("en", "???...&nbsp;")]
         [InlineData("en", "theya??r", "theya")]
         [InlineData("en", "Life is like riding a bicycle. To keep your balance, you must keep moving.", "life", "riding", "bicycle", "balance", "moving")]
+        [InlineData("en", "≾≿⊀⊁⊂⊃⊄⊅⊆⊇⊈⊉")]
+        [InlineData("en", "★*€¢£¥©░▒▓│┤├")]
+        [InlineData("en", "Hello Helena, hello Helge!", "helena", "helge")]
         [InlineData("en", "http://example.com/abc", "http", "example", "com", "abc")]
         public void Token(string culture, string input, params string[] expected)
         {
@@ -54,7 +57,7 @@ namespace WebExpress.WebIndex.Test.Token
         /// </summary>
         [Theory]
         [InlineData("en", "JourneyThroughTheUniverse.en", 241)]
-        [InlineData("en", "InterstellarConversations.en", 165)]
+        [InlineData("en", "InterstellarConversations.en", 161)]
         [InlineData("de", "BotanischeBindungenMicrosReiseZuVerdantia.de", 392)]
         [InlineData("de-DE", "BotanischeBindungenMicrosReiseZuVerdantia.de", 392)]
         [InlineData("fr", "BotanischeBindungenMicrosReiseZuVerdantia.de", 716)]

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 
 namespace WebExpress.WebIndex.Storage
 {
@@ -9,17 +10,13 @@ namespace WebExpress.WebIndex.Storage
     /// </summary>
     public class IndexStorageSegmentHashMap : IndexStorageSegment
     {
+        private readonly uint _capacity;
+        private readonly Lock _guard = new();
+
         /// <summary>
         /// Returns the amount of space required on the storage device.
         /// </summary>
         public const uint SegmentSize = sizeof(uint);
-
-        /// <summary>
-        /// A hash bucket is a range of memory in a hash table that is associated with a 
-        /// specific hash value. A bucket provides a concatenated list by recording the 
-        /// collisions (different keys with the same hash value).
-        /// </summary>
-        private ulong[] Buckets { get; set; }
 
         /// <summary>
         /// The number of fields (buckets) of the hash map. This should be a 
@@ -28,9 +25,11 @@ namespace WebExpress.WebIndex.Storage
         public uint BucketCount { get; private set; }
 
         /// <summary>
-        /// Returns a guard to protect against concurrent access.
+        /// A hash bucket is a range of memory in a hash table that is associated with a 
+        /// specific hash value. A bucket provides a concatenated list by recording the 
+        /// collisions (different keys with the same hash value).
         /// </summary>
-        private object Guard { get; } = new object();
+        private IndexStorageSegmentBucket[] Buckets { get; set; }
 
         /// <summary>
         /// Returns all items.
@@ -41,7 +40,7 @@ namespace WebExpress.WebIndex.Storage
             {
                 foreach (var bucket in Buckets)
                 {
-                    var addr = bucket;
+                    var addr = bucket.ItemAddr;
 
                     while (addr != 0)
                     {
@@ -58,32 +57,69 @@ namespace WebExpress.WebIndex.Storage
         /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="context">The reference to the context of the index.</param>
-        /// <param name="capacity">The number of elements to be stored in the hash map.</param>
-        public IndexStorageSegmentHashMap(IndexStorageContext context, uint capacity = ushort.MaxValue)
+        /// <param name="capacity">The initial capacity of the hash map segment.</param>
+        public IndexStorageSegmentHashMap(IndexStorageContext context, uint capacity)
             : base(context, context.IndexFile.Alloc(SegmentSize))
         {
-            BucketCount = DeterminePrimeNumber(capacity);
-            Buckets = new ulong[BucketCount];
+            _capacity = DeterminePrimeNumber(capacity);
+            BucketCount = _capacity;
+        }
 
-            Context.IndexFile.Alloc(sizeof(ulong) * BucketCount);
+        /// <summary>
+        /// Initialization method for the hash map segment.
+        /// </summary>
+        /// <param name="initializationFromFile">If true, initializes from file. Otherwise, initializes and writes to file.</param>
+        public virtual void Initialization(bool initializationFromFile)
+        {
+            if (initializationFromFile)
+            {
+                Context.IndexFile.Read(this);
+
+                Buckets = new IndexStorageSegmentBucket[BucketCount];
+
+                var initalAddress = Context.IndexFile.Alloc(SegmentSize + BucketCount * IndexStorageSegmentBucket.SegmentSize);
+
+                for (uint i = 0; i < BucketCount; i++)
+                {
+                    var addr = initalAddress + (i * IndexStorageSegmentBucket.SegmentSize);
+                    Buckets[i] = new IndexStorageSegmentBucket(Context, addr);
+                    Context.IndexFile.Read(Buckets[i]);
+                }
+            }
+            else
+            {
+                Buckets = new IndexStorageSegmentBucket[BucketCount];
+
+                var initalAddress = Context.IndexFile.Alloc(SegmentSize + (BucketCount * IndexStorageSegmentBucket.SegmentSize));
+
+                for (uint i = 0; i < BucketCount; i++)
+                {
+                    var addr = initalAddress + (i * IndexStorageSegmentBucket.SegmentSize);
+                    Buckets[i] = new IndexStorageSegmentBucket(Context, addr);
+                    Context.IndexFile.Write(Buckets[i]);
+                }
+
+                Context.IndexFile.Write(this);
+            }
         }
 
         /// <summary>
         /// Add an item.
         /// </summary>
-        /// <param name="segment">The segment.</param>
+        /// <param name="segment">The item segment.</param>
         public IndexStorageSegmentItem Add(IndexStorageSegmentItem segment)
         {
             var hash = segment.Id.GetHashCode();
             var index = (uint)hash % BucketCount;
+            var bucket = Buckets[index];
 
-            lock (Guard)
+            lock (_guard)
             {
-                if (Buckets[index] == 0)
+                if (bucket.ItemAddr == 0)
                 {
-                    Buckets[index] = segment.Addr;
+                    bucket.ItemAddr = segment.Addr;
 
-                    Context.IndexFile.Write(this);
+                    Context.IndexFile.Write(bucket);
                     Context.IndexFile.Write(segment);
                 }
                 else
@@ -113,11 +149,11 @@ namespace WebExpress.WebIndex.Storage
                     if (last == null)
                     {
                         // insert at the beginning
-                        var tempAddr = Buckets[index];
-                        Buckets[index] = segment.Addr;
+                        var tempAddr = bucket.ItemAddr;
+                        bucket.ItemAddr = segment.Addr;
                         segment.SuccessorAddr = tempAddr;
 
-                        Context.IndexFile.Write(this);
+                        Context.IndexFile.Write(bucket);
                         Context.IndexFile.Write(segment);
                     }
                     else
@@ -145,13 +181,14 @@ namespace WebExpress.WebIndex.Storage
         {
             var hash = id.GetHashCode();
             var index = (uint)hash % BucketCount;
+            var bucket = Buckets[index];
 
-            if (Buckets[index] == 0)
+            if (bucket.ItemAddr == 0)
             {
                 yield break;
             }
 
-            var addr = Buckets[index];
+            var addr = bucket.ItemAddr;
 
             while (addr != 0)
             {
@@ -173,16 +210,17 @@ namespace WebExpress.WebIndex.Storage
         {
             var hash = segment.Id.GetHashCode();
             var index = (uint)hash % BucketCount;
+            var bucket = Buckets[index];
 
-            lock (Guard)
+            lock (_guard)
             {
                 var predecessor = GetPredecessor(segment, out _);
 
                 if (predecessor == null)
                 {
-                    Buckets[index] = segment.SuccessorAddr;
+                    bucket.ItemAddr = segment.SuccessorAddr;
 
-                    Context.IndexFile.Write(this);
+                    Context.IndexFile.Write(bucket);
                     Context.IndexFile.Write(segment);
                 }
                 else
@@ -235,12 +273,6 @@ namespace WebExpress.WebIndex.Storage
         public override void Read(BinaryReader reader)
         {
             BucketCount = reader.ReadUInt32();
-            Buckets = new ulong[BucketCount];
-
-            for (uint i = 0; i < BucketCount; i++)
-            {
-                Buckets[i] = reader.ReadUInt64();
-            }
         }
 
         /// <summary>
@@ -250,11 +282,6 @@ namespace WebExpress.WebIndex.Storage
         public override void Write(BinaryWriter writer)
         {
             writer.Write(BucketCount);
-
-            for (int i = 0; i < BucketCount; i++)
-            {
-                writer.Write(Buckets[i]);
-            }
         }
 
         /// <summary>
