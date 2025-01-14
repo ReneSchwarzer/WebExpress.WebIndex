@@ -11,8 +11,8 @@ namespace WebExpress.WebIndex.Storage
     /// <summary>
     /// Implementation of the web reverse index, which stores the key-value pairs on disk.
     /// </summary>
-    /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
-    public class IndexStorageReverse<T> : IIndexReverse<T>, IIndexStorage where T : IIndexItem
+    /// <typeparam name="TIndexItem">The data type. This must have the IIndexItem interface.</typeparam>
+    public class IndexStorageReverse<TIndexItem> : IIndexReverse<TIndexItem>, IIndexStorage where TIndexItem : IIndexItem
     {
         private readonly string _extentions = "wri";
         private readonly int _version = 1;
@@ -78,7 +78,7 @@ namespace WebExpress.WebIndex.Storage
             Context = context;
             Property = property;
             Culture = culture;
-            FileName = Path.Combine(Context.IndexDirectory, $"{typeof(T).Name}.{property.Name}.{_extentions}");
+            FileName = Path.Combine(Context.IndexDirectory, $"{typeof(TIndexItem).Name}.{property.Name}.{_extentions}");
 
             var exists = File.Exists(FileName);
 
@@ -101,7 +101,7 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
         /// <param name="item">The data to be added to the index.</param>
-        public void Add(T item)
+        public void Add(TIndexItem item)
         {
             var value = Property?.GetValue(item)?.ToString();
             var terms = Context.TokenAnalyzer.Analyze(value, Culture);
@@ -114,7 +114,7 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         /// <param name="item">The data to be added to the index.</param>
         /// <param name="terms">The terms to add to the reverse index for the given item.</param>
-        public void Add(T item, IEnumerable<IndexTermToken> terms)
+        public void Add(TIndexItem item, IEnumerable<IndexTermToken> terms)
         {
             foreach (var term in terms)
             {
@@ -132,7 +132,7 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         /// <typeparam name="T">The data type. This must have the IIndexData interface.</typeparam>
         /// <param name="item">The data to be removed from the field.</param>
-        public void Delete(T item)
+        public void Delete(TIndexItem item)
         {
             var value = Property?.GetValue(item)?.ToString();
             var terms = Context.TokenAnalyzer.Analyze(value?.ToString(), Culture);
@@ -145,7 +145,7 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         /// <param name="item">The data to be removed from the field.</param>
         /// <param name="terms">The terms to add to the reverse index for the given item.</param>
-        public void Delete(T item, IEnumerable<IndexTermToken> terms)
+        public void Delete(TIndexItem item, IEnumerable<IndexTermToken> terms)
         {
             foreach (var term in terms)
             {

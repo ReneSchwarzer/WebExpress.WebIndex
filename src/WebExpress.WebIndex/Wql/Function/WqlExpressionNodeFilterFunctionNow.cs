@@ -1,5 +1,4 @@
 ﻿using System;
-using WebExpress.WebIndex;
 
 namespace WebExpress.WebIndex.Wql.Function
 {
@@ -7,13 +6,13 @@ namespace WebExpress.WebIndex.Wql.Function
     /// Describes the function expression of a wql statement.
     /// Returns the current date and time.
     /// </summary>
-    public class WqlExpressionNodeFilterFunctionNow<T> : WqlExpressionNodeFilterFunction<T> where T : IIndexItem
+    public class WqlExpressionNodeFilterFunctionNow<TIndexItem> : WqlExpressionNodeFilterFunction<TIndexItem> where TIndexItem : IIndexItem
     {
         /// <summary>
         /// Initializes a new instance of the class.
         /// </summary>
         public WqlExpressionNodeFilterFunctionNow()
-            :base("now")
+            : base("now")
         {
         }
 

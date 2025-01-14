@@ -2,6 +2,9 @@
 
 namespace WebExpress.WebIndex.Storage
 {
+    /// <summary>
+    /// Abstract class representing a segment of index storage.
+    /// </summary>
     public abstract class IndexStorageSegment : IIndexStorageSegment
     {
         /// <summary>

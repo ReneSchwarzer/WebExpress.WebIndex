@@ -3,12 +3,16 @@ using System.Collections.Generic;
 
 namespace WebExpress.WebIndex
 {
-    public interface IIndexDocumentStore<T> : IDisposable where T : IIndexItem
+    /// <summary>
+    /// Interface for a document store that indexes items.
+    /// </summary>
+    /// <typeparam name="TIndexItem">The type of the index item.</typeparam>
+    public interface IIndexDocumentStore<TIndexItem> : IDisposable where TIndexItem : IIndexItem
     {
         /// <summary>
         /// Returns all document items.
         /// </summary>
-        IEnumerable<T> All { get; }
+        IEnumerable<TIndexItem> All { get; }
 
         /// <summary>
         /// Returns the predicted capacity (number of items to store).
@@ -20,13 +24,13 @@ namespace WebExpress.WebIndex
         /// </summary>
         /// <typeparam name="T">The data type. This must have the IIndexData interface.</typeparam>
         /// <param name="item">The data to be added to the index.</param>
-        void Add(T item);
+        void Add(TIndexItem item);
 
         /// <summary>
         /// Update an item.
         /// </summary>
         /// <param name="item">The item.</param>
-        void Update(T item);
+        void Update(TIndexItem item);
 
         /// <summary>
         /// Removed all data from the document store.
@@ -38,7 +42,7 @@ namespace WebExpress.WebIndex
         /// </summary>
         /// <typeparam name="T">The data type. This must have the IIndexData interface.</typeparam>
         /// <param name="item">The data to be removed from the document store.</param>
-        void Delete(T item);
+        void Delete(TIndexItem item);
 
         /// <summary>
         /// Returns the number of items.
@@ -56,6 +60,6 @@ namespace WebExpress.WebIndex
         /// </summary>
         /// <param name="id">The id of the item.</param>
         /// <returns>The item.</returns>
-        T GetItem(Guid id);
+        TIndexItem GetItem(Guid id);
     }
 }

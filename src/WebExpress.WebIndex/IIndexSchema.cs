@@ -21,8 +21,8 @@ namespace WebExpress.WebIndex
     /// <summary>
     /// Defines the functionality of an index schema for a specific type of index item.
     /// </summary>
-    /// <typeparam name="T">The type of the index item. This type parameter must implement the IIndexItem interface.</typeparam>
-    public interface IIndexSchema<T> : IIndexSchema where T : IIndexItem
+    /// <typeparam name="TIndexItem">The type of the index item. This type parameter must implement the IIndexItem interface.</typeparam>
+    public interface IIndexSchema<TIndexItem> : IIndexSchema where TIndexItem : IIndexItem
     {
         /// <summary>
         /// Checks if the schema of the object has changed.

@@ -7,8 +7,8 @@ namespace WebExpress.WebIndex
     /// <summary>
     /// Reverse index interface.
     /// </summary>
-    /// <typeparam name="T">The data type. This must have the IIndexData interface.</typeparam>
-    public interface IIndexReverse<T> : IDisposable where T : IIndexItem
+    /// <typeparam name="TIndexItem">The data type. This must have the IIndexData interface.</typeparam>
+    public interface IIndexReverse<TIndexItem> : IDisposable where TIndexItem : IIndexItem
     {
         /// <summary>
         /// Returns all items.
@@ -19,26 +19,26 @@ namespace WebExpress.WebIndex
         /// Adds a item to the index.
         /// </summary>
         /// <param name="item">The data to be added to the index.</param>
-        void Add(T item);
+        void Add(TIndexItem item);
 
         /// <summary>
         /// Adds a item to the index.
         /// </summary>
         /// <param name="item">The data to be added to the index.</param>
         /// <param name="terms">The terms to add to the reverse index for the given item.</param>
-        void Add(T item, IEnumerable<IndexTermToken> terms);
+        void Add(TIndexItem item, IEnumerable<IndexTermToken> terms);
 
         /// <summary>
         /// The data to be removed from the index.
         /// </summary>
         /// <param name="item">The data to be removed from the index.</param>
-        void Delete(T item);
+        void Delete(TIndexItem item);
 
         /// <summary>
         /// The data to be removed from the index.
         /// </summary>
         /// <param name="terms">The terms to add to the reverse index for the given item.</param>
-        void Delete(T item, IEnumerable<IndexTermToken> terms);
+        void Delete(TIndexItem item, IEnumerable<IndexTermToken> terms);
 
         /// <summary>
         /// Removed all data from the index.

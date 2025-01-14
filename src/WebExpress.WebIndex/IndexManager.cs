@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using WebExpress.WebIndex.Term;
 using WebExpress.WebIndex.Term.Pipeline;
 using WebExpress.WebIndex.Wql;
+using WebExpress.WebIndex.Wql.Function;
 
 [assembly: InternalsVisibleTo("WebExpress.WebIndex.Test")]
 
@@ -19,6 +20,8 @@ namespace WebExpress.WebIndex
     /// </summary>
     public abstract class IndexManager : IDisposable
     {
+        private readonly HashSet<Type> _wqlFunctions = [];
+
         /// <summary>
         /// Event that is triggered when the schema has changed.
         /// </summary>
@@ -28,6 +31,11 @@ namespace WebExpress.WebIndex
         /// Returns an enumeration of the existing index documents.
         /// </summary>
         private Dictionary<Type, IIndexDocument> Documents { get; } = [];
+
+        /// <summary>
+        /// Returns the collection of registered WQL functions.
+        /// </summary>
+        public IEnumerable<Type> WqlFunctions => _wqlFunctions;
 
         /// <summary>
         /// Returns the index context.
@@ -66,19 +74,49 @@ namespace WebExpress.WebIndex
         /// Registers a pipe state for processing the tokens.
         /// </summary>
         /// <param name="pipeState">The pipe stage to add.</param>
-        public void Register(IIndexPipeStage pipeStage)
+        public void RegisterPipeState(IIndexPipeStage pipeStage)
         {
             TokenAnalyzer.Register(pipeStage);
         }
 
         /// <summary>
+        /// Removes a pipe stage from the processing pipeline.
+        /// </summary>
+        /// <param name="pipeStage">The pipe stage to remove.</param>
+        public void RemovePipeState(IIndexPipeStage pipeStage)
+        {
+            TokenAnalyzer.Remove(pipeStage);
+        }
+
+        /// <summary>
+        /// Registers a WQL function for an index item type.
+        /// </summary>
+        /// <typeparam name="TFunction">The type of the WQL function. This must implement the IWqlExpressionNodeFilterFunction interface.</typeparam>
+        /// <typeparam name="TIndexItem">The type of the index item. This must implement the IIndexItem interface.</typeparam>
+        public void RegisterWqlFunction<TFunction>()
+            where TFunction : IWqlExpressionNodeFilterFunction, new()
+        {
+            _wqlFunctions.Add(typeof(TFunction));
+        }
+
+        /// <summary>
+        /// Removes a registered WQL function for an index item type.
+        /// </summary>
+        /// <typeparam name="TFunction">The type of the WQL function. This must implement the IWqlExpressionNodeFilterFunction interface.</typeparam>
+        public void RemoveWqlFunction<TFunction>()
+            where TFunction : IWqlExpressionNodeFilterFunction, new()
+        {
+            _wqlFunctions.Remove(typeof(TFunction));
+        }
+
+        /// <summary>
         /// Reindexing the index.
         /// </summary>
-        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
+        /// <typeparam name="TIndexItem">The data type. This must have the IIndexItem interface.</typeparam>
         /// <param name="items">The data to be added to the index.</param>
-        public void ReIndex<T>(IEnumerable<T> items) where T : IIndexItem
+        public void ReIndex<TIndexItem>(IEnumerable<TIndexItem> items) where TIndexItem : IIndexItem
         {
-            if (GetIndexDocument<T>() is IIndexDocument<T> document)
+            if (GetIndexDocument<TIndexItem>() is IIndexDocument<TIndexItem> document)
             {
                 foreach (var item in items)
                 {
@@ -90,14 +128,14 @@ namespace WebExpress.WebIndex
         /// <summary>
         /// Performs an asynchronous reindexing of a collection of index items.
         /// </summary>
-        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
+        /// <typeparam name="TIndexItem">The data type. This must have the IIndexItem interface.</typeparam>
         /// <param name="items">The collection of items to be re-indexed.</param>
         /// <param name="progress">An optional IProgress object that tracks the progress of the re-indexing.</param>
         /// <param name="token">An optional CancellationToken that is used to cancel the re-indexing.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        public async Task ReIndexAsync<T>(IEnumerable<T> items, IProgress<int> progress = null, CancellationToken token = default(CancellationToken)) where T : IIndexItem
+        public async Task ReIndexAsync<TIndexItem>(IEnumerable<TIndexItem> items, IProgress<int> progress = null, CancellationToken token = default(CancellationToken)) where TIndexItem : IIndexItem
         {
-            if (GetIndexDocument<T>() is IIndexDocument<T> document)
+            if (GetIndexDocument<TIndexItem>() is IIndexDocument<TIndexItem> document)
             {
                 int i = 0;
                 var count = items.Count();
@@ -123,30 +161,30 @@ namespace WebExpress.WebIndex
         /// <summary>
         /// Registers a data type in the index.
         /// </summary>
-        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
+        /// <typeparam name="TIndexItem">The data type. This must have the IIndexItem interface.</typeparam>
         /// <param name="culture">The culture.</param>
         /// <param name="type">The index type.</param>
-        public void Create<T>(CultureInfo culture, IndexType type = IndexType.Memory) where T : IIndexItem
+        public void Create<TIndexItem>(CultureInfo culture, IndexType type = IndexType.Memory) where TIndexItem : IIndexItem
         {
-            if (!Documents.ContainsKey(typeof(T)))
+            if (!Documents.ContainsKey(typeof(TIndexItem)))
             {
                 var context = new IndexDocumemntContext(Context, TokenAnalyzer);
-                var document = new IndexDocument<T>(context, type, culture);
+                var document = new IndexDocument<TIndexItem>(context, type, culture);
 
                 document.SchemaChanged += OnSchemaChanged;
-                Documents.Add(typeof(T), document);
+                Documents.Add(typeof(TIndexItem), document);
             }
         }
 
         /// <summary>
         /// Closes the index file of type T.
         /// </summary>
-        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
-        public void Close<T>() where T : IIndexItem
+        /// <typeparam name="TIndexItem">The data type. This must have the IIndexItem interface.</typeparam>
+        public void Close<TIndexItem>() where TIndexItem : IIndexItem
         {
-            if (GetIndexDocument<T>() != null)
+            if (GetIndexDocument<TIndexItem>() != null)
             {
-                Documents.Remove(typeof(T), out IIndexDocument document);
+                Documents.Remove(typeof(TIndexItem), out IIndexDocument document);
 
                 document.SchemaChanged -= OnSchemaChanged;
                 document.Dispose();
@@ -156,15 +194,15 @@ namespace WebExpress.WebIndex
         /// <summary>
         /// Asynchronously closes the index file of type T.
         /// </summary>
-        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
+        /// <typeparam name="TIndexItem">The data type. This must have the IIndexItem interface.</typeparam>
         /// <returns>A task representing the asynchronous operation.</returns>
-        public async Task CloseAsync<T>() where T : IIndexItem
+        public async Task CloseAsync<TIndexItem>() where TIndexItem : IIndexItem
         {
-            if (GetIndexDocument<T>() != null)
+            if (GetIndexDocument<TIndexItem>() != null)
             {
                 await Task.Run(() =>
                 {
-                    Documents.Remove(typeof(T), out IIndexDocument document);
+                    Documents.Remove(typeof(TIndexItem), out IIndexDocument document);
 
                     document.SchemaChanged -= OnSchemaChanged;
                     document.Dispose();
@@ -175,12 +213,12 @@ namespace WebExpress.WebIndex
         /// <summary>
         /// Drops all index documents of type T.
         /// </summary>
-        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
-        public void Drop<T>() where T : IIndexItem
+        /// <typeparam name="TIndexItem">The data type. This must have the IIndexItem interface.</typeparam>
+        public void Drop<TIndexItem>() where TIndexItem : IIndexItem
         {
-            if (GetIndexDocument<T>() is IIndexDocument<T> document)
+            if (GetIndexDocument<TIndexItem>() is IIndexDocument<TIndexItem> document)
             {
-                Documents.Remove(typeof(T), out _);
+                Documents.Remove(typeof(TIndexItem), out _);
 
                 document.Drop();
                 document.SchemaChanged -= OnSchemaChanged;
@@ -190,15 +228,15 @@ namespace WebExpress.WebIndex
         /// <summary>
         /// Asynchronously drops all index documents of type T.
         /// </summary>
-        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
+        /// <typeparam name="TIndexItem">The data type. This must have the IIndexItem interface.</typeparam>
         /// <returns>A task representing the asynchronous operation.</returns>
-        public async Task DropAsync<T>() where T : IIndexItem
+        public async Task DropAsync<TIndexItem>() where TIndexItem : IIndexItem
         {
-            if (GetIndexDocument<T>() is IIndexDocument<T> document)
+            if (GetIndexDocument<TIndexItem>() is IIndexDocument<TIndexItem> document)
             {
                 await Task.Run(() =>
                 {
-                    Documents.Remove(typeof(T), out _);
+                    Documents.Remove(typeof(TIndexItem), out _);
 
                     var res = document.DropAsync();
                     document.SchemaChanged -= OnSchemaChanged;
@@ -211,11 +249,11 @@ namespace WebExpress.WebIndex
         /// <summary>
         /// Adds a item to the index.
         /// </summary>
-        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
+        /// <typeparam name="TIndexItem">The data type. This must have the IIndexItem interface.</typeparam>
         /// <param name="item">The data to be added to the index.</param>
-        public void Insert<T>(T item) where T : IIndexItem
+        public void Insert<TIndexItem>(TIndexItem item) where TIndexItem : IIndexItem
         {
-            if (GetIndexDocument<T>() is IIndexDocument<T> document)
+            if (GetIndexDocument<TIndexItem>() is IIndexDocument<TIndexItem> document)
             {
                 document.Add(item);
             }
@@ -224,12 +262,12 @@ namespace WebExpress.WebIndex
         /// <summary>
         /// Performs an asynchronous addition of an item in the index.
         /// </summary>
-        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
+        /// <typeparam name="TIndexItem">The data type. This must have the IIndexItem interface.</typeparam>
         /// <param name="item">The data to be added to the index.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        public async Task InsertAsync<T>(T item) where T : IIndexItem
+        public async Task InsertAsync<TIndexItem>(TIndexItem item) where TIndexItem : IIndexItem
         {
-            if (GetIndexDocument<T>() is IIndexDocument<T> document)
+            if (GetIndexDocument<TIndexItem>() is IIndexDocument<TIndexItem> document)
             {
                 await document.AddAsync(item);
             }
@@ -238,11 +276,11 @@ namespace WebExpress.WebIndex
         /// <summary>
         /// Updates a item in the index.
         /// </summary>
-        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
+        /// <typeparam name="TIndexItem">The data type. This must have the IIndexItem interface.</typeparam>
         /// <param name="item">The data to be updated to the index.</param>
-        public void Update<T>(T item) where T : IIndexItem
+        public void Update<TIndexItem>(TIndexItem item) where TIndexItem : IIndexItem
         {
-            if (GetIndexDocument<T>() is IIndexDocument<T> document)
+            if (GetIndexDocument<TIndexItem>() is IIndexDocument<TIndexItem> document)
             {
                 document.Update(item);
             }
@@ -251,12 +289,12 @@ namespace WebExpress.WebIndex
         /// <summary>
         /// Performs an asynchronous update of an item in the index.
         /// </summary>
-        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
+        /// <typeparam name="TIndexItem">The data type. This must have the IIndexItem interface.</typeparam>
         /// <param name="item">The data to be updated to the index.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        public async Task UpdateAsync<T>(T item) where T : IIndexItem
+        public async Task UpdateAsync<TIndexItem>(TIndexItem item) where TIndexItem : IIndexItem
         {
-            if (GetIndexDocument<T>() is IIndexDocument<T> document)
+            if (GetIndexDocument<TIndexItem>() is IIndexDocument<TIndexItem> document)
             {
                 await document.UpdateAsync(item);
             }
@@ -265,11 +303,11 @@ namespace WebExpress.WebIndex
         /// <summary>
         /// Returns the number of items.
         /// </summary>
-        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
+        /// <typeparam name="TIndexItem">The data type. This must have the IIndexItem interface.</typeparam>
         /// <returns>The number of items.</returns>
-        public uint Count<T>() where T : IIndexItem
+        public uint Count<TIndexItem>() where TIndexItem : IIndexItem
         {
-            if (GetIndexDocument<T>() is IIndexDocument<T> document)
+            if (GetIndexDocument<TIndexItem>() is IIndexDocument<TIndexItem> document)
             {
                 return document.Count();
             }
@@ -280,11 +318,11 @@ namespace WebExpress.WebIndex
         /// <summary>
         /// Performs an asynchronous determination of the number of elements.
         /// </summary>
-        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
+        /// <typeparam name="TIndexItem">The data type. This must have the IIndexItem interface.</typeparam>
         /// <returns>A task representing the asynchronous operation with the number of items.</returns>
-        public async Task<uint> CountAsync<T>() where T : IIndexItem
+        public async Task<uint> CountAsync<TIndexItem>() where TIndexItem : IIndexItem
         {
-            if (GetIndexDocument<T>() is IIndexDocument<T> document)
+            if (GetIndexDocument<TIndexItem>() is IIndexDocument<TIndexItem> document)
             {
                 return await document.CountAsync();
             }
@@ -295,11 +333,11 @@ namespace WebExpress.WebIndex
         /// <summary>
         /// Removes an item from the index.
         /// </summary>
-        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
+        /// <typeparam name="TIndexItem">The data type. This must have the IIndexItem interface.</typeparam>
         /// <param name="item">The data to be removed from the index.</param>
-        public void Delete<T>(T item) where T : IIndexItem
+        public void Delete<TIndexItem>(TIndexItem item) where TIndexItem : IIndexItem
         {
-            if (GetIndexDocument<T>() is IIndexDocument<T> document)
+            if (GetIndexDocument<TIndexItem>() is IIndexDocument<TIndexItem> document)
             {
                 document.Remove(item);
             }
@@ -308,12 +346,12 @@ namespace WebExpress.WebIndex
         /// <summary>
         /// Removes an item from the index asynchronously.
         /// </summary>
-        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
+        /// <typeparam name="TIndexItem">The data type. This must have the IIndexItem interface.</typeparam>
         /// <param name="item">The data to be removed from the index.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        public async Task DeleteAsync<T>(T item) where T : IIndexItem
+        public async Task DeleteAsync<TIndexItem>(TIndexItem item) where TIndexItem : IIndexItem
         {
-            if (GetIndexDocument<T>() is IIndexDocument<T> document)
+            if (GetIndexDocument<TIndexItem>() is IIndexDocument<TIndexItem> document)
             {
                 await document.RemoveAsync(item);
             }
@@ -322,10 +360,10 @@ namespace WebExpress.WebIndex
         /// <summary>
         /// Clear all data from index document.
         /// </summary>
-        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
-        public void Clear<T>() where T : IIndexItem
+        /// <typeparam name="TIndexItem">The data type. This must have the IIndexItem interface.</typeparam>
+        public void Clear<TIndexItem>() where TIndexItem : IIndexItem
         {
-            if (GetIndexDocument<T>() is IIndexDocument<T> document)
+            if (GetIndexDocument<TIndexItem>() is IIndexDocument<TIndexItem> document)
             {
                 document.Clear();
             }
@@ -334,11 +372,11 @@ namespace WebExpress.WebIndex
         /// <summary>
         /// Removed all data from the index asynchronously.
         /// </summary>
-        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
+        /// <typeparam name="TIndexItem">The data type. This must have the IIndexItem interface.</typeparam>
         /// <returns>A task representing the asynchronous operation.</returns>
-        public async Task ClearAsync<T>() where T : IIndexItem
+        public async Task ClearAsync<TIndexItem>() where TIndexItem : IIndexItem
         {
-            if (GetIndexDocument<T>() is IIndexDocument<T> document)
+            if (GetIndexDocument<TIndexItem>() is IIndexDocument<TIndexItem> document)
             {
                 await document.ClearAsync();
             }
@@ -347,14 +385,21 @@ namespace WebExpress.WebIndex
         /// <summary>
         /// Executes a wql statement.
         /// </summary>
-        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
+        /// <typeparam name="TIndexItem">The data type. This must have the IIndexItem interface.</typeparam>
         /// <param name="wql">The wql statement.</param>
         /// <returns>The WQL statement.</returns>
-        public IWqlStatement<T> Retrieve<T>(string wql) where T : IIndexItem
+        public IWqlStatement<TIndexItem> Retrieve<TIndexItem>(string wql) where TIndexItem : IIndexItem
         {
-            if (GetIndexDocument<T>() is IIndexDocument<T> document)
+            if (GetIndexDocument<TIndexItem>() is IIndexDocument<TIndexItem> document)
             {
-                var parser = new WqlParser<T>(document);
+                var parser = new WqlParser<TIndexItem>(document);
+
+                foreach (var function in _wqlFunctions)
+                {
+                    var method = typeof(WqlParser<TIndexItem>).GetMethod("RegisterFunction").MakeGenericMethod(function);
+                    method.Invoke(parser, null);
+                }
+
                 return parser.Parse(wql);
             }
 
@@ -364,16 +409,23 @@ namespace WebExpress.WebIndex
         /// <summary>
         /// Executes a wql statement asynchronously.
         /// </summary>
-        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
+        /// <typeparam name="TIndexItem">The data type. This must have the IIndexItem interface.</typeparam>
         /// <param name="wql">The wql statement.</param>
         /// <returns>A task that represents the asynchronous operation using the WQL statement.</returns>
-        public async Task<IWqlStatement<T>> RetrieveAsync<T>(string wql) where T : IIndexItem
+        public async Task<IWqlStatement<TIndexItem>> RetrieveAsync<TIndexItem>(string wql) where TIndexItem : IIndexItem
         {
-            if (GetIndexDocument<T>() is IIndexDocument<T> document)
+            if (GetIndexDocument<TIndexItem>() is IIndexDocument<TIndexItem> document)
             {
                 return await Task.Run(() =>
                 {
-                    var parser = new WqlParser<T>(document);
+                    var parser = new WqlParser<TIndexItem>(document);
+
+                    foreach (var function in _wqlFunctions)
+                    {
+                        var method = typeof(WqlParser<TIndexItem>).GetMethod("RegisterFunction").MakeGenericMethod(function);
+                        method.Invoke(parser, null);
+                    }
+
                     return parser.Parse(wql);
                 });
             }
@@ -384,11 +436,11 @@ namespace WebExpress.WebIndex
         /// <summary>
         /// Returns all documents from the index.
         /// </summary>
-        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
+        /// <typeparam name="TIndexItem">The data type. This must have the IIndexItem interface.</typeparam>
         /// <returns>An enumeration of the documents</returns>
-        public IEnumerable<T> All<T>() where T : IIndexItem
+        public IEnumerable<TIndexItem> All<TIndexItem>() where TIndexItem : IIndexItem
         {
-            if (GetIndexDocument<T>() is IIndexDocument<T> document)
+            if (GetIndexDocument<TIndexItem>() is IIndexDocument<TIndexItem> document)
             {
                 return document.All;
             }
@@ -399,13 +451,13 @@ namespace WebExpress.WebIndex
         /// <summary>
         /// Returns an index type based on its type.
         /// </summary>
-        /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
+        /// <typeparam name="TIndexItem">The data type. This must have the IIndexItem interface.</typeparam>
         /// <returns>The index type or null.</returns>
-        public IIndexDocument<T> GetIndexDocument<T>() where T : IIndexItem
+        public IIndexDocument<TIndexItem> GetIndexDocument<TIndexItem>() where TIndexItem : IIndexItem
         {
-            if (Documents.TryGetValue(typeof(T), out IIndexDocument res))
+            if (Documents.TryGetValue(typeof(TIndexItem), out IIndexDocument res))
             {
-                return res as IIndexDocument<T>;
+                return res as IIndexDocument<TIndexItem>;
             }
 
             return null;

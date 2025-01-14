@@ -16,7 +16,7 @@ namespace WebExpress.WebIndex.Memory
     /// <param name="context">The index context.</param>
     /// <param name="property">The property that makes up the index.</param>
     /// <param name="culture">The culture.</param>
-    public class IndexMemoryReverse<T>(IIndexDocumemntContext context, PropertyInfo property, CultureInfo culture) : IIndexReverse<T> where T : IIndexItem
+    public class IndexMemoryReverse<TIndexItem>(IIndexDocumemntContext context, PropertyInfo property, CultureInfo culture) : IIndexReverse<TIndexItem> where TIndexItem : IIndexItem
     {
         /// <summary>
         /// Returns the field name for the reverse index.
@@ -26,7 +26,7 @@ namespace WebExpress.WebIndex.Memory
         /// <summary>
         /// A delegate that determines the value of the current property.
         /// </summary>
-        private Func<T, object> GetValueDelegate { get; set; } = CreateDelegate(property);
+        private Func<TIndexItem, object> GetValueDelegate { get; set; } = CreateDelegate(property);
 
         /// <summary>
         /// The property that makes up the index.
@@ -60,7 +60,7 @@ namespace WebExpress.WebIndex.Memory
         /// Adds a item to the index.
         /// </summary>
         /// <param name="item">The data to be added to the index.</param>
-        public void Add(T item)
+        public void Add(TIndexItem item)
         {
             var value = GetValueDelegate(item);
             var terms = Context.TokenAnalyzer.Analyze(value?.ToString(), Culture);
@@ -73,7 +73,7 @@ namespace WebExpress.WebIndex.Memory
         /// </summary>
         /// <param name="item">The data to be added to the index.</param>
         /// <param name="terms">The terms to add to the reverse index for the given item.</param>
-        public void Add(T item, IEnumerable<IndexTermToken> terms)
+        public void Add(TIndexItem item, IEnumerable<IndexTermToken> terms)
         {
             foreach (var term in terms)
             {
@@ -85,7 +85,7 @@ namespace WebExpress.WebIndex.Memory
         /// The data to be removed from the index.
         /// </summary>
         /// <param name="item">The data to be removed from the field.</param>
-        public void Delete(T item)
+        public void Delete(TIndexItem item)
         {
             var value = GetValueDelegate(item);
             var terms = Context.TokenAnalyzer.Analyze(value?.ToString(), Culture);
@@ -98,7 +98,7 @@ namespace WebExpress.WebIndex.Memory
         /// </summary>
         /// <param name="item">The data to be removed from the field.</param>
         /// <param name="terms">The terms to add to the reverse index for the given item.</param>
-        public void Delete(T item, IEnumerable<IndexTermToken> terms)
+        public void Delete(TIndexItem item, IEnumerable<IndexTermToken> terms)
         {
             foreach (var term in terms)
             {
@@ -224,12 +224,12 @@ namespace WebExpress.WebIndex.Memory
         /// </summary>
         /// <param name="property">The property.</param>
         /// <returns>A delegate that determines the value of the current property.</returns>
-        private static Func<T, object> CreateDelegate(PropertyInfo property)
+        private static Func<TIndexItem, object> CreateDelegate(PropertyInfo property)
         {
-            var helper = typeof(IndexMemoryReverse<T>).GetMethod("CreateDelegateInternal", BindingFlags.Static | BindingFlags.NonPublic);
-            var method = helper.MakeGenericMethod(typeof(T), property.PropertyType);
+            var helper = typeof(IndexMemoryReverse<TIndexItem>).GetMethod("CreateDelegateInternal", BindingFlags.Static | BindingFlags.NonPublic);
+            var method = helper.MakeGenericMethod(typeof(TIndexItem), property.PropertyType);
 
-            return (Func<T, object>)method.Invoke(null, [property.GetGetMethod()]);
+            return (Func<TIndexItem, object>)method.Invoke(null, [property.GetGetMethod()]);
         }
 
         /// <summary>

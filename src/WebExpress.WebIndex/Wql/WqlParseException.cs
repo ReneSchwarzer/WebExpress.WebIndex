@@ -2,6 +2,9 @@
 
 namespace WebExpress.WebIndex.Wql
 {
+    /// <summary>
+    /// Represents an exception that is thrown when a WQL parsing error occurs.
+    /// </summary>
     public class WqlParseException : Exception
     {
         /// <summary>

@@ -1,12 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Globalization;
 
 namespace WebExpress.WebIndex.Wql.Condition
 {
-    public interface IWqlExpressionNodeFilterCondition
+    /// <summary>
+    /// Represents a filter condition for a WQL expression node.
+    /// </summary>
+    /// <typeparam name="TIndexItem">The type of the index item.</typeparam>
+    public interface IWqlExpressionNodeFilterCondition<TIndexItem> : IWqlExpressionNodeApply<TIndexItem> where TIndexItem : IIndexItem
     {
+        /// <summary>
+        /// Returns the attribute expression.
+        /// </summary>
+        WqlExpressionNodeAttribute<TIndexItem> Attribute { get; }
+
+        /// <summary>
+        /// Returns the operator expression.
+        /// </summary>
+        string Operator { get; }
+
+        /// <summary>
+        /// Returns the culture in which to run the wql.
+        /// </summary>
+        CultureInfo Culture { get; }
     }
 }

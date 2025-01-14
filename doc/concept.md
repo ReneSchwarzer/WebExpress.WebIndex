@@ -330,28 +330,29 @@ methods and properties of this class:
 
 - `IIndexContext Context`: The context of the index.
 - `void Initialization(IIndexContext context)`: Initialization of the IndexManager.
-- `void Register(IIndexPipeStage pipeStage)`: Registers a pipe state for processing the tokens.
-- `void ReIndex<T>(IEnumerable<T> items)`: Reindexing of the index.
-- `Task ReIndexAsync<T>(IEnumerable<T> items, IProgress<int> progress, CancellationToken token)`: Performs an asynchronous reindexing of a collection of index items.
-- `void Create<T>(CultureInfo culture, IndexType type)`: Registers a data type in the index.
-- `void Close<T>()`: Closes the index file of type T.
-- `Task CloseAsync<T>()`: Asynchronously closes the index file of type T.
-- `void Drop<T>()`: Drops all index documents of type T.
-- `Task DropAsync<T>()`: Asynchronously drops all index documents of type T.
-- `void Insert<T>(T item)`: Adds an item to the index.
-- `Task InsertAsync<T>(T item)`: Performs an asynchronous addition of an item in the index.
-- `void Update<T>(T item)`: Updates an item in the index.
-- `Task UpdateAsync<T>(T item)`: Performs an asynchronous update of an item in the index.
-- `void Delete<T>(T item)`: Removes an item from the index.
-- `uint Count<T>()`: Counts the number of items of the index.
-- `Task<int> CountAsync<T>()`:  Performs an asynchronous determination of the number of elements.
-- `Task DeleteAsync<T>(T item)`: Removes an item from the index asynchronously.
-- `void Clear<T>()`: Removed all data from the index.
-- `Task ClearAsync<T>()`: Removed all data from the index asynchronously.
-- `IWqlStatement<T> Retrieve<T>(string wql)`: Executes a WQL statement.
-- `Task<IWqlStatement<T>> RetrieveAsync<T>(string wql)`: Executes a wql statement asynchronously.
-- `IEnumerable<T> All<T>()`: Returns all documents from the index.
-- `IIndexDocument<T> GetIndexDocument<T>()`: Returns an index type based on its type.
+- `void RegisterPipeState(IIndexPipeStage pipeStage)`: Registers a pipe state for processing the tokens.
+- `void RegisterWqlFunction<TFunction>()`: Registers a wql function.
+- `void ReIndex<TIndexItem>(IEnumerable<TIndexItem> items)`: Reindexing of the index.
+- `Task ReIndexAsync<TIndexItem>(IEnumerable<TIndexItem> items, IProgress<int> progress, CancellationToken token)`: Performs an asynchronous reindexing of a collection of index items.
+- `void Create<TIndexItem>(CultureInfo culture, IndexType type)`: Registers a data type in the index.
+- `void Close<TIndexItem>()`: Closes the index file of type T.
+- `Task CloseAsync<TIndexItem>()`: Asynchronously closes the index file of type T.
+- `void Drop<TIndexItem>()`: Drops all index documents of type T.
+- `Task DropAsync<TIndexItem>()`: Asynchronously drops all index documents of type T.
+- `void Insert<TIndexItem>(TIndexItem item)`: Adds an item to the index.
+- `Task InsertAsync<TIndexItem>(TIndexItem item)`: Performs an asynchronous addition of an item in the index.
+- `void Update<TIndexItem>(TIndexItem item)`: Updates an item in the index.
+- `Task UpdateAsync<TIndexItem>(TIndexItem item)`: Performs an asynchronous update of an item in the index.
+- `void Delete<T>(TIndexItem item)`: Removes an item from the index.
+- `uint Count<TIndexItem>()`: Counts the number of items of the index.
+- `Task<int> CountAsync<TIndexItem>()`:  Performs an asynchronous determination of the number of elements.
+- `Task DeleteAsync<TIndexItem>(TIndexItem item)`: Removes an item from the index asynchronously.
+- `void Clear<TIndexItem>()`: Removed all data from the index.
+- `Task ClearAsync<TIndexItem>()`: Removed all data from the index asynchronously.
+- `IWqlStatement<TIndexItem> Retrieve<T>(string wql)`: Executes a WQL statement.
+- `Task<IWqlStatement<TIndexItem>> RetrieveAsync<TIndexItem>(string wql)`: Executes a wql statement asynchronously.
+- `IEnumerable<TIndexItem> All<TIndexItem>()`: Returns all documents from the index.
+- `IIndexDocument<TIndexItem> GetIndexDocument<TIndexItem>()`: Returns an index type based on its type.
 - `void Dispose()`: Disposes of the resources used by the current instance.
 
 ## IndexDocument
@@ -559,7 +560,7 @@ Access to the document instances is done via a HashMap, where the document id se
   n *    ║ Bucket 1      ║
   8 Byte ║~~~~~~~~~~~~~~~║
          ║~~~~~~~~~~~~~~~║
-         ║ Bucket n      ║
+         ║ Bucket n-1    ║
          ╠Data═══════════╣
          ║               ║ a variable memory area in which the data is stored
          ╚~~~~~~~~~~~~~~~╝
@@ -876,6 +877,8 @@ var greetings = new []
 IndexManager.ReIndex(greetings);
 ```
 
+From the data of the example, the following term tree results:
+
 ```
 ┌Term: 23┐
 │ null   │ root
@@ -963,7 +966,9 @@ Phrase search allows users to retrieve content from documents that contain a spe
 user. With phrase search, only records that contain the expression in exactly the searched order are returned. For this, the position 
 information of the reverse index is used.
 
-`Description = 'lorem ipsum'`
+```wql
+Description = 'lorem ipsum'
+```
 
 **Proximity search**
 
@@ -972,7 +977,9 @@ distance is determined by the number of intervening words. Proximity search goes
 of proximity. By limiting proximity, search results can be avoided where the words are scattered and do not cohere. The basic linguistic 
 assumption of proximity search is that the proximity of words in a document implies a relationship between the words.
 
-`Description ~ 'lorem ipsum' :2`
+```wql
+Description ~ 'lorem ipsum' :2
+```
 
 **Wildcard search**
 
@@ -983,13 +990,17 @@ one or more other characters.
 - A question mark `?` can be used to represent a single character anywhere in the word. It is most useful when there is variable 
   spellings for a word and you want to search all variants at once.
 
-`Description ~ '?orem'`
-`Description ~ 'ips*'`
+```wql
+Description ~ '?orem'
+Description ~ 'ips*'
+```
 
 **Fuzzy search**
 Fuzzy search is used to find matches in texts that are not exact, but only approximate.
 
-`Description ~ 'house' ~80`
+```wql
+Description ~ 'house' ~80
+```
 
 **Word search**
 
@@ -997,4 +1008,29 @@ Word search is the search for specific terms in a document, regardless of their 
 useful when searching for specific terms in a document without having to pay attention to their exact spelling or occurrence in the 
 document. It enables efficient searches for specific terms.
 
-`Description ~ 'lorem ipsum'`
+```wql
+Description ~ 'lorem ipsum'
+```
+
+## WQL functions
+The WebExpress Query Language (WQL) offers a set of functions that allow data to be processed and retrieved in versatile and specific 
+ways. These functions can be integrated into queries to achieve more precise and targeted search results. Below are some common functions 
+and their descriptions:
+
+| Function | Params | Description
+|----------|--------|------------------------------------------------
+| day()    | n      | Returns n days before or after the current day.
+| now()    | -      | Returns the current date and time.
+
+Functions are only allowed on the right-hand side of conditions. This means that functions always appear as part of the parameters in conditions 
+and not as standalone left-hand operands. Here are some examples to illustrate this:
+
+```wql
+dateField = day(-3)
+```
+
+This query filters all records where the dateField has the value that is 3 days before the current day.
+
+Custom functions can be created by implementing the `IWqlExpressionNodeFilterFunction<TIndexItem>` interface and registering it in the 
+`IndexManager`.
+

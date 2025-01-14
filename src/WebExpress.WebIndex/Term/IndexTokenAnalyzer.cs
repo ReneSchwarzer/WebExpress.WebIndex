@@ -103,6 +103,15 @@ namespace WebExpress.WebIndex.Term
         }
 
         /// <summary>
+        /// Removes a pipe stage from the processing pipeline.
+        /// </summary>
+        /// <param name="pipeStage">The pipe stage to remove.</param>
+        public void Remove(IIndexPipeStage pipeStage)
+        {
+            TextProcessingPipeline.Remove(pipeStage);
+        }
+
+        /// <summary>
         /// Analyze the input.
         /// </summary>
         /// <param name="input">The input.</param>

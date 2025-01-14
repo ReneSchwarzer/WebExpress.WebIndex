@@ -152,6 +152,63 @@ namespace WebExpress.WebIndex.Test.IndexManager
         }
 
         /// <summary>
+        /// Tests the register wql function of the index manager.
+        /// </summary>
+        [Fact]
+        public void RegisterWqlFunction()
+        {
+            // preconditions
+            Preconditions();
+            IndexManager.Create<UnitTestIndexTestDocumentA>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
+            IndexManager.Insert(new UnitTestIndexTestDocumentA()
+            {
+                Id = Guid.Parse("ED242C79-E41B-4214-BFBC-C4673E87433B"),
+                Text = "abc"
+            });
+
+            // test execution
+            IndexManager.RegisterWqlFunction<TestWqlExpressionNodeFilterFunctionConstant<UnitTestIndexTestDocumentA>>();
+
+            var functions = IndexManager.WqlFunctions;
+            Assert.NotEmpty(functions);
+
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentA>("text ~ 'abc'");
+            Assert.NotNull(wql);
+
+            var item = wql.Apply();
+            Assert.Equal("abc", item.FirstOrDefault()?.Text);
+
+            // postconditions
+            Postconditions();
+        }
+
+        /// <summary>
+        /// Tests the remove wql function of the index manager.
+        /// </summary>
+        [Fact]
+        public void RemoveWqlFunction()
+        {
+            // preconditions
+            Preconditions();
+            IndexManager.Create<UnitTestIndexTestDocumentA>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
+            IndexManager.Insert(new UnitTestIndexTestDocumentA()
+            {
+                Id = Guid.Parse("ED242C79-E41B-4214-BFBC-C4673E87433B"),
+                Text = "abc"
+            });
+
+            IndexManager.RegisterWqlFunction<TestWqlExpressionNodeFilterFunctionConstant<UnitTestIndexTestDocumentA>>();
+            Assert.NotEmpty(IndexManager.WqlFunctions);
+
+            // test execution
+            IndexManager.RemoveWqlFunction<TestWqlExpressionNodeFilterFunctionConstant<UnitTestIndexTestDocumentA>>();
+            Assert.Empty(IndexManager.WqlFunctions);
+
+            // postconditions
+            Postconditions();
+        }
+
+        /// <summary>
         /// Tests the update function of the index manager.
         /// </summary>
         [Fact]

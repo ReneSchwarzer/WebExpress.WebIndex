@@ -6,12 +6,16 @@ using System.Text;
 
 namespace WebExpress.WebIndex.Wql
 {
-    public class WqlStatement<T> : IWqlStatement<T> where T : IIndexItem
+    /// <summary>
+    /// Represents a WQL (WebExpress Query Language) statement with a specific index item type.
+    /// </summary>
+    /// <typeparam name="TIndexItem">The type of the index item. This type parameter must implement the IIndexItem interface.</typeparam>
+    public class WqlStatement<TIndexItem> : IWqlStatement<TIndexItem> where TIndexItem : IIndexItem
     {
         /// <summary>
         /// Returns the index document.
         /// </summary>
-        public IIndexDocument<T> IndexDocument { get; set; }
+        public IIndexDocument<TIndexItem> IndexDocument { get; set; }
 
         /// <summary>
         /// Returns the original wql statement.
@@ -21,17 +25,17 @@ namespace WebExpress.WebIndex.Wql
         /// <summary>
         /// Returns the filter expression.
         /// </summary>
-        public WqlExpressionNodeFilter<T> Filter { get; internal set; }
+        public WqlExpressionNodeFilter<TIndexItem> Filter { get; internal set; }
 
         /// <summary>
         /// Returns the order expression.
         /// </summary>
-        public WqlExpressionNodeOrder<T> Order { get; internal set; }
+        public WqlExpressionNodeOrder<TIndexItem> Order { get; internal set; }
 
         /// <summary>
         /// Returns the partitioning expression.
         /// </summary>
-        public WqlExpressionNodePartitioning<T> Partitioning { get; internal set; }
+        public WqlExpressionNodePartitioning<TIndexItem> Partitioning { get; internal set; }
 
         /// <summary>
         /// Returns true if there are any errors that occurred during parsing, false otherwise.
@@ -51,11 +55,11 @@ namespace WebExpress.WebIndex.Wql
         /// <summary>
         /// Returns the syntax tree of the wql query.
         /// </summary>
-        public IEnumerable<IWqlExpressionNode<T>> SyntaxTree
+        public IEnumerable<IWqlExpressionNode<TIndexItem>> SyntaxTree
         {
             get
             {
-                var nodes = new List<IWqlExpressionNode<T>>();
+                var nodes = new List<IWqlExpressionNode<TIndexItem>>();
 
                 if (Filter != null)
                 {
@@ -89,9 +93,9 @@ namespace WebExpress.WebIndex.Wql
         /// Applies the filter to the index.
         /// </summary>
         /// <returns>The data from the index.</returns>
-        public IQueryable<T> Apply()
+        public IQueryable<TIndexItem> Apply()
         {
-            var filtered = Enumerable.Empty<T>().AsQueryable();
+            var filtered = Enumerable.Empty<TIndexItem>().AsQueryable();
 
             if (Filter != null)
             {
@@ -130,7 +134,7 @@ namespace WebExpress.WebIndex.Wql
         /// </summary>
         /// <param name="unfiltered">The unfiltered data.</param>
         /// <returns>The filtered data.</returns>
-        public IQueryable<T> Apply(IQueryable<T> unfiltered)
+        public IQueryable<TIndexItem> Apply(IQueryable<TIndexItem> unfiltered)
         {
             var filtered = unfiltered;
 
@@ -159,7 +163,7 @@ namespace WebExpress.WebIndex.Wql
         public string GetSqlQueryString()
         {
             var sql = new StringBuilder();
-            var name = typeof(T).Name;
+            var name = typeof(TIndexItem).Name;
 
             sql.Append($"select * from {name}");
 

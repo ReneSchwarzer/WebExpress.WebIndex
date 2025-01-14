@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
-using WebExpress.WebIndex;
 
 namespace WebExpress.WebIndex.Wql.Function
 {
     /// <summary>
     /// Describes the function expression of a wql statement.
     /// </summary>
-    public abstract class WqlExpressionNodeFilterFunction<T> : IWqlExpressionNode<T> where T : IIndexItem
+    public abstract class WqlExpressionNodeFilterFunction<TIndexItem> : IWqlExpressionNodeFilterFunction<TIndexItem> where TIndexItem : IIndexItem
     {
         /// <summary>
         /// Returns the function name.
@@ -16,7 +15,7 @@ namespace WebExpress.WebIndex.Wql.Function
         /// <summary>
         /// Returns the parameter expressions.
         /// </summary>
-        public IEnumerable<WqlExpressionNodeParameter<T>> Parameters { get; internal set; }
+        public IEnumerable<WqlExpressionNodeParameter<TIndexItem>> Parameters { get; internal set; }
 
         /// <summary>
         /// Initializes a new instance of the class.

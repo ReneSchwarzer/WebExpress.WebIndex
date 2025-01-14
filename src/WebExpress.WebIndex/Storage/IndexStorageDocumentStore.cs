@@ -11,8 +11,8 @@ namespace WebExpress.WebIndex.Storage
     /// <summary>
     /// Implementation of the web document store, which stores the key-value pairs on disk.
     /// </summary>
-    /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
-    public class IndexStorageDocumentStore<T> : IIndexDocumentStore<T>, IIndexStorage where T : IIndexItem
+    /// <typeparam name="TIndexItem">The data type. This must have the IIndexItem interface.</typeparam>
+    public class IndexStorageDocumentStore<TIndexItem> : IIndexDocumentStore<TIndexItem>, IIndexStorage where TIndexItem : IIndexItem
     {
         private readonly string _extentions = "wds";
         private readonly int _version = 1;
@@ -60,7 +60,7 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Returns all items.
         /// </summary>
-        public IEnumerable<T> All => HashMap.All.Select(x => GetItem(x));
+        public IEnumerable<TIndexItem> All => HashMap.All.Select(x => GetItem(x));
 
         /// <summary>
         /// Returns or sets the predicted capacity (number of items to store) of the document store.
@@ -77,7 +77,7 @@ namespace WebExpress.WebIndex.Storage
             Capacity = capacity;
             Context = context;
             StorageContext = new IndexStorageContext(this);
-            FileName = Path.Combine(Context.IndexDirectory, $"{typeof(T).Name}.{_extentions}");
+            FileName = Path.Combine(Context.IndexDirectory, $"{typeof(TIndexItem).Name}.{_extentions}");
 
             var exists = File.Exists(FileName);
             IndexFile = new IndexStorageFile(FileName);
@@ -98,7 +98,7 @@ namespace WebExpress.WebIndex.Storage
         /// Adds an item.
         /// </summary>
         /// <param name="item">The item.</param>
-        public void Add(T item)
+        public void Add(TIndexItem item)
         {
             var chunkSize = (int)IndexStorageSegmentChunk.ChunkSize;
             var json = JsonSerializer.Serialize(item);
@@ -144,7 +144,7 @@ namespace WebExpress.WebIndex.Storage
         /// Update an item.
         /// </summary>
         /// <param name="item">The item.</param>
-        public void Update(T item)
+        public void Update(TIndexItem item)
         {
             Delete(item);
             Add(item);
@@ -173,7 +173,7 @@ namespace WebExpress.WebIndex.Storage
         /// Remove an item.
         /// </summary>
         /// <param name="item">The item.</param>
-        public void Delete(T item)
+        public void Delete(TIndexItem item)
         {
             var list = HashMap.GetBucket(item.Id);
 
@@ -213,7 +213,7 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         /// <param name="id">The id of the item.</param>
         /// <returns>The item.</returns>
-        public T GetItem(Guid id)
+        public TIndexItem GetItem(Guid id)
         {
             return GetItem(HashMap.GetBucket(id).SkipWhile(x => x.Id != id).FirstOrDefault());
         }
@@ -223,7 +223,7 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         /// <param name="segment">The segment of the item.</param>
         /// <returns>The item.</returns>
-        private T GetItem(IndexStorageSegmentItem segment)
+        private TIndexItem GetItem(IndexStorageSegmentItem segment)
         {
             if (segment == null)
             {
@@ -253,7 +253,7 @@ namespace WebExpress.WebIndex.Storage
             }
 
             var json = DecompressString([.. bytes]);
-            var item = JsonSerializer.Deserialize<T>(json);
+            var item = JsonSerializer.Deserialize<TIndexItem>(json);
 
             return item;
         }

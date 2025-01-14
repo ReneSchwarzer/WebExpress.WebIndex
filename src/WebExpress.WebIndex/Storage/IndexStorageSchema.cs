@@ -10,8 +10,8 @@ namespace WebExpress.WebIndex.Storage
     /// <summary>
     /// Represents a index schema file.
     /// </summary>
-    /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
-    public class IndexStorageSchema<T> : IIndexSchema<T> where T : IIndexItem
+    /// <typeparam name="TIndexItem">The data type. This must have the IIndexItem interface.</typeparam>
+    public class IndexStorageSchema<TIndexItem> : IIndexSchema<TIndexItem> where TIndexItem : IIndexItem
     {
         private readonly string _extentions = "ws";
         private readonly int _version = 1;
@@ -33,7 +33,7 @@ namespace WebExpress.WebIndex.Storage
         public IndexStorageSchema(IIndexContext context)
         {
             Context = context;
-            FileName = Path.Combine(Context.IndexDirectory, $"{typeof(T).Name}.{_extentions}");
+            FileName = Path.Combine(Context.IndexDirectory, $"{typeof(TIndexItem).Name}.{_extentions}");
 
             if (!File.Exists(FileName))
             {
@@ -86,7 +86,7 @@ namespace WebExpress.WebIndex.Storage
         /// </returns>
         private dynamic GetSchema()
         {
-            var objectType = typeof(T);
+            var objectType = typeof(TIndexItem);
             var fields = objectType.GetProperties().Select(x => new
             {
                 x.Name,

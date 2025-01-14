@@ -8,18 +8,17 @@ namespace WebExpress.WebIndex.Memory
     /// Key: The id of the item.
     /// Value: The item.
     /// </summary>
-    public class IndexMemoryDocumentStore<T> : Dictionary<Guid, T>, IIndexDocumentStore<T> where T : IIndexItem
+    public class IndexMemoryDocumentStore<TIndexItem> : Dictionary<Guid, TIndexItem>, IIndexDocumentStore<TIndexItem> where TIndexItem : IIndexItem
     {
         /// <summary>
         /// Returns all items.
         /// </summary>
-        public IEnumerable<T> All => Values;
-
+        public IEnumerable<TIndexItem> All => Values;
 
         /// <summary>
         /// Returns the predicted capacity (number of items to store) of the document store.
         /// </summary>
-        public uint Capacity => (uint)base.Count;
+        public new uint Capacity => (uint)base.Count;
 
         /// <summary>
         /// Returns the index context.
@@ -41,7 +40,7 @@ namespace WebExpress.WebIndex.Memory
         /// Adds an item.
         /// </summary>
         /// <param name="item">The item.</param>
-        public void Add(T item)
+        public void Add(TIndexItem item)
         {
             if (!ContainsKey(item.Id))
             {
@@ -53,7 +52,7 @@ namespace WebExpress.WebIndex.Memory
         /// Update an item.
         /// </summary>
         /// <param name="item">The item.</param>
-        public void Update(T item)
+        public void Update(TIndexItem item)
         {
             if (!ContainsKey(item.Id))
             {
@@ -70,7 +69,7 @@ namespace WebExpress.WebIndex.Memory
         /// Remove an item.
         /// </summary>
         /// <param name="item">The item.</param>
-        public void Delete(T item)
+        public void Delete(TIndexItem item)
         {
             if (ContainsKey(item.Id))
             {
@@ -99,7 +98,7 @@ namespace WebExpress.WebIndex.Memory
         /// </summary>
         /// <param name="id">The id of the item.</param>
         /// <returns>The item.</returns>
-        public T GetItem(Guid id)
+        public TIndexItem GetItem(Guid id)
         {
             if (ContainsKey(id))
             {
