@@ -207,10 +207,14 @@ namespace WebExpress.WebIndex.Test.DocumentStore
 
             // test execution
             documentStore.Clear();
+            Assert.Empty(documentStore.All);
+
             documentStore.Add(Fixture.TestData[0]);
+
+            //var all = documentStore.All.ToList();
             documentStore.Add(Fixture.TestData[1]);
 
-            var all = documentStore.All;
+            var all = documentStore.All.ToList();
 
             Assert.Equal(all.Select(x => x.Id).OrderBy(x => x), Fixture.TestData.Take(2).Select(x => x.Id).OrderBy(x => x));
 

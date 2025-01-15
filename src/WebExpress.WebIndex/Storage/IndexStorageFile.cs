@@ -136,6 +136,14 @@ namespace WebExpress.WebIndex.Storage
         }
 
         /// <summary>
+        /// Performs cache invalidation for a all IndexStorageSegment object.
+        /// </summary>
+        public void InvalidationAll()
+        {
+            Buffer.InvalidationAll();
+        }
+
+        /// <summary>
         /// Is called to free up resources.
         /// </summary>
         public void Dispose()

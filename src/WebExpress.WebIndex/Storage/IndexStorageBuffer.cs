@@ -152,6 +152,15 @@ namespace WebExpress.WebIndex.Storage
         }
 
         /// <summary>
+        /// Performs cache invalidation for a all IndexStorageSegment object.
+        /// </summary>
+        public void InvalidationAll()
+        {
+            _readCache.Clear();
+            _imperishableCache.Clear();
+        }
+
+        /// <summary>
         /// Adds an segment to the end of the buffer.
         /// </summary>
         /// <param name="segment">The segment.</param>

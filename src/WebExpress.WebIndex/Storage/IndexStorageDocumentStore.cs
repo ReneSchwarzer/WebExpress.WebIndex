@@ -156,6 +156,9 @@ namespace WebExpress.WebIndex.Storage
         public void Clear()
         {
             IndexFile.NextFreeAddr = 0;
+            IndexFile.InvalidationAll();
+            IndexFile.Flush();
+
             Header = new IndexStorageSegmentHeader(StorageContext) { Identifier = _extentions, Version = (byte)_version };
             Allocator = new IndexStorageSegmentAllocatorDocumentStore(StorageContext);
             Statistic = new IndexStorageSegmentStatistic(StorageContext);
@@ -165,6 +168,7 @@ namespace WebExpress.WebIndex.Storage
             Statistic.Initialization(false);
             HashMap.Initialization(false);
             Allocator.Initialization(false);
+
 
             IndexFile.Flush();
         }

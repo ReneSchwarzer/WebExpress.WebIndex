@@ -28,22 +28,6 @@ namespace WebExpress.WebIndex.Storage
         }
 
         /// <summary>
-        /// Initialization method for the hash map segment.
-        /// </summary>
-        /// <param name="initializationFromFile">If true, initializes from file. Otherwise, initializes and writes to file.</param>
-        public virtual void Initialization(bool initializationFromFile)
-        {
-            if (initializationFromFile)
-            {
-                Context.IndexFile.Read(this);
-            }
-            else
-            {
-                Context.IndexFile.Write(this);
-            }
-        }
-
-        /// <summary>
         /// Reads the record from the storage medium.
         /// </summary>
         public override void Read(BinaryReader reader)

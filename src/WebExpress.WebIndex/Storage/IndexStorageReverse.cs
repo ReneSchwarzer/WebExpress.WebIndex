@@ -168,6 +168,8 @@ namespace WebExpress.WebIndex.Storage
         public void Clear()
         {
             IndexFile.NextFreeAddr = 0;
+            IndexFile.InvalidationAll();
+            IndexFile.Flush();
 
             Header = new IndexStorageSegmentHeader(new IndexStorageContext(this)) { Identifier = _extentions, Version = (byte)_version };
             Allocator = new IndexStorageSegmentAllocatorReverseIndex(new IndexStorageContext(this));

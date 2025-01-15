@@ -12,6 +12,7 @@ namespace WebExpress.WebIndex.Storage
     {
         private readonly uint _capacity;
         private readonly Lock _guard = new();
+        private const int _bufferSize = 4096;
 
         /// <summary>
         /// Returns the amount of space required on the storage device.
@@ -29,7 +30,7 @@ namespace WebExpress.WebIndex.Storage
         /// specific hash value. A bucket provides a concatenated list by recording the 
         /// collisions (different keys with the same hash value).
         /// </summary>
-        private IndexStorageSegmentBucket[] Buckets { get; set; }
+        //private IndexStorageSegmentBucket[] Buckets { get; set; }
 
         /// <summary>
         /// Returns all items.
@@ -38,16 +39,17 @@ namespace WebExpress.WebIndex.Storage
         {
             get
             {
-                foreach (var bucket in Buckets)
+                for (var i = 0u; i < BucketCount; i++)
                 {
+                    var bucket = GetBucket(i);
                     var addr = bucket.ItemAddr;
 
                     while (addr != 0)
                     {
                         var item = Context.IndexFile.Read<IndexStorageSegmentItem>(addr, Context);
-                        yield return item;
-
                         addr = item.SuccessorAddr;
+
+                        yield return item;
                     }
                 }
             }
@@ -75,31 +77,25 @@ namespace WebExpress.WebIndex.Storage
             {
                 Context.IndexFile.Read(this);
 
-                Buckets = new IndexStorageSegmentBucket[BucketCount];
-
-                var initalAddress = Context.IndexFile.Alloc(SegmentSize + BucketCount * IndexStorageSegmentBucket.SegmentSize);
-
-                for (uint i = 0; i < BucketCount; i++)
-                {
-                    var addr = initalAddress + (i * IndexStorageSegmentBucket.SegmentSize);
-                    Buckets[i] = new IndexStorageSegmentBucket(Context, addr);
-                    Context.IndexFile.Read(Buckets[i]);
-                }
+                Context.IndexFile.Alloc(SegmentSize + BucketCount * IndexStorageSegmentBucket.SegmentSize);
             }
             else
             {
-                Buckets = new IndexStorageSegmentBucket[BucketCount];
-
                 var initalAddress = Context.IndexFile.Alloc(SegmentSize + (BucketCount * IndexStorageSegmentBucket.SegmentSize));
-
-                for (uint i = 0; i < BucketCount; i++)
-                {
-                    var addr = initalAddress + (i * IndexStorageSegmentBucket.SegmentSize);
-                    Buckets[i] = new IndexStorageSegmentBucket(Context, addr);
-                    Context.IndexFile.Write(Buckets[i]);
-                }
+                var zeroBuffer = new byte[_bufferSize];
+                var totalBytes = BucketCount * IndexStorageSegmentBucket.SegmentSize;
+                var bytesWritten = 0L;
 
                 Context.IndexFile.Write(this);
+                Context.IndexFile.FileStream.Seek((long)initalAddress, SeekOrigin.Begin);
+
+                while (bytesWritten < totalBytes)
+                {
+                    var bytesToWrite = Math.Min(_bufferSize, totalBytes - bytesWritten);
+
+                    Context.IndexFile.FileStream.Write(zeroBuffer, 0, (int)bytesToWrite);
+                    bytesWritten += bytesToWrite;
+                }
             }
         }
 
@@ -111,7 +107,7 @@ namespace WebExpress.WebIndex.Storage
         {
             var hash = segment.Id.GetHashCode();
             var index = (uint)hash % BucketCount;
-            var bucket = Buckets[index];
+            var bucket = GetBucket(index);
 
             lock (_guard)
             {
@@ -181,7 +177,7 @@ namespace WebExpress.WebIndex.Storage
         {
             var hash = id.GetHashCode();
             var index = (uint)hash % BucketCount;
-            var bucket = Buckets[index];
+            var bucket = GetBucket(index);
 
             if (bucket.ItemAddr == 0)
             {
@@ -210,7 +206,7 @@ namespace WebExpress.WebIndex.Storage
         {
             var hash = segment.Id.GetHashCode();
             var index = (uint)hash % BucketCount;
-            var bucket = Buckets[index];
+            var bucket = GetBucket(index);
 
             lock (_guard)
             {
@@ -273,6 +269,19 @@ namespace WebExpress.WebIndex.Storage
         public override void Read(BinaryReader reader)
         {
             BucketCount = reader.ReadUInt32();
+        }
+
+        /// <summary>
+        /// Returns the bucket at the specified index.
+        /// </summary>
+        /// <param name="index">The index of the bucket to retrieve.</param>
+        /// <returns>The bucket at the specified index.</returns>
+        private IndexStorageSegmentBucket GetBucket(uint index)
+        {
+            var addr = Addr + SegmentSize + (index * IndexStorageSegmentBucket.SegmentSize);
+            var bucket = new IndexStorageSegmentBucket(Context, addr);
+
+            return Context.IndexFile.Read(bucket);
         }
 
         /// <summary>
