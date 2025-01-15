@@ -1,18 +1,19 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using WebExpress.WebIndex;
 
 namespace WebExpress.WebIndex.Wql
 {
     /// <summary>
-    /// Describes the order expression of a wql statement.
+    /// Describes the order expression node of a WQL statement.
     /// </summary>
-    public class WqlExpressionNodeOrder<T> : IWqlExpressionNode<T> where T : IIndexItem
+    /// <typeparam name="TIndexItem">The type of the index item.</typeparam>
+    public class WqlExpressionNodeOrder<TIndexItem> : IWqlExpressionNode<TIndexItem>
+        where TIndexItem : IIndexItem
     {
         /// <summary>
         /// Returns the order attribute expressions.
         /// </summary>
-        public IReadOnlyList<WqlExpressionNodeOrderAttribute<T>> Attributes { get; internal set; }
+        public IReadOnlyList<WqlExpressionNodeOrderAttribute<TIndexItem>> Attributes { get; internal set; }
 
         /// <summary>
         /// Initializes a new instance of the class.
@@ -26,7 +27,7 @@ namespace WebExpress.WebIndex.Wql
         /// </summary>
         /// <param name="unfiltered">The unfiltered data.</param>
         /// <returns>The filtered data.</returns>
-        public IQueryable<T> Apply(IQueryable<T> unfiltered)
+        public IQueryable<TIndexItem> Apply(IQueryable<TIndexItem> unfiltered)
         {
             var filtered = unfiltered;
 

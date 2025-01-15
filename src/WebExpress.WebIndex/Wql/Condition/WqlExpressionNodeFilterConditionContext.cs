@@ -1,8 +1,11 @@
-﻿using WebExpress.WebIndex;
-
-namespace WebExpress.WebIndex.Wql.Condition
+﻿namespace WebExpress.WebIndex.Wql.Condition
 {
-    public class WqlExpressionNodeFilterConditionContext<T> : IWqlExpressionNodeFilterConditionContext where T : IIndexItem
+    /// <summary>
+    /// Represents the context for a WQL expression node filter condition.
+    /// </summary>
+    /// <typeparam name="TIndexItem">The type of the index item.</typeparam>
+    public class WqlExpressionNodeFilterConditionContext<TIndexItem> : IWqlExpressionNodeFilterConditionContext
+        where TIndexItem : IIndexItem
     {
     }
 }

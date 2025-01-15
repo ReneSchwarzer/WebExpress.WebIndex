@@ -2,9 +2,11 @@
 namespace WebExpress.WebIndex.Wql
 {
     /// <summary>
-    /// Interface of a wql expression.
+    /// Interface of a WQL expression node.
     /// </summary>
-    public interface IWqlExpressionNode<T> where T : IIndexItem
+    /// <typeparam name="TIndexItem">The type of the index item.</typeparam>
+    public interface IWqlExpressionNode<TIndexItem>
+        where TIndexItem : IIndexItem
     {
 
     }

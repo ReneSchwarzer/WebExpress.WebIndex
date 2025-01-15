@@ -7,7 +7,8 @@ namespace WebExpress.WebIndex.Wql
     /// Interface for parsing WQL (WebExpress Query Language) queries and managing condition and function expressions.
     /// </summary>
     /// <typeparam name="TIndexItem">The type of the index item that implements the IIndexItem interface.</typeparam>
-    public interface IWqlParser<TIndexItem> where TIndexItem : IIndexItem
+    public interface IWqlParser<TIndexItem>
+        where TIndexItem : IIndexItem
     {
         /// <summary>
         /// Parses a given wql query.
@@ -22,14 +23,16 @@ namespace WebExpress.WebIndex.Wql
         /// </summary>
         /// <typeparam name="TCondition">The type of the condition expression to register.</typeparam>
         /// <exception cref="WqlParseException">Thrown when the condition expression cannot be registered.</exception>
-        void RegisterCondition<TCondition>() where TCondition : IWqlExpressionNodeFilterCondition<TIndexItem>, new();
+        void RegisterCondition<TCondition>()
+            where TCondition : IWqlExpressionNodeFilterCondition<TIndexItem>, new();
 
         /// <summary>
         /// Registers a function expression.
         /// </summary>
         /// <typeparam name="TFunction">The type of the function expression to register.</typeparam>
         /// <exception cref="WqlParseException">Thrown when the function expression cannot be registered.</exception>
-        void RegisterFunction<TFunction>() where TFunction : IWqlExpressionNodeFilterFunction, new();
+        void RegisterFunction<TFunction>()
+            where TFunction : IWqlExpressionNodeFilterFunction, new();
 
         /// <summary>
         /// Removes a condition expression.

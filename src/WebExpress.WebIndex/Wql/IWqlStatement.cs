@@ -46,35 +46,36 @@ namespace WebExpress.WebIndex.Wql
     /// <summary>
     /// Represents a WQL (WebExpress Query Language) statement with a specific index item type.
     /// </summary>
-    /// <typeparam name="T">The type of the index item.</typeparam>
-    public interface IWqlStatement<T> : IWqlStatement where T : IIndexItem
+    /// <typeparam name="TIndexItem">The type of the index item.</typeparam>
+    public interface IWqlStatement<TIndexItem> : IWqlStatement
+        where TIndexItem : IIndexItem
     {
         /// <summary>
         /// Returns the filter expression.
         /// </summary>
-        WqlExpressionNodeFilter<T> Filter { get; }
+        WqlExpressionNodeFilter<TIndexItem> Filter { get; }
 
         /// <summary>
         /// Returns the order expression.
         /// </summary>
-        WqlExpressionNodeOrder<T> Order { get; }
+        WqlExpressionNodeOrder<TIndexItem> Order { get; }
 
         /// <summary>
         /// Returns the partitioning expression.
         /// </summary>
-        WqlExpressionNodePartitioning<T> Partitioning { get; }
+        WqlExpressionNodePartitioning<TIndexItem> Partitioning { get; }
 
         /// <summary>
         /// Applies the filter to the index.
         /// </summary>
         /// <returns>The data ids from the index.</returns>
-        IQueryable<T> Apply();
+        IQueryable<TIndexItem> Apply();
 
         /// <summary>
         /// Applies the filter to the unfiltered data object.
         /// </summary>
         /// <param name="unfiltered">The unfiltered data.</param>
         /// <returns>The filtered data.</returns>
-        IQueryable<T> Apply(IQueryable<T> unfiltered);
+        IQueryable<TIndexItem> Apply(IQueryable<TIndexItem> unfiltered);
     }
 }

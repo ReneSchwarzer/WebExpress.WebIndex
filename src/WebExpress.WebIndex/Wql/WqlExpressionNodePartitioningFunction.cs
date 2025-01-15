@@ -1,12 +1,13 @@
 ﻿using System.Linq;
-using WebExpress.WebIndex;
 
 namespace WebExpress.WebIndex.Wql
 {
     /// <summary>
     /// Describes the partitioning expression of a wql statement.
     /// </summary>
-    public class WqlExpressionNodePartitioningFunction<T> : IWqlExpressionNode<T> where T : IIndexItem
+    /// <typeparam name="TIndexItem">The type of the index item.</typeparam>
+    public class WqlExpressionNodePartitioningFunction<TIndexItem> : IWqlExpressionNode<TIndexItem>
+        where TIndexItem : IIndexItem
     {
         /// <summary>
         /// Returns the operator expressions.

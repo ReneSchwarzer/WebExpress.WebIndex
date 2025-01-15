@@ -1,18 +1,19 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using WebExpress.WebIndex;
 
 namespace WebExpress.WebIndex.Wql
 {
     /// <summary>
-    /// Describes the partitioning expression of a wql statement.
+    /// Describes the partitioning expression node of a WQL statement.
     /// </summary>
-    public class WqlExpressionNodePartitioning<T> : IWqlExpressionNode<T> where T : IIndexItem
+    /// <typeparam name="TIndexItem">The type of the index item.</typeparam>
+    public class WqlExpressionNodePartitioning<TIndexItem> : IWqlExpressionNode<TIndexItem>
+        where TIndexItem : IIndexItem
     {
         /// <summary>
         /// Returns the partitioning function expressions.
         /// </summary>
-        public IReadOnlyList<WqlExpressionNodePartitioningFunction<T>> PartitioningFunctions { get; internal set; }
+        public IReadOnlyList<WqlExpressionNodePartitioningFunction<TIndexItem>> PartitioningFunctions { get; internal set; }
 
         /// <summary>
         /// Initializes a new instance of the class.
@@ -30,7 +31,7 @@ namespace WebExpress.WebIndex.Wql
         {
             var filtered = unfiltered;
 
-            foreach(var function in PartitioningFunctions)
+            foreach (var function in PartitioningFunctions)
             {
                 filtered = function.Apply(filtered);
             }

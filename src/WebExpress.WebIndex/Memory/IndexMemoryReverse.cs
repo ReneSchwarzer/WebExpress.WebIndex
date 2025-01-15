@@ -16,7 +16,8 @@ namespace WebExpress.WebIndex.Memory
     /// <param name="context">The index context.</param>
     /// <param name="property">The property that makes up the index.</param>
     /// <param name="culture">The culture.</param>
-    public class IndexMemoryReverse<TIndexItem>(IIndexDocumemntContext context, PropertyInfo property, CultureInfo culture) : IIndexReverse<TIndexItem> where TIndexItem : IIndexItem
+    public class IndexMemoryReverse<TIndexItem>(IIndexDocumemntContext context, PropertyInfo property, CultureInfo culture) : IIndexReverse<TIndexItem>
+        where TIndexItem : IIndexItem
     {
         /// <summary>
         /// Returns the field name for the reverse index.

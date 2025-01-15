@@ -3,14 +3,16 @@
 namespace WebExpress.WebIndex.Wql
 {
     /// <summary>
-    /// Describes the order attribute of a wql statement.
+    /// Describes the order attribute of a WQL statement.
     /// </summary>
-    public class WqlExpressionNodeOrderAttribute<T> : IWqlExpressionNode<T> where T : IIndexItem
+    /// <typeparam name="TIndexItem">The type of the index item.</typeparam>
+    public class WqlExpressionNodeOrderAttribute<TIndexItem> : IWqlExpressionNode<TIndexItem>
+        where TIndexItem : IIndexItem
     {
         /// <summary>
         /// Returns the attribute expressions.
         /// </summary>
-        public WqlExpressionNodeAttribute<T> Attribute { get; internal set; }
+        public WqlExpressionNodeAttribute<TIndexItem> Attribute { get; internal set; }
 
         /// <summary>
         /// Returns the descending expressions.
@@ -34,11 +36,11 @@ namespace WebExpress.WebIndex.Wql
         /// </summary>
         /// <param name="unfiltered">The unfiltered data.</param>
         /// <returns>The filtered data.</returns>
-        public IQueryable<T> Apply(IQueryable<T> unfiltered)
+        public IQueryable<TIndexItem> Apply(IQueryable<TIndexItem> unfiltered)
         {
             var property = Attribute.Property;
 
-            if (Position > 0 && unfiltered is IOrderedQueryable<T> orderedQueryable)
+            if (Position > 0 && unfiltered is IOrderedQueryable<TIndexItem> orderedQueryable)
             {
                 if (Descending)
                 {

@@ -74,21 +74,22 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         /// <param name="addr">The segment address.</param>
         /// <param name="context">The reference to the context of the index.</param>
-        /// <typeparam name="T">The type to be read.</typeparam>
+        /// <typeparam name="TIndexStorageSegment">The type to be read.</typeparam>
         /// <returns>The segment, how it was read by the storage medium.</returns>
-        public T Read<T>(ulong addr, IndexStorageContext context) where T : IIndexStorageSegment
+        public TIndexStorageSegment Read<TIndexStorageSegment>(ulong addr, IndexStorageContext context)
+            where TIndexStorageSegment : IIndexStorageSegment
         {
             lock (_guard)
             {
                 if (GetSegment(addr, out IIndexStorageSegment readCached))
                 {
-                    if (readCached is T cachedSegment)
+                    if (readCached is TIndexStorageSegment cachedSegment)
                     {
                         return cachedSegment;
                     }
                 }
 
-                var segment = (T)Activator.CreateInstance(typeof(T), context, addr);
+                var segment = (TIndexStorageSegment)Activator.CreateInstance(typeof(TIndexStorageSegment), context, addr);
 
                 Reader.BaseStream.Seek((long)segment.Addr, SeekOrigin.Begin);
                 segment.Read(Reader);
@@ -100,16 +101,19 @@ namespace WebExpress.WebIndex.Storage
         }
 
         /// <summary>
-        /// Read and adds an segment to the end of the buffer.
+        /// Reads the record from the storage medium and adds the segment to the end of the buffer.
         /// </summary>
-        /// <param name="segment">The segment.</param>
-        public T Read<T>(IIndexStorageSegment segment) where T : IIndexStorageSegment
+        /// <typeparam name="TIndexStorageSegment">The type of the segment to be read.</typeparam>
+        /// <param name="segment">The segment to be read.</param>
+        /// <returns>The segment as read from the storage medium.</returns>
+        public TIndexStorageSegment Read<TIndexStorageSegment>(IIndexStorageSegment segment)
+            where TIndexStorageSegment : IIndexStorageSegment
         {
             lock (_guard)
             {
                 if (GetSegment(segment.Addr, out IIndexStorageSegment readCached))
                 {
-                    return (T)readCached;
+                    return (TIndexStorageSegment)readCached;
                 }
 
                 Reader.BaseStream.Seek((long)segment.Addr, SeekOrigin.Begin);
@@ -118,7 +122,7 @@ namespace WebExpress.WebIndex.Storage
                 Cache(segment);
             }
 
-            return (T)segment;
+            return (TIndexStorageSegment)segment;
         }
 
         /// <summary>

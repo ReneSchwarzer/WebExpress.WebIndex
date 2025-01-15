@@ -1,9 +1,11 @@
 ﻿namespace WebExpress.WebIndex.Wql
 {
     /// <summary>
-    /// Describes the parameter option expression of a wql statement.
+    /// Describes the parameter option expression of a WQL statement.
     /// </summary>
-    public class WqlExpressionNodeParameterOption<T> : IWqlExpressionNode<T> where T : IIndexItem
+    /// <typeparam name="TIndexItem">The type of the index item.</typeparam>
+    public class WqlExpressionNodeParameterOption<TIndexItem> : IWqlExpressionNode<TIndexItem>
+        where TIndexItem : IIndexItem
     {
         /// <summary>
         /// Returns the similarity value for the fuzzy search.

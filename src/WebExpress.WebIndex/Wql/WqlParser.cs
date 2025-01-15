@@ -13,9 +13,10 @@ namespace WebExpress.WebIndex.Wql
     /// input string that contains a WQL query and returns a WQL object that represents the structure of the query.
     /// To use the parser, call the Parse method with the string to be parsed to get a WQL object. This object 
     /// contains the structure of the WQL query and can be used to evaluate or process the query.
-    /// The parser implements the following bnf:
+    /// </summary>
     /// <code>
-    /// WQL                       ::= Filter Order Partitioning | ε
+    /// The parser implements the following bnf:
+    /// WQL                      ::= Filter Order Partitioning | ε
     /// Filter                   ::= "(" Filter ")" | Filter LogicalOperator Filter | Condition | ε
     /// Condition                ::= Attribute BinaryOperator Parameter | Attribute SetOperator "(" Parameter ParameterNext ")"
     /// LogicalOperator          ::= "and" | "or" | "&" | "||"
@@ -38,8 +39,8 @@ namespace WebExpress.WebIndex.Wql
     /// DoubleValue              ::= [+-]?[0-9]*[.]?[0-9]+
     /// Number                   ::= [0-9]+
     /// </code>
-    /// </summary>
-    public partial class WqlParser<TIndexItem> : IWqlParser<TIndexItem> where TIndexItem : IIndexItem
+    public partial class WqlParser<TIndexItem> : IWqlParser<TIndexItem>
+        where TIndexItem : IIndexItem
     {
         [GeneratedRegex("^[0-9]+$", RegexOptions.Compiled)]
         private static partial Regex NumberRegex();

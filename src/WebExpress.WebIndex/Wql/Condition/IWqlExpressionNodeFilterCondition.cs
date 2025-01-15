@@ -3,10 +3,11 @@
 namespace WebExpress.WebIndex.Wql.Condition
 {
     /// <summary>
-    /// Represents a filter condition for a WQL expression node.
+    /// Interface for a WQL expression node filter condition.
     /// </summary>
     /// <typeparam name="TIndexItem">The type of the index item.</typeparam>
-    public interface IWqlExpressionNodeFilterCondition<TIndexItem> : IWqlExpressionNodeApply<TIndexItem> where TIndexItem : IIndexItem
+    public interface IWqlExpressionNodeFilterCondition<TIndexItem> : IWqlExpressionNodeApply<TIndexItem>
+        where TIndexItem : IIndexItem
     {
         /// <summary>
         /// Returns the attribute expression.

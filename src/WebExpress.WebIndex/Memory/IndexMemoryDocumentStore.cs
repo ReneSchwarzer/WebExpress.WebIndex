@@ -8,7 +8,8 @@ namespace WebExpress.WebIndex.Memory
     /// Key: The id of the item.
     /// Value: The item.
     /// </summary>
-    public class IndexMemoryDocumentStore<TIndexItem> : Dictionary<Guid, TIndexItem>, IIndexDocumentStore<TIndexItem> where TIndexItem : IIndexItem
+    public class IndexMemoryDocumentStore<TIndexItem> : Dictionary<Guid, TIndexItem>, IIndexDocumentStore<TIndexItem>
+        where TIndexItem : IIndexItem
     {
         /// <summary>
         /// Returns all items.

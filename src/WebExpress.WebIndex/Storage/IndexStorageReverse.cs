@@ -12,7 +12,8 @@ namespace WebExpress.WebIndex.Storage
     /// Implementation of the web reverse index, which stores the key-value pairs on disk.
     /// </summary>
     /// <typeparam name="TIndexItem">The data type. This must have the IIndexItem interface.</typeparam>
-    public class IndexStorageReverse<TIndexItem> : IIndexReverse<TIndexItem>, IIndexStorage where TIndexItem : IIndexItem
+    public class IndexStorageReverse<TIndexItem> : IIndexReverse<TIndexItem>, IIndexStorage
+        where TIndexItem : IIndexItem
     {
         private readonly string _extentions = "wri";
         private readonly int _version = 1;

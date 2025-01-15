@@ -6,9 +6,11 @@ using System.Linq;
 namespace WebExpress.WebIndex.Wql.Condition
 {
     /// <summary>
-    /// Interface of a condition expression.
+    /// Represents an abstract base class for a WQL expression node filter condition.
     /// </summary>
-    public abstract class WqlExpressionNodeFilterCondition<TIndexItem> : IWqlExpressionNodeFilterCondition<TIndexItem> where TIndexItem : IIndexItem
+    /// <typeparam name="TIndexItem">The type of the index item.</typeparam>
+    public abstract class WqlExpressionNodeFilterCondition<TIndexItem> : IWqlExpressionNodeFilterCondition<TIndexItem>
+        where TIndexItem : IIndexItem
     {
         /// <summary>
         /// Returns the attribute expression.

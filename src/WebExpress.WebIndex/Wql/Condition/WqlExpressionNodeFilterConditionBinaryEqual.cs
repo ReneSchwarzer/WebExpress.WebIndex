@@ -3,7 +3,12 @@ using System.Linq;
 
 namespace WebExpress.WebIndex.Wql.Condition
 {
-    public class WqlExpressionNodeFilterConditionBinaryEqual<T> : WqlExpressionNodeFilterConditionBinary<T> where T : IIndexItem
+    /// <summary>
+    /// Represents a binary equal condition in a WQL expression node.
+    /// </summary>
+    /// <typeparam name="TIndexItem">The type of the index item.</typeparam>
+    public class WqlExpressionNodeFilterConditionBinaryEqual<TIndexItem> : WqlExpressionNodeFilterConditionBinary<TIndexItem>
+        where TIndexItem : IIndexItem
     {
         /// <summary>
         /// Initializes a new instance of the class.
@@ -34,7 +39,7 @@ namespace WebExpress.WebIndex.Wql.Condition
         /// </summary>
         /// <param name="unfiltered">The unfiltered data.</param>
         /// <returns>The filtered data.</returns>
-        public override IQueryable<T> Apply(IQueryable<T> unfiltered)
+        public override IQueryable<TIndexItem> Apply(IQueryable<TIndexItem> unfiltered)
         {
             var property = Attribute?.Property;
             var value = Parameter.GetValue();

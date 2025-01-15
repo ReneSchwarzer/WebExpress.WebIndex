@@ -11,7 +11,8 @@ namespace WebExpress.WebIndex.Storage
     /// Represents a index schema file.
     /// </summary>
     /// <typeparam name="TIndexItem">The data type. This must have the IIndexItem interface.</typeparam>
-    public class IndexStorageSchema<TIndexItem> : IIndexSchema<TIndexItem> where TIndexItem : IIndexItem
+    public class IndexStorageSchema<TIndexItem> : IIndexSchema<TIndexItem>
+        where TIndexItem : IIndexItem
     {
         private readonly string _extentions = "ws";
         private readonly int _version = 1;

@@ -19,7 +19,7 @@ The `WebExpress` family includes the following projects:
 - [WebExpress.WebApp](https://github.com/ReneSchwarzer/WebExpress.WebApp#readme) - Business application template for `WebExpress` applications.
 
 # WebExpress.WebIndex
-`WebExpress.WebIndex` is part of the WebExpress family. The project provides a reverse index to enable a quick and efficient search for data. The index can be filtered using the wql (webexpress query language). Even though the reverse index is part of the `WebExpress` family, it can also be used in other projects (outside of `WebExpress`). For detailed information about `WebIndex`, see [concept](https://github.com/ReneSchwarzer/WebExpress.WebIndex/blob/main/doc/concept.md).
+`WebExpress.WebIndex` is part of the WebExpress family. The project provides a reverse index to enable a quick and efficient search for data. The index can be filtered using the wql (webexpress query language). Even though the reverse index is part of the `WebExpress` family, it can also be used in other projects (outside of `WebExpress`). For detailed information about `WebIndex`, see [concept](https://github.com/ReneSchwarzer/WebExpress.WebIndex/blob/main/docs/concept.md).
 
 # Download 
 The current binaries are available for download [here](https://github.com/ReneSchwarzer/WebExpress/releases).

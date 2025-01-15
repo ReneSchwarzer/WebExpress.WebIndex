@@ -3,19 +3,21 @@
 namespace WebExpress.WebIndex.Wql
 {
     /// <summary>
-    /// Describes the parameter expression of a wql statement.
+    /// Describes the parameter expression of a WQL statement.
     /// </summary>
-    public class WqlExpressionNodeParameter<T> : IWqlExpressionNode<T> where T : IIndexItem
+    /// <typeparam name="TIndexItem">The type of the index item.</typeparam>
+    public class WqlExpressionNodeParameter<TIndexItem> : IWqlExpressionNode<TIndexItem>
+        where TIndexItem : IIndexItem
     {
         /// <summary>
         /// Returns the value expressions.
         /// </summary>
-        public WqlExpressionNodeValue<T> Value { get; internal set; }
+        public WqlExpressionNodeValue<TIndexItem> Value { get; internal set; }
 
         /// <summary>
         /// Returns the function expressions.
         /// </summary>
-        public WqlExpressionNodeFilterFunction<T> Function { get; internal set; }
+        public WqlExpressionNodeFilterFunction<TIndexItem> Function { get; internal set; }
 
         /// <summary>
         /// Initializes a new instance of the class.

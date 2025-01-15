@@ -10,7 +10,8 @@ namespace WebExpress.WebIndex.Wql
     /// Represents a WQL (WebExpress Query Language) statement with a specific index item type.
     /// </summary>
     /// <typeparam name="TIndexItem">The type of the index item. This type parameter must implement the IIndexItem interface.</typeparam>
-    public class WqlStatement<TIndexItem> : IWqlStatement<TIndexItem> where TIndexItem : IIndexItem
+    public class WqlStatement<TIndexItem> : IWqlStatement<TIndexItem>
+        where TIndexItem : IIndexItem
     {
         /// <summary>
         /// Returns the index document.

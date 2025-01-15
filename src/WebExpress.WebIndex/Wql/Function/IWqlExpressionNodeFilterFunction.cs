@@ -21,7 +21,8 @@
     /// Interface for a WQL expression node filter function.
     /// </summary>
     /// <typeparam name="TIndexItem">The type of the index item.</typeparam>
-    public interface IWqlExpressionNodeFilterFunction<TIndexItem> : IWqlExpressionNodeFilterFunction, IWqlExpressionNode<TIndexItem> where TIndexItem : IIndexItem
+    public interface IWqlExpressionNodeFilterFunction<TIndexItem> : IWqlExpressionNodeFilterFunction, IWqlExpressionNode<TIndexItem>
+        where TIndexItem : IIndexItem
     {
     }
 }

@@ -4,9 +4,11 @@ using System.Linq;
 namespace WebExpress.WebIndex.Wql.Condition
 {
     /// <summary>
-    /// Describes the condition value expression of a wql statement.
+    /// Represents a WQL expression node filter condition for the "not in" set operation.
     /// </summary>
-    public class WqlExpressionNodeFilterConditionSetNotIn<T> : WqlExpressionNodeFilterConditionSet<T> where T : IIndexItem
+    /// <typeparam name="TIndexItem">The type of the index item.</typeparam>
+    public class WqlExpressionNodeFilterConditionSetNotIn<TIndexItem> : WqlExpressionNodeFilterConditionSet<TIndexItem>
+        where TIndexItem : IIndexItem
     {
         /// <summary>
         /// Initializes a new instance of the class.
@@ -31,7 +33,7 @@ namespace WebExpress.WebIndex.Wql.Condition
         /// </summary>
         /// <param name="unfiltered">The unfiltered data.</param>
         /// <returns>The filtered data.</returns>
-        public override IQueryable<T> Apply(IQueryable<T> unfiltered)
+        public override IQueryable<TIndexItem> Apply(IQueryable<TIndexItem> unfiltered)
         {
             var property = Attribute.Property;
             var values = Parameters.Select(y => y.GetValue());

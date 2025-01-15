@@ -4,7 +4,8 @@
     /// Represents a index schema file.
     /// </summary>
     /// <typeparam name="TIndexItem">The data type. This must have the IIndexItem interface.</typeparam>
-    public class IndexMemorySchema<TIndexItem> : IIndexSchema<TIndexItem> where TIndexItem : IIndexItem
+    public class IndexMemorySchema<TIndexItem> : IIndexSchema<TIndexItem>
+        where TIndexItem : IIndexItem
     {
         /// <summary>
         /// Returns the index context.

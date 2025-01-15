@@ -15,7 +15,8 @@ namespace WebExpress.WebIndex
     /// Key: The field name.
     /// Value: The reverse index.
     /// </summary>
-    public class IndexDocument<TIndexItem> : Dictionary<PropertyInfo, IIndexReverse<TIndexItem>>, IIndexDocument<TIndexItem> where TIndexItem : IIndexItem
+    public class IndexDocument<TIndexItem> : Dictionary<PropertyInfo, IIndexReverse<TIndexItem>>, IIndexDocument<TIndexItem>
+        where TIndexItem : IIndexItem
     {
         /// <summary>
         /// Event that is triggered when the schema has changed.

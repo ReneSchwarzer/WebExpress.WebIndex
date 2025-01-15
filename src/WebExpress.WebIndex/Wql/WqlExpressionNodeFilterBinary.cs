@@ -7,12 +7,14 @@ namespace WebExpress.WebIndex.Wql
     /// <summary>
     /// Describes the filter expression of a wql statement.
     /// </summary>
-    public class WqlExpressionNodeFilterBinary<T> : WqlExpressionNodeFilter<T> where T : IIndexItem
+    /// <typeparam name="TIndexItem">The type of the index item.</typeparam>
+    public class WqlExpressionNodeFilterBinary<TIndexItem> : WqlExpressionNodeFilter<TIndexItem>
+        where TIndexItem : IIndexItem
     {
         /// <summary>
         /// Returns the left filter expressions.
         /// </summary>
-        public WqlExpressionNodeFilter<T> LeftFilter { get; internal set; }
+        public WqlExpressionNodeFilter<TIndexItem> LeftFilter { get; internal set; }
 
         /// <summary>
         /// Returns the logical operator expressions.
@@ -22,7 +24,7 @@ namespace WebExpress.WebIndex.Wql
         /// <summary>
         /// Returns the right filter expressions.
         /// </summary>
-        public WqlExpressionNodeFilter<T> RightFilter { get; internal set; }
+        public WqlExpressionNodeFilter<TIndexItem> RightFilter { get; internal set; }
 
         /// <summary>
         /// Initializes a new instance of the class.
@@ -62,7 +64,7 @@ namespace WebExpress.WebIndex.Wql
         /// </summary>
         /// <param name="unfiltered">The unfiltered data.</param>
         /// <returns>The filtered data.</returns>
-        public override IQueryable<T> Apply(IQueryable<T> unfiltered)
+        public override IQueryable<TIndexItem> Apply(IQueryable<TIndexItem> unfiltered)
         {
             var filtered = unfiltered;
             var leftFiltered = LeftFilter.Apply(filtered);

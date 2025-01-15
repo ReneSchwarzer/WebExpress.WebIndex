@@ -1,14 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using WebExpress.WebIndex;
 
 namespace WebExpress.WebIndex.Wql
 {
     /// <summary>
-    /// Describes the value expression of a wql statement.
+    /// Describes the value expression of a WQL statement.
     /// </summary>
-    public class WqlExpressionNodeValue<T> : IWqlExpressionNode<T> where T : IIndexItem
+    /// <typeparam name="TIndexItem">The type of the index item.</typeparam>
+    public class WqlExpressionNodeValue<TIndexItem> : IWqlExpressionNode<TIndexItem>
+        where TIndexItem : IIndexItem
     {
         /// <summary>
         /// Returns the value as string.
@@ -38,7 +38,7 @@ namespace WebExpress.WebIndex.Wql
         /// <returns>The value.</returns>
         public object GetValue()
         {
-            return NumberValue.HasValue ? 
+            return NumberValue.HasValue ?
                 NumberValue.Value : (object)StringValue;
         }
 
@@ -46,7 +46,7 @@ namespace WebExpress.WebIndex.Wql
         /// Converts the value to a string.
         /// </summary>
         /// <param name="value">The value.</param>
-        public static explicit operator string(WqlExpressionNodeValue<T> value)
+        public static explicit operator string(WqlExpressionNodeValue<TIndexItem> value)
         {
             return value.GetValue().ToString();
         }

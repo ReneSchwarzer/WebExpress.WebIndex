@@ -12,7 +12,8 @@ namespace WebExpress.WebIndex.Storage
     /// Implementation of the web document store, which stores the key-value pairs on disk.
     /// </summary>
     /// <typeparam name="TIndexItem">The data type. This must have the IIndexItem interface.</typeparam>
-    public class IndexStorageDocumentStore<TIndexItem> : IIndexDocumentStore<TIndexItem>, IIndexStorage where TIndexItem : IIndexItem
+    public class IndexStorageDocumentStore<TIndexItem> : IIndexDocumentStore<TIndexItem>, IIndexStorage
+        where TIndexItem : IIndexItem
     {
         private readonly string _extentions = "wds";
         private readonly int _version = 1;
