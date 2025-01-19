@@ -9,14 +9,14 @@ using WebExpress.WebIndex.Term;
 namespace WebExpress.WebIndex.Memory
 {
     /// <summary>
-    /// Provides a reverse index that manages the data in the main memory.
+    /// Provides a reverse index for numeric values that manages the data in the main memory.
     /// Key: The terms.
     /// Value: The index item.
     /// </summary>
     /// <param name="context">The index context.</param>
     /// <param name="property">The property that makes up the index.</param>
     /// <param name="culture">The culture.</param>
-    public class IndexMemoryReverse<TIndexItem>(IIndexDocumemntContext context, PropertyInfo property, CultureInfo culture) : IIndexReverse<TIndexItem>
+    public class IndexMemoryReverseNumeric<TIndexItem>(IIndexDocumemntContext context, PropertyInfo property, CultureInfo culture) : IIndexReverse<TIndexItem>
         where TIndexItem : IIndexItem
     {
         /// <summary>
@@ -47,15 +47,12 @@ namespace WebExpress.WebIndex.Memory
         /// <summary>
         /// The root term.
         /// </summary>
-        public IndexMemoryReverseTerm Root { get; private set; } = new();
+        public IndexMemorySegmentNumericNode Numeric { get; private set; } = new();
 
         /// <summary>
         /// Returns all items.
         /// </summary>
-        public IEnumerable<Guid> All => Root.Terms
-            .SelectMany(x => x.Item2.Postings)
-            .Select(x => x.DocumentID)
-            .Distinct();
+        public IEnumerable<Guid> All => Numeric.All.Distinct();
 
         /// <summary>
         /// Adds a item to the index.
@@ -78,7 +75,7 @@ namespace WebExpress.WebIndex.Memory
         {
             foreach (var term in terms)
             {
-                Root.Add(item.Id, term.Value.ToString(), term.Position);
+                Numeric.Add(item.Id, Convert.ToDecimal(term.Value));
             }
         }
 
@@ -103,7 +100,7 @@ namespace WebExpress.WebIndex.Memory
         {
             foreach (var term in terms)
             {
-                Root.Remove(term.Value.ToString(), item.Id);
+                //Numeric.Remove(term.Value.ToString(), item.Id);
             }
         }
 
@@ -112,7 +109,7 @@ namespace WebExpress.WebIndex.Memory
         /// </summary>
         public void Clear()
         {
-            Root = new IndexMemoryReverseTerm();
+            Numeric = new IndexMemorySegmentNumericNode();
         }
 
         /// <summary>
@@ -124,100 +121,27 @@ namespace WebExpress.WebIndex.Memory
         }
 
         /// <summary>
-        /// Return all items for a given string.
+        /// Return all items for a given input.
         /// </summary>
-        /// <param name="term">The term string.</param>
+        /// <param name="input">The input.</param>
         /// <param name="options">The retrieve options.</param>
         /// <returns>An enumeration of the data ids.</returns>
-        public IEnumerable<Guid> Retrieve(string term, IndexRetrieveOptions options)
+        public IEnumerable<Guid> Retrieve(object input, IndexRetrieveOptions options)
         {
-            var terms = Context.TokenAnalyzer.Analyze(term, Culture, true);
-            var distinct = new HashSet<Guid>((int)Math.Min(options.MaxResults, int.MaxValue / 2));
-            var count = 0u;
-
-            if (!terms.Any())
+            if (decimal.TryParse(input?.ToString(), out decimal value))
             {
-                return distinct;
-            }
-
-            switch (options.Method)
-            {
-                case IndexRetrieveMethod.Phrase:
-                    {
-                        var firstTerm = terms.Take(1).FirstOrDefault();
-                        var nextTerms = terms.Skip(1);
-
-                        foreach (var posting in Root.GetPostings(firstTerm.Value.ToString()))
-                        {
-                            foreach (var position in posting.Positions)
-                            {
-                                if (CheckForPhraseMatch(posting.DocumentID, position, firstTerm.Position, nextTerms))
-                                {
-                                    distinct.Add(posting.DocumentID);
-                                }
-                            }
-                        }
-
-                        break;
-                    }
-                default:
-                    {
-                        foreach (var document in terms.Take(1).SelectMany(x => Root.Retrieve(x.Value.ToString(), options)))
-                        {
-                            if (distinct.Add(document) && count++ >= options.MaxResults)
-                            {
-                                break;
-                            }
-                        }
-
-                        foreach (var normalized in terms.Skip(1))
-                        {
-                            var temp = new HashSet<Guid>(distinct.Count);
-
-                            foreach (var document in Root.Retrieve(normalized.Value.ToString(), options))
-                            {
-                                if (distinct.Contains(document) && temp.Add(document))
-                                {
-                                }
-                            }
-
-                            distinct = temp;
-                        }
-
-                        break;
-                    }
-            }
-
-            return distinct;
-        }
-
-        /// <summary>
-        /// Checks whether there is an exact match.
-        /// </summary>
-        /// <param name="document">The document id to check.</param>
-        /// <param name="position">The position of the term within the document.</param>
-        /// <param name="offset">The position within the search term.</param>
-        /// <param name="terms">Further following search terms.</param>
-        /// <returns>True ff there is an exact match, otherwise false.</returns>
-        private bool CheckForPhraseMatch(Guid document, uint position, uint offset, IEnumerable<IndexTermToken> terms)
-        {
-            if (!terms.Any())
-            {
-                return true;
-            }
-
-            var firstTerm = terms.Take(1).FirstOrDefault();
-            var nextTerms = terms.Skip(1);
-
-            foreach (var posting in Root.GetPostings(firstTerm.Value.ToString()).Where(x => x?.DocumentID == document))
-            {
-                foreach (var pos in posting.Positions.Where(x => x == position + (firstTerm.Position - offset)))
+                return options.Method switch
                 {
-                    return CheckForPhraseMatch(posting.DocumentID, pos, firstTerm.Position, nextTerms);
-                }
+                    IndexRetrieveMethod.Phrase => Numeric.Retrieve(value, options),
+                    IndexRetrieveMethod.GratherThan => Numeric.Retrieve(value, options),
+                    IndexRetrieveMethod.GratherThanOrEqual => Numeric.Retrieve(value, options),
+                    IndexRetrieveMethod.LessThan => Numeric.Retrieve(value, options),
+                    IndexRetrieveMethod.LessThanOrEqual => Numeric.Retrieve(value, options),
+                    _ => []
+                };
             }
 
-            return false;
+            return [];
         }
 
         /// <summary>
@@ -227,7 +151,7 @@ namespace WebExpress.WebIndex.Memory
         /// <returns>A delegate that determines the value of the current property.</returns>
         private static Func<TIndexItem, object> CreateDelegate(PropertyInfo property)
         {
-            var helper = typeof(IndexMemoryReverse<TIndexItem>).GetMethod("CreateDelegateInternal", BindingFlags.Static | BindingFlags.NonPublic);
+            var helper = typeof(IndexMemoryReverseTerm<TIndexItem>).GetMethod("CreateDelegateInternal", BindingFlags.Static | BindingFlags.NonPublic);
             var method = helper.MakeGenericMethod(typeof(TIndexItem), property.PropertyType);
 
             return (Func<TIndexItem, object>)method.Invoke(null, [property.GetGetMethod()]);

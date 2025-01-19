@@ -1,272 +1,256 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
-using System.Text.RegularExpressions;
+using System.Reflection;
+using WebExpress.WebIndex.Term;
 
 namespace WebExpress.WebIndex.Memory
 {
     /// <summary>
-    /// Represents a tree which is formed from the characters of the terms.
+    /// Provides a reverse index that manages the data in the main memory.
+    /// Key: The terms.
+    /// Value: The index item.
     /// </summary>
-    public class IndexMemoryReverseTerm
+    /// <param name="context">The index context.</param>
+    /// <param name="property">The property that makes up the index.</param>
+    /// <param name="culture">The culture.</param>
+    public class IndexMemoryReverseTerm<TIndexItem>(IIndexDocumemntContext context, PropertyInfo property, CultureInfo culture) : IIndexReverse<TIndexItem>
+        where TIndexItem : IIndexItem
     {
         /// <summary>
-        /// The character of the node.
+        /// Returns the field name for the reverse index.
         /// </summary>
-        public char Character { get; set; }
+        public string Field => Property?.Name;
 
         /// <summary>
-        /// Returns or sets the child nodes of the tree.
+        /// A delegate that determines the value of the current property.
         /// </summary>
-        public List<IndexMemoryReverseTerm> Children { get; set; } = [];
+        private Func<TIndexItem, object> GetValueDelegate { get; set; } = CreateDelegate(property);
 
         /// <summary>
-        /// Returns or sets the postings. This is always on the leaf of an term.
+        /// The property that makes up the index.
         /// </summary>
-        public List<IndexMemoryReversePosting> Postings { get; set; }
+        private PropertyInfo Property { get; set; } = property;
 
         /// <summary>
-        /// Checks whether the current node is the root.
+        /// Returns the index context.
         /// </summary>
-        public bool IsRoot => Character == 0;
+        public IIndexDocumemntContext Context { get; private set; } = context;
 
         /// <summary>
-        /// Passes through the tree in pre order.
+        /// Returns the culture.
         /// </summary>
-        /// <returns>The tree as a list.</returns>
-        public IEnumerable<IndexMemoryReverseTerm> PreOrder
+        public CultureInfo Culture { get; private set; } = culture;
+
+        /// <summary>
+        /// The root term.
+        /// </summary>
+        public IndexMemorySegmentTermNode Root { get; private set; } = new();
+
+        /// <summary>
+        /// Returns all items.
+        /// </summary>
+        public IEnumerable<Guid> All => Root.Terms
+            .SelectMany(x => x.Item2.Postings)
+            .Select(x => x.DocumentId)
+            .Distinct();
+
+        /// <summary>
+        /// Adds a item to the index.
+        /// </summary>
+        /// <param name="item">The data to be added to the index.</param>
+        public void Add(TIndexItem item)
         {
-            get
-            {
-                yield return this;
+            var value = GetValueDelegate(item);
+            var terms = Context.TokenAnalyzer.Analyze(value?.ToString(), Culture);
 
-                foreach (var child in Children)
-                {
-                    foreach (var preOrderChild in child.PreOrder)
-                    {
-                        yield return preOrderChild;
-                    }
-                }
+            Add(item, terms);
+        }
+
+        /// <summary>
+        /// Adds a item to the index.
+        /// </summary>
+        /// <param name="item">The data to be added to the index.</param>
+        /// <param name="terms">The terms to add to the reverse index for the given item.</param>
+        public void Add(TIndexItem item, IEnumerable<IndexTermToken> terms)
+        {
+            foreach (var term in terms)
+            {
+                Root.Add(item.Id, term.Value.ToString(), term.Position);
             }
         }
 
         /// <summary>
-        /// Returns all terms.
+        /// The data to be removed from the index.
         /// </summary>
-        public IEnumerable<(string, IndexMemoryReverseTerm)> Terms
+        /// <param name="item">The data to be removed from the field.</param>
+        public void Delete(TIndexItem item)
         {
-            get
+            var value = GetValueDelegate(item);
+            var terms = Context.TokenAnalyzer.Analyze(value?.ToString(), Culture);
+
+            Delete(item, terms);
+        }
+
+        /// <summary>
+        /// The data to be removed from the index.
+        /// </summary>
+        /// <param name="item">The data to be removed from the field.</param>
+        /// <param name="terms">The terms to add to the reverse index for the given item.</param>
+        public void Delete(TIndexItem item, IEnumerable<IndexTermToken> terms)
+        {
+            foreach (var term in terms)
             {
-                foreach (var child in Children)
-                {
-                    if (child.Postings != null && child.Children.Any())
-                    {
-                        yield return (Character + child.Character.ToString(), child);
-                    }
-
-                    foreach (var term in child.Terms)
-                    {
-                        if (Character != 0)
-                        {
-                            yield return (Character + term.Item1, term.Item2);
-                        }
-                        else
-                        {
-                            yield return (term.Item1, term.Item2);
-                        }
-                    }
-                }
-
-                if (IsRoot)
-                {
-                    yield break;
-                }
-
-                if (Children.Any())
-                {
-                    yield break;
-                }
-
-                yield return (Character.ToString(), this);
+                Root.Remove(term.Value.ToString(), item.Id);
             }
         }
 
         /// <summary>
-        /// Initializes a new instance of the class.
+        /// Removed all data from the index.
         /// </summary>
-        internal IndexMemoryReverseTerm()
+        public void Clear()
         {
+            Root = new IndexMemorySegmentTermNode();
         }
 
         /// <summary>
-        /// Create tree from term and save item in leaf.
+        /// Drop the reverse index.
         /// </summary>
-        /// <param name="id">The data to be added to the index.</param>
-        /// <param name="subterm">A subterm that is shortened by the first character at each tree level.</param>
-        /// <param name="position">The position of the term in the input value.</param>
-        public void Add(Guid id, string subterm, uint position)
+        public void Drop()
         {
-            if (subterm == null)
-            {
-                // end of recursive descent reached
-                Postings ??= [];
-                var posting = Postings.FirstOrDefault(x => x.DocumentID.Equals(id));
 
-                if (posting == null)
-                {
-                    Postings.Add(new IndexMemoryReversePosting(id, position));
-                }
-                else if (!posting.Positions.Contains<uint>(position))
-                {
-                    posting.Positions.Add(position);
-                }
-
-                return;
-            }
-
-            var children = Children as List<IndexMemoryReverseTerm>;
-            var first = subterm.FirstOrDefault();
-            var next = subterm.Length > 1 ? subterm[1..] : null;
-
-            // find existing nodes
-            foreach (var child in children)
-            {
-                if (first == child.Character)
-                {
-                    // recursive descent
-                    child.Add(id, next, position);
-
-                    return;
-                }
-            }
-
-            // add new node
-            var node = new IndexMemoryReverseTerm() { Character = first };
-            children.Add(node);
-            node.Add(id, next, position);
         }
 
         /// <summary>
-        /// The data to be removed from the field.
+        /// Return all items for a given input.
         /// </summary>
-        /// <param name="subterm">A subterm that is shortened by the first character at each tree level.</param>
-        /// <param name="id">The data to be added to the index.</param>
-        public void Remove(string subterm, Guid id)
-        {
-            if (subterm == null)
-            {
-                Postings = Postings?.Where(X => !X.DocumentID.Equals(id)).ToList();
-
-                return;
-            }
-
-            var first = subterm.FirstOrDefault();
-            var next = subterm.Length > 1 ? subterm[1..] : null;
-
-            // find nodes
-            foreach (var child in Children)
-            {
-                if (first == child.Character)
-                {
-                    // recursive descent
-                    child.Remove(next, id);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Return all term items for a given term.
-        /// </summary>
-        /// <param name="term">The term.</param>
+        /// <param name="input">The input.</param>
         /// <param name="options">The retrieve options.</param>
-        /// <returns>An enumeration of data ids of the terms.</returns>
-        public virtual IEnumerable<Guid> Retrieve(string term, IndexRetrieveOptions options)
+        /// <returns>An enumeration of the data ids.</returns>
+        public IEnumerable<Guid> Retrieve(object input, IndexRetrieveOptions options)
         {
-            foreach (var posting in GetPostings(term))
-            {
-                yield return posting.DocumentID;
-            }
-        }
+            var tokens = Context.TokenAnalyzer.Analyze(input?.ToString(), Culture, true);
+            var distinct = new HashSet<Guid>((int)Math.Min(options.MaxResults, int.MaxValue / 2));
+            var count = 0u;
 
-        /// <summary>
-        /// Return all term posting items for a given term.
-        /// </summary>
-        /// <param name="term">The term.</param>
-        /// <returns>An enumeration of posting items.</returns>
-        internal virtual IEnumerable<IndexMemoryReversePosting> GetPostings(string term)
-        {
-            foreach (var node in GetLeafs(term))
+            if (!tokens.Any())
             {
-                foreach (var posting in node.Postings ?? [])
-                {
-                    yield return posting;
-                }
+                return distinct;
             }
-        }
 
-        /// <summary>
-        /// Returns the nodes in the tree.
-        /// </summary>
-        /// <param name="term">A subterm that is shortened by the first character at each tree level.</param>
-        /// <returns>An enumeration of leafs of the term.</returns>
-        public virtual IEnumerable<IndexMemoryReverseTerm> GetLeafs(string term)
-        {
-            if (term == null)
+            switch (options.Method)
             {
-                yield return this;
-            }
-            else
-            {
-                var first = term.FirstOrDefault();
-                var next = term.Length > 1 ? term[1..] : null;
+                case IndexRetrieveMethod.Phrase:
+                    {
+                        var firstTerm = tokens.Take(1).FirstOrDefault();
+                        var nextTerms = tokens.Skip(1);
 
-                switch (first)
-                {
-                    case '?':
-                        // find nodes
-                        foreach (var child in Children)
+                        foreach (var posting in Root.GetPostings(firstTerm.Value.ToString()))
                         {
-                            foreach (var node in child.GetLeafs(next))
+                            foreach (var position in posting.Positions)
                             {
-                                yield return node;
-                            }
-                        }
-                        break;
-                    case '*':
-                        var pattern = next?.Replace("*", ".*").Replace("?", ".") ?? ".*";
-                        foreach (var termTuple in Terms)
-                        {
-                            if (Regex.IsMatch(termTuple.Item1, pattern))
-                            {
-                                yield return termTuple.Item2;
-                            }
-                        }
-                        break;
-                    default:
-                        // find nodes
-                        foreach (var child in Children)
-                        {
-                            if (first == child.Character)
-                            {
-                                // recursive descent
-                                foreach (var node in child.GetLeafs(next))
+                                if (CheckForPhraseMatch(posting.DocumentId, position, firstTerm.Position, nextTerms))
                                 {
-                                    yield return node;
+                                    distinct.Add(posting.DocumentId);
                                 }
                             }
                         }
+
                         break;
-                }
+                    }
+                default:
+                    {
+                        foreach (var document in tokens.Take(1).SelectMany(x => Root.Retrieve(x.Value.ToString(), options)))
+                        {
+                            if (distinct.Add(document) && count++ >= options.MaxResults)
+                            {
+                                break;
+                            }
+                        }
+
+                        foreach (var normalized in tokens.Skip(1))
+                        {
+                            var temp = new HashSet<Guid>(distinct.Count);
+
+                            foreach (var document in Root.Retrieve(normalized.Value.ToString(), options))
+                            {
+                                if (distinct.Contains(document) && temp.Add(document))
+                                {
+                                }
+                            }
+
+                            distinct = temp;
+                        }
+
+                        break;
+                    }
             }
+
+            return distinct;
         }
 
         /// <summary>
-        /// Converts the order expression to a string.
+        /// Checks whether there is an exact match.
         /// </summary>
-        /// <returns>The order expression as a string.</returns>
-        public override string ToString()
+        /// <param name="document">The document id to check.</param>
+        /// <param name="position">The position of the term within the document.</param>
+        /// <param name="offset">The position within the search term.</param>
+        /// <param name="terms">Further following search terms.</param>
+        /// <returns>True ff there is an exact match, otherwise false.</returns>
+        private bool CheckForPhraseMatch(Guid document, uint position, uint offset, IEnumerable<IndexTermToken> terms)
         {
-            return $"{Character} → {Postings?.ToString() ?? "null"}";
+            if (!terms.Any())
+            {
+                return true;
+            }
+
+            var firstTerm = terms.Take(1).FirstOrDefault();
+            var nextTerms = terms.Skip(1);
+
+            foreach (var posting in Root.GetPostings(firstTerm.Value.ToString()).Where(x => x?.DocumentId == document))
+            {
+                foreach (var pos in posting.Positions.Where(x => x == position + (firstTerm.Position - offset)))
+                {
+                    return CheckForPhraseMatch(posting.DocumentId, pos, firstTerm.Position, nextTerms);
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Creates a delegate for faster access to the value of the property.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns>A delegate that determines the value of the current property.</returns>
+        private static Func<TIndexItem, object> CreateDelegate(PropertyInfo property)
+        {
+            var helper = typeof(IndexMemoryReverseTerm<TIndexItem>).GetMethod("CreateDelegateInternal", BindingFlags.Static | BindingFlags.NonPublic);
+            var method = helper.MakeGenericMethod(typeof(TIndexItem), property.PropertyType);
+
+            return (Func<TIndexItem, object>)method.Invoke(null, [property.GetGetMethod()]);
+        }
+
+        /// <summary>
+        /// An auxiliary function used to determine the value of a property.
+        /// </summary>
+        /// <param name="methodInfo">The method Info.</param>
+        /// <returns>A delegate that determines the value of the current property.</returns>
+        [SuppressMessage("CodeQuality", "IDE0051")]
+        private static Func<X, object> CreateDelegateInternal<X, TReturn>(MethodInfo methodInfo)
+        {
+            var f = (Func<X, TReturn>)System.Delegate.CreateDelegate(typeof(Func<X, TReturn>), methodInfo);
+            return t => (object)f(t);
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, 
+        /// or resetting unmanaged resources.
+        /// </summary>
+        public virtual void Dispose()
+        {
         }
     }
 }

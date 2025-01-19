@@ -30,12 +30,10 @@ namespace WebExpress.WebIndex.Wql.Condition
             var property = Attribute?.Property;
             var value = Parameter.GetValue();
 
-            //var filtered = unfiltered.Where
-            //(
-            //    x => property != null && property.GetValue(x).Equals(value)
-            //);
-
-            return null; //filtered.AsQueryable();
+            return Attribute.ReverseIndex?.Retrieve(value, new IndexRetrieveOptions()
+            {
+                Method = IndexRetrieveMethod.GratherThan
+            }).AsQueryable();
         }
 
         /// <summary>

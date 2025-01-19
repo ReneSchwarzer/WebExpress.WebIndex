@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 using System.Reflection;
-using WebExpress.WebIndex.Memory;
+using WebExpress.WebIndex.Storage;
 using WebExpress.WebIndex.Test.Document;
 using WebExpress.WebIndex.Test.Fixture;
 using Xunit.Abstractions;
@@ -18,7 +18,12 @@ namespace WebExpress.WebIndex.Test.ReverseIndex
         /// <summary>
         /// Test class for testing the storage-based reverse index.
         /// </summary>
-        protected static PropertyInfo Property => typeof(UnitTestIndexTestDocumentB).GetProperty("Name");
+        protected static PropertyInfo PropertyName => typeof(UnitTestIndexTestDocumentB).GetProperty("Name");
+
+        /// <summary>
+        /// Returns the property for the price.
+        /// </summary>
+        protected static PropertyInfo PropertyPrice => typeof(UnitTestIndexTestDocumentB).GetProperty("Price");
 
         /// <summary>
         /// Creates a reverse index.
@@ -30,7 +35,7 @@ namespace WebExpress.WebIndex.Test.ReverseIndex
             Preconditions();
 
             // test execution
-            var reverseIndex = new IndexMemoryReverse<UnitTestIndexTestDocumentB>(Context, Property, CultureInfo.GetCultureInfo("en"));
+            var reverseIndex = new IndexStorageReverseTerm<UnitTestIndexTestDocumentB>(Context, PropertyName, CultureInfo.GetCultureInfo("en"));
 
             // postconditions
             reverseIndex.Dispose();
@@ -45,9 +50,7 @@ namespace WebExpress.WebIndex.Test.ReverseIndex
         {
             // preconditions
             Preconditions();
-            var reverseIndex = new IndexMemoryReverse<UnitTestIndexTestDocumentB>(Context, Property, CultureInfo.GetCultureInfo("en"));
-
-            reverseIndex.Clear();
+            var reverseIndex = new IndexStorageReverseTerm<UnitTestIndexTestDocumentB>(Context, PropertyName, CultureInfo.GetCultureInfo("en"));
 
             foreach (var item in Fixture.TestData)
             {
@@ -55,9 +58,10 @@ namespace WebExpress.WebIndex.Test.ReverseIndex
                 reverseIndex.Add(item);
             }
 
-            Assert.NotNull(reverseIndex);
+            Assert.NotEmpty(reverseIndex.All);
 
             // postconditions
+            reverseIndex.Dispose();
             Postconditions();
         }
 
@@ -70,7 +74,7 @@ namespace WebExpress.WebIndex.Test.ReverseIndex
             // preconditions
             Preconditions();
             var randomItem = Fixture.RandomItem;
-            var reverseIndex = new IndexMemoryReverse<UnitTestIndexTestDocumentB>(Context, Property, CultureInfo.GetCultureInfo("en"));
+            var reverseIndex = new IndexStorageReverseTerm<UnitTestIndexTestDocumentB>(Context, PropertyName, CultureInfo.GetCultureInfo("en"));
 
             reverseIndex.Clear();
             foreach (var item in Fixture.TestData)
@@ -100,7 +104,7 @@ namespace WebExpress.WebIndex.Test.ReverseIndex
             // preconditions
             Preconditions();
             var randomItem = Fixture.RandomItem;
-            var reverseIndex = new IndexMemoryReverse<UnitTestIndexTestDocumentB>(Context, Property, CultureInfo.GetCultureInfo("en"));
+            var reverseIndex = new IndexStorageReverseTerm<UnitTestIndexTestDocumentB>(Context, PropertyName, CultureInfo.GetCultureInfo("en"));
 
             reverseIndex.Clear();
             foreach (var item in Fixture.TestData)
@@ -132,7 +136,7 @@ namespace WebExpress.WebIndex.Test.ReverseIndex
             // preconditions
             Preconditions();
             var randomItem = Fixture.RandomItem;
-            var reverseIndex = new IndexMemoryReverse<UnitTestIndexTestDocumentB>(Context, Property, CultureInfo.GetCultureInfo("en"));
+            var reverseIndex = new IndexStorageReverseTerm<UnitTestIndexTestDocumentB>(Context, PropertyName, CultureInfo.GetCultureInfo("en"));
 
             reverseIndex.Clear();
             foreach (var item in Fixture.TestData)
@@ -163,7 +167,7 @@ namespace WebExpress.WebIndex.Test.ReverseIndex
             // preconditions
             Preconditions();
             var randomItem = Fixture.RandomItem;
-            var reverseIndex = new IndexMemoryReverse<UnitTestIndexTestDocumentB>(Context, Property, CultureInfo.GetCultureInfo("en"));
+            var reverseIndex = new IndexStorageReverseTerm<UnitTestIndexTestDocumentB>(Context, PropertyName, CultureInfo.GetCultureInfo("en"));
 
             reverseIndex.Clear();
             foreach (var item in Fixture.TestData)
@@ -182,6 +186,186 @@ namespace WebExpress.WebIndex.Test.ReverseIndex
         }
 
         /// <summary>
+        /// Tests numeric equals.
+        /// </summary>
+        [Theory]
+        [InlineData(-10, 0)]
+        [InlineData(0, 1)]
+        [InlineData(10, 1)]
+        [InlineData(50, 1)]
+        [InlineData(50.5, 0)]
+        [InlineData(90, 1)]
+        [InlineData(100, 0)]
+        public void NumericEquals(decimal number, int expected)
+        {
+            // preconditions
+            Preconditions();
+            var reverseIndex = new IndexStorageReverseNumeric<UnitTestIndexTestDocumentB>(Context, PropertyPrice, CultureInfo.GetCultureInfo("en"));
+
+            foreach (var item in Fixture.TestData)
+            {
+                // test execution
+                reverseIndex.Add(item);
+            }
+
+            // test execution
+            var items = reverseIndex.Retrieve(number, new IndexRetrieveOptions() { Method = IndexRetrieveMethod.Phrase });
+            var prices = Fixture.TestData.Where(x => items.Contains(x.Id)).Select(x => x.Price).ToList();
+
+            Assert.NotNull(items);
+            Assert.Equal(Fixture.TestData.Where(x => x.Price == (double)number).Select(x => x.Price).ToList(), prices);
+            Assert.Equal(expected, items.Count());
+
+            // postconditions
+            reverseIndex.Dispose();
+            Postconditions();
+        }
+
+        /// <summary>
+        /// Tests numeric greater than.
+        /// </summary>
+        [Theory]
+        [InlineData(-10, 100)]
+        [InlineData(0, 99)]
+        [InlineData(10, 89)]
+        [InlineData(50, 49)]
+        [InlineData(50.5, 49)]
+        [InlineData(90, 9)]
+        [InlineData(100, 0)]
+        public void NumericGreaterThan(decimal number, int expected)
+        {
+            // preconditions
+            Preconditions();
+            var reverseIndex = new IndexStorageReverseNumeric<UnitTestIndexTestDocumentB>(Context, PropertyPrice, CultureInfo.GetCultureInfo("en"));
+
+            foreach (var item in Fixture.TestData)
+            {
+                // test execution
+                reverseIndex.Add(item);
+            }
+
+            // test execution
+            var items = reverseIndex.Retrieve(number, new IndexRetrieveOptions() { Method = IndexRetrieveMethod.GratherThan });
+            var prices = Fixture.TestData.Where(x => items.Contains(x.Id)).Select(x => x.Price).ToList();
+
+            Assert.NotNull(items);
+            Assert.Equal(Fixture.TestData.Where(x => x.Price > (double)number).Select(x => x.Price).ToList(), prices);
+            Assert.Equal(expected, items.Count());
+
+            // postconditions
+            reverseIndex.Dispose();
+            Postconditions();
+        }
+
+        /// <summary>
+        /// Tests numeric greater than or equals.
+        /// </summary>
+        [Theory]
+        [InlineData(-10, 100)]
+        [InlineData(0, 100)]
+        [InlineData(10, 90)]
+        [InlineData(50, 50)]
+        [InlineData(50.5, 49)]
+        [InlineData(90, 10)]
+        [InlineData(100, 0)]
+        public void NumericGreaterThanOrEquals(decimal number, int expected)
+        {
+            // preconditions
+            Preconditions();
+            var reverseIndex = new IndexStorageReverseNumeric<UnitTestIndexTestDocumentB>(Context, PropertyPrice, CultureInfo.GetCultureInfo("en"));
+
+            foreach (var item in Fixture.TestData)
+            {
+                // test execution
+                reverseIndex.Add(item);
+            }
+
+            // test execution
+            var items = reverseIndex.Retrieve(number, new IndexRetrieveOptions() { Method = IndexRetrieveMethod.GratherThanOrEqual });
+            var prices = Fixture.TestData.Where(x => items.Contains(x.Id)).Select(x => x.Price).ToList();
+
+            Assert.NotNull(items);
+            Assert.Equal(Fixture.TestData.Where(x => x.Price >= (double)number).Select(x => x.Price).ToList(), prices);
+            Assert.Equal(expected, items.Count());
+
+            // postconditions
+            reverseIndex.Dispose();
+            Postconditions();
+        }
+
+        /// <summary>
+        /// Tests numeric less than or equals.
+        /// </summary>
+        [Theory]
+        [InlineData(-10, 0)]
+        [InlineData(0, 0)]
+        [InlineData(10, 10)]
+        [InlineData(50, 50)]
+        [InlineData(50.5, 51)]
+        [InlineData(90, 90)]
+        [InlineData(100, 100)]
+        public void NumericLessThan(decimal number, int expected)
+        {
+            // preconditions
+            Preconditions();
+            var reverseIndex = new IndexStorageReverseNumeric<UnitTestIndexTestDocumentB>(Context, PropertyPrice, CultureInfo.GetCultureInfo("en"));
+
+            foreach (var item in Fixture.TestData)
+            {
+                // test execution
+                reverseIndex.Add(item);
+            }
+
+            // test execution
+            var items = reverseIndex.Retrieve(number, new IndexRetrieveOptions() { Method = IndexRetrieveMethod.LessThan });
+            var prices = Fixture.TestData.Where(x => items.Contains(x.Id)).Select(x => x.Price).ToList();
+
+            Assert.NotNull(items);
+            Assert.Equal(Fixture.TestData.Where(x => x.Price < (double)number).Select(x => x.Price).ToList(), prices);
+            Assert.Equal(expected, items.Count());
+
+            // postconditions
+            reverseIndex.Dispose();
+            Postconditions();
+        }
+
+        /// <summary>
+        /// Tests numeric less than or equals.
+        /// </summary>
+        [Theory]
+        [InlineData(-10, 0)]
+        [InlineData(0, 1)]
+        [InlineData(10, 11)]
+        [InlineData(50, 51)]
+        [InlineData(50.5, 51)]
+        [InlineData(90, 91)]
+        [InlineData(100, 100)]
+        public void NumericLessThanOrEquals(decimal number, int expected)
+        {
+            // preconditions
+            Preconditions();
+            var reverseIndex = new IndexStorageReverseNumeric<UnitTestIndexTestDocumentB>(Context, PropertyPrice, CultureInfo.GetCultureInfo("en"));
+
+            foreach (var item in Fixture.TestData)
+            {
+                // test execution
+                reverseIndex.Add(item);
+            }
+
+            // test execution
+            var items = reverseIndex.Retrieve(number, new IndexRetrieveOptions() { Method = IndexRetrieveMethod.LessThanOrEqual });
+            var prices = Fixture.TestData.Where(x => items.Contains(x.Id)).Select(x => x.Price).ToList();
+
+            Assert.NotNull(items);
+            Assert.Equal(Fixture.TestData.Where(x => x.Price <= (double)number).Select(x => x.Price).ToList(), prices);
+            Assert.Equal(expected, items.Count());
+
+            // postconditions
+            reverseIndex.Dispose();
+            Postconditions();
+        }
+
+        /// <summary>
         /// Return all entries of the reverse index.
         /// </summary>
         [Fact]
@@ -189,7 +373,7 @@ namespace WebExpress.WebIndex.Test.ReverseIndex
         {
             // preconditions
             Preconditions();
-            var reverseIndex = new IndexMemoryReverse<UnitTestIndexTestDocumentB>(Context, Property, CultureInfo.GetCultureInfo("en"));
+            var reverseIndex = new IndexStorageReverseTerm<UnitTestIndexTestDocumentB>(Context, PropertyName, CultureInfo.GetCultureInfo("en"));
 
             reverseIndex.Clear();
             foreach (var item in Fixture.TestData)
@@ -199,9 +383,9 @@ namespace WebExpress.WebIndex.Test.ReverseIndex
             }
 
             // test execution
-            //var all = reverseIndex.All;
+            var all = reverseIndex.All.OrderBy(x => x).ToList();
 
-            //Assert.True(all.Select(x => x.DocumentID).SequenceEqual(data.Select(x => x.DocumentID)));
+            Assert.Equal(all, Fixture.TestData.Select(x => x.Id).OrderBy(x => x).ToList());
 
             // postconditions
             reverseIndex.Dispose();

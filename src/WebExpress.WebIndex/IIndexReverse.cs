@@ -51,11 +51,11 @@ namespace WebExpress.WebIndex
         void Drop();
 
         /// <summary>
-        /// Return all items for a given string.
+        /// Return all items for a given input.
         /// </summary>
-        /// <param name="term">The term string.</param>
+        /// <param name="term">The input.</param>
         /// <param name="options">The retrieve options.</param>
         /// <returns>An enumeration of the data ids.</returns>
-        IEnumerable<Guid> Retrieve(string term, IndexRetrieveOptions options);
+        IEnumerable<Guid> Retrieve(object input, IndexRetrieveOptions options);
     }
 }

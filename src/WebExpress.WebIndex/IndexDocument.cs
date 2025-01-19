@@ -190,7 +190,7 @@ namespace WebExpress.WebIndex
         /// <param name="property">The property that makes up the index.</param>
         public virtual void Add(PropertyInfo property)
         {
-            if (property.GetCustomAttribute<IndexIgnoreAttribute>() != null)
+            if (property.GetCustomAttribute<IndexIgnoreAttribute>() != null || ContainsKey(property))
             {
                 return;
             }
@@ -199,20 +199,26 @@ namespace WebExpress.WebIndex
             {
                 case IndexType.Memory:
                     {
-                        if (!ContainsKey(property))
+                        if (IsNumericType(property))
                         {
-                            Add(property, new IndexMemoryReverse<TIndexItem>(Context, property, Culture));
+                            Add(property, new IndexMemoryReverseNumeric<TIndexItem>(Context, property, Culture));
                         }
-
+                        else
+                        {
+                            Add(property, new IndexMemoryReverseTerm<TIndexItem>(Context, property, Culture));
+                        }
                         break;
                     }
                 default:
                     {
-                        if (!ContainsKey(property))
+                        if (IsNumericType(property))
                         {
-                            Add(property, new IndexStorageReverse<TIndexItem>(Context, property, Culture));
+                            Add(property, new IndexStorageReverseNumeric<TIndexItem>(Context, property, Culture));
                         }
-
+                        else
+                        {
+                            Add(property, new IndexStorageReverseTerm<TIndexItem>(Context, property, Culture));
+                        }
                         break;
                     }
             }
@@ -534,6 +540,23 @@ namespace WebExpress.WebIndex
                     reverseIndex.Dispose();
                 }
             }
+        }
+
+        /// <summary>
+        /// Determines if the given property is of a numeric type.
+        /// </summary>
+        /// <param name="property">The property to check.</param>
+        /// <returns>True if the property is of a numeric type, otherwise false.</returns>
+        private static bool IsNumericType(PropertyInfo property)
+        {
+            var type = property.PropertyType;
+
+            return type == typeof(byte) || type == typeof(sbyte) ||
+                   type == typeof(short) || type == typeof(ushort) ||
+                   type == typeof(int) || type == typeof(uint) ||
+                   type == typeof(long) || type == typeof(ulong) ||
+                   type == typeof(float) || type == typeof(double) ||
+                   type == typeof(decimal);
         }
     }
 }

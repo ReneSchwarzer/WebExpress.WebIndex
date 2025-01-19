@@ -12,7 +12,7 @@ namespace WebExpress.WebIndex.Storage
     /// Implementation of the web reverse index, which stores the key-value pairs on disk.
     /// </summary>
     /// <typeparam name="TIndexItem">The data type. This must have the IIndexItem interface.</typeparam>
-    public class IndexStorageReverse<TIndexItem> : IIndexReverse<TIndexItem>, IIndexStorage
+    public class IndexStorageReverseTerm<TIndexItem> : IIndexReverse<TIndexItem>, IIndexStorage
         where TIndexItem : IIndexItem
     {
         private readonly string _extentions = "wri";
@@ -74,7 +74,7 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="context">The index context.</param>
         /// <param name="property">The property that makes up the index.</param>
         /// <param name="culture">The culture.</param>
-        public IndexStorageReverse(IIndexDocumemntContext context, PropertyInfo property, CultureInfo culture)
+        public IndexStorageReverseTerm(IIndexDocumemntContext context, PropertyInfo property, CultureInfo culture)
         {
             Context = context;
             Property = property;
@@ -194,18 +194,18 @@ namespace WebExpress.WebIndex.Storage
         }
 
         /// <summary>
-        /// Return all items for a given string.
+        /// Return all items for a given input.
         /// </summary>
-        /// <param name="term">The term string.</param>
+        /// <param name="term">The input.</param>
         /// <param name="options">The retrieve options.</param>
         /// <returns>An enumeration of the data ids.</returns>
-        public IEnumerable<Guid> Retrieve(string term, IndexRetrieveOptions options)
+        public IEnumerable<Guid> Retrieve(object input, IndexRetrieveOptions options)
         {
-            var terms = Context.TokenAnalyzer.Analyze(term, Culture, true);
+            var tokens = Context.TokenAnalyzer.Analyze(input?.ToString(), Culture, true);
             var distinct = new HashSet<Guid>((int)Math.Min(options.MaxResults, int.MaxValue / 2));
             var count = 0u;
 
-            if (!terms.Any())
+            if (!tokens.Any())
             {
                 return distinct;
             }
@@ -214,8 +214,8 @@ namespace WebExpress.WebIndex.Storage
             {
                 case IndexRetrieveMethod.Phrase:
                     {
-                        var firstTerm = terms.Take(1).FirstOrDefault();
-                        var nextTerms = terms.Skip(1);
+                        var firstTerm = tokens.Take(1).FirstOrDefault();
+                        var nextTerms = tokens.Skip(1);
 
                         foreach (var posting in Term.GetPostings(firstTerm.Value.ToString()))
                         {
@@ -234,7 +234,7 @@ namespace WebExpress.WebIndex.Storage
                     {
                         if (options.Distance == 0)
                         {
-                            foreach (var document in terms.Take(1).SelectMany(x => Term.Retrieve(x.Value.ToString(), options)))
+                            foreach (var document in tokens.Take(1).SelectMany(x => Term.Retrieve(x.Value.ToString(), options)))
                             {
                                 if (distinct.Add(document) && count++ >= options.MaxResults)
                                 {
@@ -242,7 +242,7 @@ namespace WebExpress.WebIndex.Storage
                                 }
                             }
 
-                            foreach (var normalized in terms.Skip(1))
+                            foreach (var normalized in tokens.Skip(1))
                             {
                                 var temp = new HashSet<Guid>(distinct.Count);
 
@@ -258,8 +258,8 @@ namespace WebExpress.WebIndex.Storage
                         }
                         else
                         {
-                            var firstTerm = terms.Take(1).FirstOrDefault();
-                            var nextTerms = terms.Skip(1);
+                            var firstTerm = tokens.Take(1).FirstOrDefault();
+                            var nextTerms = tokens.Skip(1);
 
                             foreach (var posting in Term.GetPostings(firstTerm.Value.ToString()))
                             {
@@ -360,6 +360,7 @@ namespace WebExpress.WebIndex.Storage
         public void Dispose()
         {
             IndexFile.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

@@ -15,7 +15,6 @@ namespace WebExpress.WebIndex.Storage
     /// information about the term, such as its frequency, position in the document, and other relevant information that can be
     /// useful in search queries.
     /// </summary>
-    /// <typeparam name="T">The data type. This must have the IIndexData interface.</typeparam>
     /// <param name="context">The reference to the context of the index.</param>
     /// <param name="addr">The adress of the segment.</param>
     [SegmentCached]
@@ -144,7 +143,7 @@ namespace WebExpress.WebIndex.Storage
         }
 
         /// <summary>
-        /// Returns all items.
+        /// Returns all document ids.
         /// </summary>
         public IEnumerable<Guid> All => Terms
             .SelectMany(x => x.Item2.Posting?.All);
@@ -201,6 +200,7 @@ namespace WebExpress.WebIndex.Storage
         /// Create tree from term and save item in leaf.
         /// </summary>
         /// <param name="subterm">A subterm that is shortened by the first character at each tree level.</param>
+        /// <returns>The node where the term is added.</returns>
         public IndexStorageSegmentTermNode Add(string subterm)
         {
             if (subterm == null)

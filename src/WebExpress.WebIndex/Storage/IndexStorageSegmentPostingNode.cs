@@ -9,6 +9,9 @@ namespace WebExpress.WebIndex.Storage
     /// <summary>
     /// Each document stored as separate nodes in a binary search tree.
     /// </summary>
+    /// <remarks> 
+    /// TODO: Implement balanced tree algorithm for optimal performance. 
+    /// </remarks>
     /// <typeparam name="T">The data type. This must have the IIndexData interface.</typeparam>
     /// <param name="context">The reference to the context of the index.</param>
     /// <param name="addr">The adress of the segment.</param>
@@ -134,29 +137,15 @@ namespace WebExpress.WebIndex.Storage
                 yield return this;
 
                 // recurse on the left subtree
-                foreach (var n in Left?.PreOrder ?? Enumerable.Empty<IndexStorageSegmentPostingNode>())
+                foreach (var n in Left?.PreOrder ?? [])
                 {
                     yield return n;
                 }
 
                 // recurse on the right subtree
-                foreach (var n in Right?.PreOrder ?? Enumerable.Empty<IndexStorageSegmentPostingNode>())
+                foreach (var n in Right?.PreOrder ?? [])
                 {
                     yield return n;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Returns all documents.
-        /// </summary>
-        public IEnumerable<(Guid, IEnumerable<IndexStorageSegmentPosition>)> Documents
-        {
-            get
-            {
-                foreach (var node in PreOrder)
-                {
-                    yield return (node.DocumentID, node.Positions);
                 }
             }
         }
@@ -463,7 +452,7 @@ namespace WebExpress.WebIndex.Storage
                 return DocumentID.CompareTo(posting.DocumentID);
             }
 
-            throw new ArgumentException();
+            throw new ArgumentException("Object is not the same type as this instance.", nameof(obj));
         }
 
         /// <summary>

@@ -30,7 +30,7 @@ namespace WebExpress.WebIndex.Test.ReverseIndex
             Preconditions();
 
             // test execution
-            var reverseIndex = new IndexStorageReverse<UnitTestIndexTestDocumentF>(Context, Property, CultureInfo.GetCultureInfo("en"));
+            var reverseIndex = new IndexStorageReverseTerm<UnitTestIndexTestDocumentF>(Context, Property, CultureInfo.GetCultureInfo("en"));
 
             // postconditions
             reverseIndex.Dispose();
@@ -51,7 +51,7 @@ namespace WebExpress.WebIndex.Test.ReverseIndex
             // preconditions
             Preconditions();
             var doc = new UnitTestIndexTestDocumentF() { Id = Guid.Parse(id), Name = name };
-            var reverseIndex = new IndexStorageReverse<UnitTestIndexTestDocumentF>(Context, Property, CultureInfo.GetCultureInfo("en"));
+            var reverseIndex = new IndexStorageReverseTerm<UnitTestIndexTestDocumentF>(Context, Property, CultureInfo.GetCultureInfo("en"));
 
             // test execution
             reverseIndex.Add(new UnitTestIndexTestDocumentF() { Id = Guid.Parse(id), Name = name });
@@ -85,7 +85,7 @@ namespace WebExpress.WebIndex.Test.ReverseIndex
             // preconditions
             Preconditions();
             var randomItem = Fixture.TestData?.LastOrDefault();
-            var reverseIndex = new IndexStorageReverse<UnitTestIndexTestDocumentF>(Context, Property, CultureInfo.GetCultureInfo("en"));
+            var reverseIndex = new IndexStorageReverseTerm<UnitTestIndexTestDocumentF>(Context, Property, CultureInfo.GetCultureInfo("en"));
 
             foreach (var item in Fixture.TestData)
             {
@@ -115,7 +115,7 @@ namespace WebExpress.WebIndex.Test.ReverseIndex
         {
             // preconditions
             Preconditions();
-            var reverseIndex = new IndexStorageReverse<UnitTestIndexTestDocumentF>(Context, Property, CultureInfo.GetCultureInfo("en"));
+            var reverseIndex = new IndexStorageReverseTerm<UnitTestIndexTestDocumentF>(Context, Property, CultureInfo.GetCultureInfo("en"));
             var option = new IndexRetrieveOptions() { Method = method };
 
             foreach (var item in Fixture.TestData)

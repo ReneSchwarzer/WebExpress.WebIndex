@@ -22,7 +22,7 @@
                 {
                     Id = Guid.NewGuid(),
                     Name = $"Name_{i}",
-                    Summary = $"Der Name_{i}",
+                    Summary = $"The Name_{i}",
                     Description = GenerateLoremIpsum(100),
                     Date = DateTime.Now.AddMonths(i % 12),
                     Price = i,
