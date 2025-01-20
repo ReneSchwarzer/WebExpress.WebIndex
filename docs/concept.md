@@ -401,26 +401,26 @@ segment is no longer needed, it can be removed from the main memory. These featu
 the system performance.
 
 ```
-         ╔Header═════════╗
-  3 Byte ║ "wds" | "wri" ║ identification (magic number) of the file `wds` for IndexDocumentStore and `wri` for IndexReverse
-  1 Byte ║ Version       ║ the file version
-         ╠Allocator══════╣ 
-  8 Byte ║ NextFreeAddr  ║ the next free address
-  8 Byte ║ FreeListAddr  ║ the address to the free list
-         ╠Statistic══════╣
-  4 Byte ║ Count         ║ the number of elements in the file
-         ╠Body═══════════╣
-         ║               ║ a variable memory area in which the data is stored
-         ╚~~~~~~~~~~~~~~~╝
+         ╔Header═════════════╗
+  3 Byte ║ "wds"|"wrt"|"wrn" ║ identification (magic number) of the file `wds` for IndexDocumentStore and `wrt` or 'wrn' for IndexReverse
+  1 Byte ║ Version           ║ the file version
+         ╠Allocator══════════╣ 
+  8 Byte ║ NextFreeAddr      ║ the next free address
+  8 Byte ║ FreeListAddr      ║ the address to the free list
+         ╠Statistic══════════╣
+  4 Byte ║ Count             ║ the number of elements in the file
+         ╠Body═══════════════╣
+         ║                   ║ a variable memory area in which the data is stored
+         ╚~~~~~~~~~~~~~~~~~~~╝
 ```
 
 Unused memory areas in the file are represented by the `Free` segment, which is located in the body area variable and forms a linked list. The 
 `Allocator` points to the first element of this list.
 
 ```
-         ╔Free═══════════╗
-  8 Byte ║ SuccessorAddr ║ pointer to the address of the next element of a sorted list or 0 if there is no element
-         ╚═══════════════╝
+         ╔Free═══════════════╗
+  8 Byte ║ SuccessorAddr     ║ pointer to the address of the next element of a sorted list or 0 if there is no element
+         ╚═══════════════════╝
 ```
 
 When new documents are indexed, the new segments are accommodated in a free storage area in the file. Initially, this is the end of the 
@@ -431,26 +431,26 @@ points to the next free storage space with `NextFreeAddr`.
 In this example, segments 2 and 3 are successively added. It is important to note that segment 1 already exists.
 
 ```
-       initial               add segment 2             add segment 3
+         initial                    add segment 2               add segment 3
 
- 0 ╔Header═════════╗        ╔Header═════════╗        ╔Header═════════╗
-   ║ "wds" | "wri" ║        ║ "wds" | "wri" ║        ║ "wds" | "wri" ║
- 3 ╠Allocator══════╣        ╠Allocator══════╣        ╠Allocator══════╣
-   ║ 2             ║        ║ 3             ║        ║ 4             ║
-   ║ 0             ║        ║ 0             ║        ║ 0             ║
-19 ╠Statistic══════╣        ╠Statistic══════╣        ╠Statistic══════╣
-   ║ 1             ║        ║ 2             ║        ║ 3             ║
-23 ╠Body═══════════╣        ╠Body═══════════╣        ╠Body═══════════╣
-   ║   ┌Seg:  1┐   ║    =>  ║   ┌Seg:  1┐   ║    =>  ║   ┌Seg:  1┐   ║
-   ║   │       │   ║        ║   │       │   ║        ║   │       │   ║
-   ║   └───────┘   ║        ║   └───────┘   ║        ║   └───────┘   ║
-   ╚═══════════════╝        ║   ┌Seg:  2┐   ║        ║   ┌Seg:  2┐   ║
-                            ║   │   +   │   ║        ║   │       │   ║
-                            ║   └───────┘   ║        ║   └───────┘   ║
-                            ╚═══════════════╝        ║   ┌Seg:  3┐   ║
-                                                     ║   │   +   │   ║
-                                                     ║   └───────┘   ║
-                                                     ╚═══════════════╝
+ 0 ╔Header═════════════╗        ╔Header═════════════╗        ╔Header═════════════╗
+   ║ "wds"|"wrt"|"wrn" ║        ║ "wds"|"wrt"|"wrn" ║        ║ "wds"|"wrt"|"wrn" ║
+ 3 ╠Allocator══════════╣        ╠Allocator══════════╣        ╠Allocator══════════╣
+   ║ 2                 ║        ║ 3                 ║        ║ 4                 ║
+   ║ 0                 ║        ║ 0                 ║        ║ 0                 ║
+19 ╠Statistic══════════╣        ╠Statistic══════════╣        ╠Statistic══════════╣
+   ║ 1                 ║        ║ 2                 ║        ║ 3                 ║
+23 ╠Body═══════════════╣        ╠Body═══════════════╣        ╠Body═══════════════╣
+   ║     ┌Seg:  1┐     ║    =>  ║     ┌Seg:  1┐     ║    =>  ║     ┌Seg:  1┐     ║
+   ║     │       │     ║        ║     │       │     ║        ║     │       │     ║
+   ║     └───────┘     ║        ║     └───────┘     ║        ║     └───────┘     ║
+   ╚═══════════════════╝        ║     ┌Seg:  2┐     ║        ║     ┌Seg:  2┐     ║
+                                ║     │   +   │     ║        ║     │       │     ║
+                                ║     └───────┘     ║        ║     └───────┘     ║
+                                ╚═══════════════════╝        ║     ┌Seg:  3┐     ║
+                                                             ║     │   +   │     ║
+                                                             ║     └───────┘     ║
+                                                             ╚═══════════════════╝
 ```
 
 Free spaces are stored in a linked list that represents the free segments in the file. These can be reused to store new data. Unused 
@@ -460,29 +460,29 @@ Segments are replaced by the `free` segment.
 In this example, segments 2, 1 and 4 are sequentially released and consolidated.
 
 ```
-       initial              remove segment 2         remove segment 1         remove segment 4
+         initial                  remove segment 2             remove segment 1             remove segment 4
 
- 0 ╔Header═════════╗        ╔Header═════════╗        ╔Header═════════╗        ╔Header═════════╗
-   ║ "wds" | "wri" ║        ║ "wds" | "wri" ║        ║ "wds" | "wri" ║        ║ "wds" | "wri" ║
- 3 ╠Allocator══════╣        ╠Allocator══════╣        ╠Allocator══════╣        ╠Allocator══════╣
-   ║ 5             ║        ║ 5             ║        ║ 5             ║        ║ 5             ║
-   ║ 0             ║        ║ 2             ║─┐      ║ 1             ║─┐      ║ 4             ║───┐
-19 ╠Statistic══════╣        ╠Statistic══════╣ │      ╠Statistic══════╣ │      ╠Statistic══════╣   │
-   ║ 4             ║        ║ 3             ║ │      ║ 2             ║ │      ║ 1             ║   │
-23 ╠Body═══════════╣        ╠Body═══════════╣ │      ╠Body═══════════╣ │      ╠Body═══════════╣   │
-   ║   ┌Seg:  1┐   ║    =>  ║   ┌Seg:  1┐   ║ │  =>  ║   ┌Free: 1┐   ║◄┘  =>  ║   ┌Free: 1┐   ║◄─┐│
-   ║   │       │   ║        ║   │       │   ║ │      ║   │   X   │   ║─┐      ║   │       │   ║─┐││
-   ║   └───────┘   ║        ║   └───────┘   ║ │      ║   └───────┘   ║ │      ║   └───────┘   ║ │││
-   ║   ┌Seg:  2┐   ║        ║   ┌Free: 2┐   ║◄┘      ║   ┌Free: 2┐   ║◄┘      ║   ┌Free: 2┐   ║◄┘││
-   ║   │       │   ║        ║   │   X   │   ║        ║   │       │   ║        ║   │       │   ║  ││
-   ║   └───────┘   ║        ║   └───────┘   ║        ║   └───────┘   ║        ║   └───────┘   ║  ││
-   ║   ┌Seg:  3┐   ║        ║   ┌Seg:  3┐   ║        ║   ┌Seg:  3┐   ║        ║   ┌Seg:  3┐   ║  ││
-   ║   │       │   ║        ║   │       │   ║        ║   │       │   ║        ║   │       │   ║  ││
-   ║   └───────┘   ║        ║   └───────┘   ║        ║   └───────┘   ║        ║   └───────┘   ║  ││
-   ║   ┌Seg:  4┐   ║        ║   ┌Seg:  4┐   ║        ║   ┌Seg:  4┐   ║        ║   ┌Free: 4┐   ║◄─┼┘
-   ║   │       │   ║        ║   │       │   ║        ║   │       │   ║        ║   │   X   │   ║──┘
-   ║   └───────┘   ║        ║   └───────┘   ║        ║   └───────┘   ║        ║   └───────┘   ║
-   ╚═══════════════╝        ╚═══════════════╝        ╚═══════════════╝        ╚═══════════════╝
+ 0 ╔Header═════════════╗        ╔Header═════════════╗        ╔Header═════════════╗        ╔Header═════════════╗
+   ║ "wds"|"wrt"|"wrn" ║        ║ "wds"|"wrt"|"wrn" ║        ║ "wds"|"wrt"|"wrn" ║        ║ "wds"|"wrt"|"wrn" ║
+ 3 ╠Allocator══════════╣        ╠Allocator══════════╣        ╠Allocator══════════╣        ╠Allocator══════════╣
+   ║ 5                 ║        ║ 5                 ║        ║ 5                 ║        ║ 5                 ║
+   ║ 0                 ║        ║ 2                 ║─┐      ║ 1                 ║─┐      ║ 4                 ║───┐
+19 ╠Statistic══════════╣        ╠Statistic══════════╣ │      ╠Statistic══════════╣ │      ╠Statistic══════════╣   │
+   ║ 4                 ║        ║ 3                 ║ │      ║ 2                 ║ │      ║ 1                 ║   │
+23 ╠Body═══════════════╣        ╠Body═══════════════╣ │      ╠Body═══════════════╣ │      ╠Body═══════════════╣   │
+   ║     ┌Seg:  1┐     ║    =>  ║     ┌Seg:  1┐     ║ │  =>  ║     ┌Free: 1┐     ║◄┘  =>  ║     ┌Free: 1┐     ║◄─┐│
+   ║     │       │     ║        ║     │       │     ║ │      ║     │   X   │     ║─┐      ║     │       │     ║─┐││
+   ║     └───────┘     ║        ║     └───────┘     ║ │      ║     └───────┘     ║ │      ║     └───────┘     ║ │││
+   ║     ┌Seg:  2┐     ║        ║     ┌Free: 2┐     ║◄┘      ║     ┌Free: 2┐     ║◄┘      ║     ┌Free: 2┐     ║◄┘││
+   ║     │       │     ║        ║     │   X   │     ║        ║     │       │     ║        ║     │       │     ║  ││
+   ║     └───────┘     ║        ║     └───────┘     ║        ║     └───────┘     ║        ║     └───────┘     ║  ││
+   ║     ┌Seg:  3┐     ║        ║     ┌Seg:  3┐     ║        ║     ┌Seg:  3┐     ║        ║     ┌Seg:  3┐     ║  ││
+   ║     │       │     ║        ║     │       │     ║        ║     │       │     ║        ║     │       │     ║  ││
+   ║     └───────┘     ║        ║     └───────┘     ║        ║     └───────┘     ║        ║     └───────┘     ║  ││
+   ║     ┌Seg:  4┐     ║        ║     ┌Seg:  4┐     ║        ║     ┌Seg:  4┐     ║        ║     ┌Free: 4┐     ║◄─┼┘
+   ║     │       │     ║        ║     │       │     ║        ║     │       │     ║        ║     │   X   │     ║──┘
+   ║     └───────┘     ║        ║     └───────┘     ║        ║     └───────┘     ║        ║     └───────┘     ║
+   ╚═══════════════════╝        ╚═══════════════════╝        ╚═══════════════════╝        ╚═══════════════════╝
 ```
 
 The repurposing of unused segments reduces the space requirements of files, particularly for highly fluctuating index files. This practice 
@@ -495,29 +495,29 @@ This example reallocates a segment using the available free space. Since the siz
 Segment is reused. For efficiency reasons, the first element from the list of free segments is always used.
 
 ```
-       initial              realloc segment 4
+         initial                  realloc segment 4
 
- 0 ╔Header═════════╗        ╔Header═════════╗
-   ║ "wds" | "wri" ║        ║ "wds" | "wri" ║
- 3 ╠Allocator══════╣        ╠Allocator══════╣
-   ║ 5             ║        ║ 5             ║
-   ║ 4             ║───┐    ║ 1             ║─┐
-19 ╠Statistic══════╣   │    ╠Statistic══════╣ │
-   ║ 1             ║   │    ║ 2             ║ │
-23 ╠Body═══════════╣   │    ╠Body═══════════╣ │
-   ║   ┌Free: 1┐   ║◄─┐│=>  ║   ┌Seg: 1─┐   ║◄┘
-   ║   │       │   ║─┐││    ║   │       │   ║─┐
-   ║   └───────┘   ║ │││    ║   └───────┘   ║ │
-   ║   ┌Free: 2┐   ║◄┘││    ║   ┌Free: 2┐   ║◄┘
-   ║   │       │   ║  ││    ║   │       │   ║
-   ║   └───────┘   ║  ││    ║   └───────┘   ║
-   ║   ┌Seg:  3┐   ║  ││    ║   ┌Seg:  3┐   ║
-   ║   │       │   ║  ││    ║   │       │   ║
-   ║   └───────┘   ║  ││    ║   └───────┘   ║
-   ║   ┌Free: 4┐   ║◄─┼┘    ║   ┌Seg:  4┐   ║
-   ║   │       │   ║──┘     ║   │   x   │   ║
-   ║   └───────┘   ║        ║   └───────┘   ║
-   ╚═══════════════╝        ╚═══════════════╝
+ 0 ╔Header═════════════╗        ╔Header═════════════╗
+   ║ "wds"|"wrt"|"wrn" ║        ║ "wds"|"wrt"|"wrn" ║
+ 3 ╠Allocator══════════╣        ╠Allocator══════════╣
+   ║ 5                 ║        ║ 5                 ║
+   ║ 4                 ║───┐    ║ 1                 ║─┐
+19 ╠Statistic══════════╣   │    ╠Statistic══════════╣ │
+   ║ 1                 ║   │    ║ 2                 ║ │
+23 ╠Body═══════════════╣   │    ╠Body═══════════════╣ │
+   ║     ┌Free: 1┐     ║◄─┐│=>  ║     ┌Seg: 1─┐     ║◄┘
+   ║     │       │     ║─┐││    ║     │       │     ║─┐
+   ║     └───────┘     ║ │││    ║     └───────┘     ║ │
+   ║     ┌Free: 2┐     ║◄┘││    ║     ┌Free: 2┐     ║◄┘
+   ║     │       │     ║  ││    ║     │       │     ║
+   ║     └───────┘     ║  ││    ║     └───────┘     ║
+   ║     ┌Seg:  3┐     ║  ││    ║     ┌Seg:  3┐     ║
+   ║     │       │     ║  ││    ║     │       │     ║
+   ║     └───────┘     ║  ││    ║     └───────┘     ║
+   ║     ┌Free: 4┐     ║◄─┼┘    ║     ┌Seg:  4┐     ║
+   ║     │       │     ║──┘     ║     │   x   │     ║
+   ║     └───────┘     ║        ║     └───────┘     ║
+   ╚═══════════════════╝        ╚═══════════════════╝
 ```
 
 ### Caching
@@ -536,66 +536,66 @@ based on the key. The document store plays a crucial role in improving the effic
 instances that contain the desired terms. The internal structure of the document store:
 
 ```
-         ╔Header═════════╗
-  3 Byte ║ "wds"         ║ identification (magic number) of the file
-  1 Byte ║ Version       ║ the file version
-         ╠Allocator══════╣ 
-  8 Byte ║ NextFreeAddr  ║ the next free address
-  8 Byte ║ FreeItemAddr  ║ the address to the list with free item node segments
-  8 Byte ║ FreeChunkAddr ║ the address to the list with free chunk node segments
-         ╠Statistic══════╣
-  4 Byte ║ Count         ║ the number of terms in the file
-         ╠Body═══════════╣
-         ║ HashMap       ║ a hash map in which the data is stored
-         ╚~~~~~~~~~~~~~~~╝
+         ╔Header═════════════╗
+  3 Byte ║ "wds"             ║ identification (magic number) of the file
+  1 Byte ║ Version           ║ the file version
+         ╠Allocator══════════╣ 
+  8 Byte ║ NextFreeAddr      ║ the next free address
+  8 Byte ║ FreeItemAddr      ║ the address to the list with free item node segments
+  8 Byte ║ FreeChunkAddr     ║ the address to the list with free chunk node segments
+         ╠Statistic══════════╣
+  4 Byte ║ Count             ║ the number of terms in the file
+         ╠Body═══════════════╣
+         ║ HashMap           ║ a hash map in which the data is stored
+         ╚~~~~~~~~~~~~~~~~~~~╝
 ```
 
 Access to the document instances is done via a HashMap, where the document id serves as the key. 
 
 ```
-         ╔HashMap════════╗
-  4 Byte ║ BucketCount   ║ number of buckets (the next prime number of capacity)
-         ╠Buckets════════╣
-         ║ Bucket 0      ║ slot in which items with the same hash value are stored
-  n *    ║ Bucket 1      ║
-  8 Byte ║~~~~~~~~~~~~~~~║
-         ║~~~~~~~~~~~~~~~║
-         ║ Bucket n-1    ║
-         ╠Data═══════════╣
-         ║               ║ a variable memory area in which the data is stored
-         ╚~~~~~~~~~~~~~~~╝
+         ╔HashMap════════════╗
+  4 Byte ║ BucketCount       ║ number of buckets (the next prime number of capacity)
+         ╠Buckets════════════╣
+         ║ Bucket 0          ║ slot in which items with the same hash value are stored
+  n *    ║ Bucket 1          ║
+  8 Byte ║~~~~~~~~~~~~~~~~~~~║
+         ║~~~~~~~~~~~~~~~~~~~║
+         ║ Bucket n-1        ║
+         ╠Data═══════════════╣
+         ║                   ║ a variable memory area in which the data is stored
+         ╚~~~~~~~~~~~~~~~~~~~╝
 ```
 
 Each bucket contains a pointer to blocks of a list, with the elements of the bucket.
 
 ```
-         ╔Bucket═════════╗
-  8 Byte ║ ItemAddr      ║ pointer to the address of the first element of a sorted list that has the same hash values (collisions) or 0 if there is no element
-         ╚═══════════════╝
+         ╔Bucket═════════════╗
+  8 Byte ║ ItemAddr          ║ pointer to the address of the first element of a sorted list that has the same hash values (collisions) or 0 if there is no element
+         ╚═══════════════════╝
 ```
 
 The document instances are stored in one or more segments. The size of the segment is fixed and the number of segments per record is 
 determined by the size of the compressed document instance. The segment is stored in the variable storage area.
 
 ```
-         ╔Item═══════════╗
- 16 Byte ║ Id            ║ guid of the document item
-  4 Byte ║ Length        ║ size of the DataChunk in bytes
-256 Byte ║ DataChunk     ║ a memory area in which a part of the element is stored (gzip compressed)
-  8 Byte ║ NextChunkAddr ║ pointer to the address of the next chunk element of a list or 0 if there is no element
-  8 Byte ║ SuccessorAddr ║ pointer to the address of the next bucket element of a sorted list or 0 if there is no element
-         ╚═══════════════╝
+         ╔Item═══════════════╗
+ 16 Byte ║ Id                ║ guid of the document item
+  4 Byte ║ Length            ║ size of the DataChunk in bytes
+256 Byte ║ DataChunk         ║ a memory area in which a part of the element is stored (gzip compressed)
+  8 Byte ║ NextChunkAddr     ║ pointer to the address of the next chunk element of a list or 0 if there is no element
+  8 Byte ║ SuccessorAddr     ║ pointer to the address of the next bucket element of a sorted list or 0 if there is no element
+         ╚═══════════════════╝
 ```
 
 If the data is larger than what can fit in a chunk, additional chunks are created and the data is divided among them. The last chunk 
 may not be completely filled. All chunks are linked in an ordered list.
 
 ```
-         ╔Chunk══════════╗
-  4 Byte ║ Length        ║ size of the DataChunk in bytes
-256 Byte ║ DataChunk     ║ a memory area in which a part of the element is stored (gzip compressed)
-  8 Byte ║ NextChunkAddr ║ pointer to the address of the next chunk element of a list or 0 if there is no element
-         ╚═══════════════╝
+         ╔Chunk══════════════╗
+  4 Byte ║ Length            ║ size of the DataChunk in bytes
+256 Byte ║ DataChunk         ║ a memory area in which a part of the element is stored (gzip compressed)
+  8 Byte ║ NextChunkAddr     ║ pointer to the address of the next chunk element of a list or 0 if there is no element
+         ╚═══════════════════╝
 ```
 
 **Add**: The add function in the `IndexDocumentStore` is designed to permanently store the entire document. To efficiently utilize 
@@ -603,6 +603,7 @@ storage space and minimize storage requirements, the object is serialized into a
 This process ensures efficient use of storage space without compromising the integrity or accessibility of the data. Furthermore, 
 this method allows for faster data transmission and enhances the overall performance of the `IndexDocumentStore`. Access to the 
 original data can be obtained at any time through decompression and deserialization.
+
 ```
 ┌──────────────────────────────┐
 │ start                        │
@@ -668,7 +669,7 @@ ensures efficient use of storage and keeps the document storage tidy and well-or
 └──────────────────────────────┘
 ```
 
-### IndexReverse
+### IndexReverse term
 A reverse index is a specialized type of index that allows access to data in reverse order. In the context of the `WebIndex`, the reverse 
 index is used for efficient searching of terms. These terms are derived from the associated fields, and their values are broken down 
 into tokens, normalized, filtered, and stored in a search tree for fast retrieval.
@@ -678,29 +679,29 @@ in which the free segments are saved. For faster storage and reuse, insertion an
 the list. When there is a new memory request, a free segment can be reused without any search effort. Merging segments is not necessary.
 
 ```
-         ╔Header═══════════╗
-  3 Byte ║ "wri"           ║ identification (magic number) of the file
-  1 Byte ║ Version         ║ the file version
-         ╠Allocator════════╣ 
-  8 Byte ║ NextFreeAddr    ║ the next free address
-  8 Byte ║ FreeTermAddr    ║ the address to the list with free term node segments
-  8 Byte ║ FreePostingAddr ║ the address to the list with free posting node segments
-  8 Byte ║ FreePositionAddr║ the address to the list with free position segments
-         ╠Statistic════════╣
-  4 Byte ║ Count           ║ the number of terms in the file
-         ╠Body═════════════╣
-         ║ Term            ║ the root node
-         ╚~~~~~~~~~~~~~~~~~╝
+         ╔Header═════════════╗
+  3 Byte ║ "wrt"             ║ identification (magic number) of the file
+  1 Byte ║ Version           ║ the file version
+         ╠Allocator══════════╣ 
+  8 Byte ║ NextFreeAddr      ║ the next free address
+  8 Byte ║ FreeTermAddr      ║ the address to the list with free term node segments
+  8 Byte ║ FreePostingAddr   ║ the address to the list with free posting node segments
+  8 Byte ║ FreePositionAddr  ║ the address to the list with free position segments
+         ╠Statistic══════════╣
+  4 Byte ║ Count             ║ the number of terms in the file
+         ╠Body═══════════════╣
+         ║ Term              ║ the root node
+         ╚~~~~~~~~~~~~~~~~~~~╝
 ```
 
 The term structure contains the root node, which in turn manages the term nodes.
 
 ```
-         ╔Term═══════════╗
- 30 Byte ║ TermNode      ║ the root node
-         ╠Data═══════════╣
-         ║               ║ a variable memory area in which the data is stored
-         ╚~~~~~~~~~~~~~~~╝
+         ╔Term═══════════════╗
+ 30 Byte ║ TermNode          ║ the root node
+         ╠Data═══════════════╣
+         ║                   ║ a variable memory area in which the data is stored
+         ╚~~~~~~~~~~~~~~~~~~~╝
 ```
 
 The tree structure enables efficient search and retrieval of terms. Each node in the tree represents a character of the term, and the 
@@ -710,13 +711,13 @@ important metadata. This includes the frequency of the term’s occurrence and a
 documents in which the term appears.
 
 ```
-         ╔TermNode═══════╗
-  2 Byte ║ Character     ║ a character from the term
-  8 Byte ║ SiblingAddr   ║ address of the first sibling node or 0 if no sibling node exists
-  8 Byte ║ ChildAddr     ║ address of the first child node or 0 if not present
-  4 Byte ║ Fequency      ║ the number of times the term is used 
-  8 Byte ║ PostingAddr   ║ adress of the first posting node of a binary tree or 0 if there is no element
-         ╚═══════════════╝
+         ╔TermNode═══════════╗
+  2 Byte ║ Character         ║ a character from the term
+  8 Byte ║ SiblingAddr       ║ address of the first sibling node or 0 if no sibling node exists
+  8 Byte ║ ChildAddr         ║ address of the first child node or 0 if not present
+  4 Byte ║ Fequency          ║ the number of times the term is used 
+  8 Byte ║ PostingAddr       ║ adress of the first posting node of a binary tree or 0 if there is no element exists
+         ╚═══════════════════╝
 ```
 
 The posting node segment is designed as a binary tree and contains the ids of the documents that belong to a term. For each document, the 
@@ -724,12 +725,12 @@ posting node segment refers to the position information that indicates where the
 is stored in the variable memory area of the inverted index.
 
 ```
-         ╔PostingNode════╗
- 16 Byte ║ Id            ║ guid of the document item
-  8 Byte ║ LeftAddr      ║ pointer to the address of the left child or 0 if there is no element
-  8 Byte ║ RightAddr     ║ pointer to the address of the right child or 0 if there is no element
-  8 Byte ║ PositionAddr  ║ adress of the first position element of a sorted list or 0 if there is no element
-         ╚═══════════════╝
+         ╔TermPostingNode════╗
+ 16 Byte ║ Id                ║ guid of the document item
+  8 Byte ║ LeftAddr          ║ pointer to the address of the left child or 0 if there is no element exists
+  8 Byte ║ RightAddr         ║ pointer to the address of the right child or 0 if there is no element exists
+  8 Byte ║ PositionAddr      ║ adress of the first position element of a sorted list or 0 if there is no element exists
+         ╚═══════════════════╝
 ```
 
 The position segments form a linked list containing the position information of the associated terms. The position of a term 
@@ -738,10 +739,10 @@ the variable data area of the reverse index. This structure allows for efficient
 position in the documents.
 
 ```
-         ╔Position═══════╗
-  4 Byte ║ Position      ║ the position
-  8 Byte ║ SuccessorAddr ║ pointer to the address of the next element of a sorted list or 0 if there is no element
-         ╚═══════════════╝
+         ╔Position═══════════╗
+  4 Byte ║ Position          ║ the position
+  8 Byte ║ SuccessorAddr     ║ pointer to the address of the next element of a sorted list or 0 if there is no element exists
+         ╚═══════════════════╝
 ```
 
 **Add**: The procedure for adding terms from an 'IndexField' and saving references to the document with its position within the document 
@@ -800,7 +801,9 @@ new postings (including positions) are created for terms that were not included 
                      │           changed\current │
                      └───────────────────────────┘
 ```
+
 This results in the following process:
+
 ```
 ┌──────────────────────────────────┐
 │ start                            │
@@ -849,6 +852,64 @@ This results in the following process:
 │ └────────────────────────────┤
 │ end                          │
 └──────────────────────────────┘
+```
+
+### IndexReverse numeric
+Unlike reverse indices based on terms, the reverse index based on numerical values offers significant advantages when indexing numerical 
+data. The management structures for numerical reverse indices differ substantially: Instead of a term tree, a balanced binary tree is used, 
+in which each node contains the complete numerical value. This structure enables more efficient management and faster search for numerical 
+values. Balanced binary trees ensure that the tree height remains logarithmic, allowing for quick search, insert, and delete operations. 
+This method offers clear performance advantages in processing and managing numerical data compared to term-based trees.
+
+```
+         ╔Header═════════════╗
+  3 Byte ║ "wrn"             ║ identification (magic number) of the file
+  1 Byte ║ Version           ║ the file version
+         ╠Allocator══════════╣ 
+  8 Byte ║ NextFreeAddr      ║ the next free address
+  8 Byte ║ FreeTermAddr      ║ the address to the list with free term node segments
+  8 Byte ║ FreePostingAddr   ║ the address to the list with free posting node segments
+  8 Byte ║ FreePositionAddr  ║ the address to the list with free position segments
+         ╠Statistic══════════╣
+  4 Byte ║ Count             ║ the number of terms in the file
+         ╠Body═══════════════╣
+         ║ Numeric           ║ the root node
+         ╚~~~~~~~~~~~~~~~~~~~╝
+```
+
+The numeric structure contains the root node, which in turn manages the numeric nodes.
+
+```
+         ╔Numeric════════════╗
+ 44 Byte ║ NumericNode       ║ the root node
+         ╠Data═══════════════╣
+         ║                   ║ a variable memory area in which the data is stored
+         ╚~~~~~~~~~~~~~~~~~~~╝
+```
+
+The tree structure enables efficient search and retrieval of numeric values by using a balanced binary tree to store the values. Each 
+node has a pointer to a posting tree where the document ids of the associated documents are stored.
+
+```
+         ╔NumericNode════════╗
+ 16 Byte ║ Value             ║ the numeric value of the node
+  8 Byte ║ LeftAddr          ║ address of the left child node or 0 if no left child node exists
+  8 Byte ║ RightdAddr        ║ address of the right child node or 0 if not right child node exists
+  4 Byte ║ Fequency          ║ the number of times the numeric value is used
+  8 Byte ║ NumPostingNode    ║ Address of the first posting node of a binary tree or 0 if no element exists
+         ╚═══════════════════╝
+```
+
+The posting node segment is designed as a binary tree and contains the ids of the documents that belong to a term. For each document, the 
+posting node segment refers to the position information that indicates where the term is located in the document. The posting segment 
+is stored in the variable memory area of the inverted index.
+
+```
+         ╔NumericPostingNode═╗
+ 16 Byte ║ Id                ║ guid of the document item
+  8 Byte ║ LeftAddr          ║ pointer to the address of the left child or 0 if there is no element
+  8 Byte ║ RightAddr         ║ pointer to the address of the right child or 0 if there is no element
+         ╚═══════════════════╝
 ```
 
 ## Indexing

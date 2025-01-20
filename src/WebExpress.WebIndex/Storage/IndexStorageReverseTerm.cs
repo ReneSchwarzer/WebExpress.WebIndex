@@ -15,7 +15,7 @@ namespace WebExpress.WebIndex.Storage
     public class IndexStorageReverseTerm<TIndexItem> : IIndexReverse<TIndexItem>, IIndexStorage
         where TIndexItem : IIndexItem
     {
-        private readonly string _extentions = "wri";
+        private readonly string _extentions = "wrt";
         private readonly int _version = 1;
 
         /// <summary>

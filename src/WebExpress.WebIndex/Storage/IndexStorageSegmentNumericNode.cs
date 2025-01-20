@@ -161,13 +161,13 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Returns the root element of the posting tree.
         /// </summary>
-        public IndexStorageSegmentPostingNode Posting
+        public IndexStorageSegmentNumericPostingNode Posting
         {
             get
             {
                 if (PostingAddr != 0)
                 {
-                    var item = Context.IndexFile.Read<IndexStorageSegmentPostingNode>(PostingAddr, Context);
+                    var item = Context.IndexFile.Read<IndexStorageSegmentNumericPostingNode>(PostingAddr, Context);
                     return item;
                 }
 
@@ -257,16 +257,16 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         /// <param name="id">The document id.</params>
         /// <returns>The posting node segment.</returns>
-        public IndexStorageSegmentPostingNode AddPosting(Guid id)
+        public IndexStorageSegmentNumericPostingNode AddPosting(Guid id)
         {
-            var item = default(IndexStorageSegmentPostingNode);
+            var item = default(IndexStorageSegmentNumericPostingNode);
 
             lock (_guard)
             {
                 if (PostingAddr == 0)
                 {
-                    PostingAddr = Context.Allocator.Alloc(IndexStorageSegmentPostingNode.SegmentSize);
-                    item = new IndexStorageSegmentPostingNode(Context, PostingAddr)
+                    PostingAddr = Context.Allocator.Alloc(IndexStorageSegmentNumericPostingNode.SegmentSize);
+                    item = new IndexStorageSegmentNumericPostingNode(Context, PostingAddr)
                     {
                         DocumentID = id
                     };
@@ -278,7 +278,7 @@ namespace WebExpress.WebIndex.Storage
                 }
                 else
                 {
-                    if (Posting.Insert(id, out IndexStorageSegmentPostingNode node))
+                    if (Posting.Insert(id, out IndexStorageSegmentNumericPostingNode node))
                     {
                         Fequency++;
 
@@ -342,7 +342,6 @@ namespace WebExpress.WebIndex.Storage
                     {
                         PostingAddr = root.RightAddr;
 
-                        root.RemovePositions();
                         Context.Allocator.Free(root);
 
                         Fequency--;
@@ -355,7 +354,6 @@ namespace WebExpress.WebIndex.Storage
                     {
                         PostingAddr = root.LeftAddr;
 
-                        root.RemovePositions();
                         Context.Allocator.Free(root);
 
                         Fequency--;
@@ -381,7 +379,6 @@ namespace WebExpress.WebIndex.Storage
                     }
 
                     PostingAddr = inorderSuccessor?.Addr ?? 0ul;
-                    root.RemovePositions();
                     Context.Allocator.Free(root);
 
                     Fequency--;
@@ -550,7 +547,7 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns>An enumeration of posting items.</returns>
-        internal virtual IEnumerable<IndexStorageSegmentPostingNode> GetPostings(decimal value)
+        internal virtual IEnumerable<IndexStorageSegmentNumericPostingNode> GetPostings(decimal value)
         {
             var node = this[value];
 
@@ -584,29 +581,6 @@ namespace WebExpress.WebIndex.Storage
             writer.Write(RightAddr);
             writer.Write(Fequency);
             writer.Write(PostingAddr);
-        }
-
-        /// <summary>
-        /// Compares the current instance with another object of the same type and returns
-        ///  an integer that indicates whether the current instance precedes, follows, or
-        ///  occurs in the same position in the sort order as the other object.
-        /// </summary>
-        /// <param name="obj">An object to compare with this instance.</param>
-        /// <returns>
-        /// A signed integer that indicates the relative values of x and y.
-        ///     Less than zero -> x is less than y.
-        ///     Zero -> x equals y.
-        ///     Greater than zero -> x is greater than y.
-        /// </returns>
-        /// <exception cref="System.ArgumentException">Obj is not the same type as this instance.</exception>
-        public int CompareTo(object obj)
-        {
-            if (obj is IndexStorageSegmentTermNode item)
-            {
-                return Value == item.Character ? 0 : -1;
-            }
-
-            throw new ArgumentException("Object is not the same type as this instance.", nameof(obj));
         }
 
         /// <summary>
