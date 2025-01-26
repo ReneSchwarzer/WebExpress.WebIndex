@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Threading.Tasks;
 
 namespace WebExpress.WebIndex
@@ -30,7 +29,7 @@ namespace WebExpress.WebIndex
         /// <summary>
         /// Return the index field names.
         /// </summary>
-        IEnumerable<string> Fields { get; }
+        IEnumerable<IndexFieldData> Fields { get; }
 
         /// <summary>
         /// Returns all documents from the index.
@@ -115,8 +114,8 @@ namespace WebExpress.WebIndex
         /// <summary>
         /// Returns an index field based on its name.
         /// </summary>
-        /// <param name="property">The property that makes up the index.</param>
+        /// <param name="field">The field that makes up the index.</param>
         /// <returns>The index field or null.</returns>
-        IIndexReverse<TIndexItem> GetReverseIndex(PropertyInfo property);
+        IIndexReverse<TIndexItem> GetReverseIndex(IndexFieldData field);
     }
 }

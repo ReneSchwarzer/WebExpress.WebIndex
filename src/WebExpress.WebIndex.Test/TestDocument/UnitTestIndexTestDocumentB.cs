@@ -6,11 +6,14 @@
     /// </summary>
     public class UnitTestIndexTestDocumentB : UnitTestIndexTestDocument
     {
+        /// <summary>
+        /// Class representing an address with street, city, and zip code.
+        /// </summary>
         public class AdressClass
         {
-            public string Street { get; set;}
-            public string City { get; set;}
-            public int Zip { get; set;}
+            public string Street { get; set; }
+            public string City { get; set; }
+            public int Zip { get; set; }
         }
 
         /// <summary>

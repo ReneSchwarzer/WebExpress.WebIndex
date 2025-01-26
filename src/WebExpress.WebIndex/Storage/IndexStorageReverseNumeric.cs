@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using WebExpress.WebIndex.Term;
 
 namespace WebExpress.WebIndex.Storage
@@ -12,31 +11,11 @@ namespace WebExpress.WebIndex.Storage
     /// Implementation of the web reverse index, which stores numeric values on disk.
     /// </summary>
     /// <typeparam name="TIndexItem">The data type. This must have the IIndexItem interface.</typeparam>
-    public class IndexStorageReverseNumeric<TIndexItem> : IIndexReverse<TIndexItem>, IIndexStorage
+    public class IndexStorageReverseNumeric<TIndexItem> : IndexStorageReverse<TIndexItem>, IIndexStorage
         where TIndexItem : IIndexItem
     {
         private readonly string _extentions = "wrn";
         private readonly int _version = 1;
-
-        /// <summary>
-        /// The property that makes up the index.
-        /// </summary>
-        private PropertyInfo Property { get; set; }
-
-        /// <summary>
-        /// Returns the file name for the reverse index.
-        /// </summary>
-        public string FileName { get; private set; }
-
-        /// <summary>
-        /// Returns or sets the reverse index file.
-        /// </summary>
-        public IndexStorageFile IndexFile { get; private set; }
-
-        /// <summary>
-        /// Returns or sets the header.
-        /// </summary>
-        public IndexStorageSegmentHeader Header { get; private set; }
 
         /// <summary>
         /// Returns or sets the numeric tree.
@@ -44,42 +23,20 @@ namespace WebExpress.WebIndex.Storage
         public IndexStorageSegmentNumeric Numeric { get; private set; }
 
         /// <summary>
-        /// Returns or sets the memory manager.
-        /// </summary>
-        public IndexStorageSegmentAllocator Allocator { get; private set; }
-
-        /// <summary>
-        /// Returns the statistical values that can be help to optimize the index.
-        /// </summary>
-        public IndexStorageSegmentStatistic Statistic { get; private set; }
-
-        /// <summary>
-        /// Returns the index context.
-        /// </summary>
-        public IIndexDocumemntContext Context { get; private set; }
-
-        /// <summary>
-        /// Returns the culture.
-        /// </summary>
-        public CultureInfo Culture { get; private set; }
-
-        /// <summary>
         /// Returns all items.
         /// </summary>
-        public IEnumerable<Guid> All => Numeric.All.Distinct();
+        public override IEnumerable<Guid> All => Numeric.All.Distinct();
 
         /// <summary>
         /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="context">The index context.</param>
-        /// <param name="property">The property that makes up the index.</param>
+        /// <param name="field">The field that makes up the index.</param>
         /// <param name="culture">The culture.</param>
-        public IndexStorageReverseNumeric(IIndexDocumemntContext context, PropertyInfo property, CultureInfo culture)
+        public IndexStorageReverseNumeric(IIndexDocumemntContext context, IndexFieldData field, CultureInfo culture)
+            : base(context, field, culture)
         {
-            Context = context;
-            Property = property;
-            Culture = culture;
-            FileName = Path.Combine(Context.IndexDirectory, $"{typeof(TIndexItem).Name}.{property.Name}.{_extentions}");
+            FileName = Path.Combine(Context.IndexDirectory, $"{typeof(TIndexItem).Name}.{Field.Name}.{_extentions}");
 
             var exists = File.Exists(FileName);
 
@@ -102,9 +59,9 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
         /// <param name="item">The data to be added to the index.</param>
-        public void Add(TIndexItem item)
+        public override void Add(TIndexItem item)
         {
-            var value = Property?.GetValue(item)?.ToString();
+            var value = GetPropertyValue(item, Field)?.ToString();
             var terms = Context.TokenAnalyzer.Analyze(value, Culture);
 
             Add(item, terms);
@@ -115,7 +72,7 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         /// <param name="item">The data to be added to the index.</param>
         /// <param name="terms">The terms to add to the reverse index for the given item.</param>
-        public void Add(TIndexItem item, IEnumerable<IndexTermToken> terms)
+        public override void Add(TIndexItem item, IEnumerable<IndexTermToken> terms)
         {
             foreach (var term in terms)
             {
@@ -134,9 +91,9 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         /// <typeparam name="T">The data type. This must have the IIndexData interface.</typeparam>
         /// <param name="item">The data to be removed from the field.</param>
-        public void Delete(TIndexItem item)
+        public override void Delete(TIndexItem item)
         {
-            var value = Property?.GetValue(item)?.ToString();
+            var value = GetPropertyValue(item, Field);
             var terms = Context.TokenAnalyzer.Analyze(value?.ToString(), Culture);
 
             Delete(item, terms);
@@ -147,7 +104,7 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         /// <param name="item">The data to be removed from the field.</param>
         /// <param name="terms">The terms to add to the reverse index for the given item.</param>
-        public void Delete(TIndexItem item, IEnumerable<IndexTermToken> terms)
+        public override void Delete(TIndexItem item, IEnumerable<IndexTermToken> terms)
         {
             foreach (var term in terms)
             {
@@ -167,7 +124,7 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Removed all data from the index.
         /// </summary>
-        public void Clear()
+        public override void Clear()
         {
             IndexFile.NextFreeAddr = 0;
             IndexFile.InvalidationAll();
@@ -189,7 +146,7 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Drop the reverse index.
         /// </summary>
-        public void Drop()
+        public override void Drop()
         {
             IndexFile.Delete();
         }
@@ -200,7 +157,7 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="input">The input string.</param>
         /// <param name="options">The retrieve options.</param>
         /// <returns>An enumeration of the data ids.</returns>
-        public IEnumerable<Guid> Retrieve(object input, IndexRetrieveOptions options)
+        public override IEnumerable<Guid> Retrieve(object input, IndexRetrieveOptions options)
         {
             if (decimal.TryParse(input?.ToString(), out decimal value))
             {
@@ -216,16 +173,6 @@ namespace WebExpress.WebIndex.Storage
             }
 
             return [];
-        }
-
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, 
-        /// or resetting unmanaged resources.
-        /// </summary>
-        public void Dispose()
-        {
-            IndexFile.Dispose();
-            GC.SuppressFinalize(this);
         }
     }
 }

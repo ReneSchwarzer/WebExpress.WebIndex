@@ -69,6 +69,7 @@
 	    <PackagePath>\</PackagePath>
 	    <Pack>True</Pack>
 	  </None>
+	  <None Include="Memory\IndexMemoryReversecs.cs" />
 	</ItemGroup>
 
 </Project>

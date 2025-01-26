@@ -9,7 +9,7 @@ namespace WebExpress.WebIndex.Wi.Model
     /// </summary>
     internal class ObjectType
     {
-        private Dictionary<string, Type> _typeCache = new Dictionary<string, Type>();
+        private Dictionary<string, Type> _typeCache = [];
 
         /// <summary>
         /// Returns or sets the name of the object.

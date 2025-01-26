@@ -14,31 +14,34 @@ namespace WebExpress.WebIndex.Wql
     /// To use the parser, call the Parse method with the string to be parsed to get a WQL object. This object 
     /// contains the structure of the WQL query and can be used to evaluate or process the query.
     /// </summary>
-    /// <code>
+    /// <remarks>
     /// The parser implements the following bnf:
-    /// WQL                      ::= Filter Order Partitioning | ε
-    /// Filter                   ::= "(" Filter ")" | Filter LogicalOperator Filter | Condition | ε
-    /// Condition                ::= Attribute BinaryOperator Parameter | Attribute SetOperator "(" Parameter ParameterNext ")"
-    /// LogicalOperator          ::= "and" | "or" | "&" | "||"
-    /// Attribute                ::= Name
-    /// Parameter                ::= Function> | DoubleValue | """ StringValue """ | "'" StringValue "'"  | StringValue
-    /// ParameterOptions         ::= ParameterFuzzyOptions | ParameterDistanceOptions | ParameterFuzzyOptions ParameterDistanceOptions | ParameterDistanceOptions ParameterFuzzyOptions | ε
-    /// ParameterFuzzyOptions    ::= "~" Number
-    /// ParameterDistanceOptions ::= ":" Number
-    /// Function                 ::= Name "(" Parameter ParameterNext ")" | Name "(" ")"
-    /// ParameterNext            ::= "," Parameter ParameterNext | ε
-    /// BinaryOperator           ::= "=" | ">" | "<![CDATA[<]]>" | ">=" | "<![CDATA[<=]]>" | "!=" | "~" | "is" | "is not" | "was"
-    /// SetOperator              ::= "in" | "not in" | "was in"
-    /// Order                    ::= "order" "by" Attribute DescendingOrder OrderNext | ε
-    /// OrderNext                ::= "," Attribute DescendingOrder OrderNext | ε
-    /// DescendingOrder          ::= "asc" | "desc" | ε
-    /// Partitioning             ::= Partitioning Partitioning | PartitioningOperator Number | ε
-    /// PartitioningOperator     ::= "take" | "skip"
-    /// Name                     ::= [A-Za-z_.][A-Za-z0-9_.]+
-    /// StringValue              ::= [A-Za-z0-9_@<>=~$%/!+.,;:\-]+
-    /// DoubleValue              ::= [+-]?[0-9]*[.]?[0-9]+
-    /// Number                   ::= [0-9]+
-    /// </code>
+    /// <code>
+    /// [<![CDATA[
+    /// <WQL>                      ::= <Filter> <Order> <Partitioning> | ε
+    /// <Filter>                   ::= "(" <Filter> ")" | <Filter> <LogicalOperator> <Filter> |<Condition> | ε
+    /// <Condition>                ::= <Attribute> <BinaryOperator> <Parameter> <ParameterOptions> | <Attribute> <SetOperator> "(" <Parameter> <ParameterNext> ")"
+    /// <LogicalOperator>          ::= "and" | "or" | "&" | "||"
+    /// <Attribute>                ::= <Name> | <Name> "." <Name>
+    /// <Parameter>                ::= <Function> | <DoubleValue> | """ <StringValue> """ | "'" <StringValue> "'"  | <StringValue>
+    /// <ParameterOptions>         ::= <ParameterFuzzyOptions> | <ParameterDistanceOptions> | <ParameterFuzzyOptions> <ParameterDistanceOptions> | <ParameterDistanceOptions> <ParameterFuzzyOptions> | ε
+    /// <ParameterFuzzyOptions>    ::= "~" <Number>
+    /// <ParameterDistanceOptions> ::= ":" <Number>
+    /// <Function>                 ::= <Name> "(" <Parameter> <ParameterNext> ")" | Name "(" ")"
+    /// <ParameterNext>            ::= "," <Parameter> <ParameterNext> | ε
+    /// <BinaryOperator>           ::= "=" | ">" | "<" | ">=" | "<=" | "!=" | "~" | "is" | "is not"
+    /// <SetOperator>              ::= "in" | "not in"
+    /// <Order>                    ::= "order" "by" <Attribute> <DescendingOrder> <OrderNext> | ε
+    /// <OrderNext>                ::= "," <Attribute> <DescendingOrder> <OrderNext> | ε
+    /// <DescendingOrder>          ::= "asc" | "desc" | ε
+    /// <Partitioning>             ::= <Partitioning> <Partitioning> | <PartitioningOperator> <Number> | ε
+    /// <PartitioningOperator>     ::= "take" | "skip"
+    /// <Name>                     ::= [A-Za-z_][A-Za-z0-9_]+
+    /// <StringValue>              ::= [A-Za-z0-9_@<>=~$%/!+.,;:\-]+
+    /// <DoubleValue>              ::= [+-]?[0-9]*[.]?[0-9]+
+    /// <Number>                   ::= [0-9]+
+    /// ]]></code>
+    /// </remarks>
     public partial class WqlParser<TIndexItem> : IWqlParser<TIndexItem>
         where TIndexItem : IIndexItem
     {
@@ -72,7 +75,7 @@ namespace WebExpress.WebIndex.Wql
         /// <summary>
         /// Returns an enumeration of the existing attributes.
         /// </summary>
-        protected IEnumerable<string> Attributes { get; private set; }
+        protected IEnumerable<IndexFieldData> Attributes { get; private set; }
 
         /// <summary>
         /// Returns the index document.
@@ -84,7 +87,7 @@ namespace WebExpress.WebIndex.Wql
         /// </summary>
         internal WqlParser()
         {
-            Attributes = typeof(TIndexItem).GetProperties().Select(x => x.Name);
+            Attributes = GetFieldData(typeof(TIndexItem));
 
             RegisterCondition<WqlExpressionNodeFilterConditionBinaryEqual<TIndexItem>>();
             RegisterCondition<WqlExpressionNodeFilterConditionBinaryLike<TIndexItem>>();
@@ -363,7 +366,7 @@ namespace WebExpress.WebIndex.Wql
         {
             var attributeToken = PeekToken(tokenQueue);
             var attribute = Attributes
-                .Where(x => x.Equals(attributeToken?.Value, StringComparison.OrdinalIgnoreCase))
+                .Where(x => x.Name.Equals(attributeToken?.Value, StringComparison.OrdinalIgnoreCase))
                 .FirstOrDefault();
 
             ReadToken(tokenQueue);
@@ -372,9 +375,9 @@ namespace WebExpress.WebIndex.Wql
             {
                 return new WqlExpressionNodeAttribute<TIndexItem>
                 {
-                    Name = attribute,
-                    Property = typeof(TIndexItem).GetProperty(attribute),
-                    ReverseIndex = IndexDocument.GetReverseIndex(typeof(TIndexItem).GetProperty(attribute))
+                    Name = attribute.Name,
+                    Property = attribute.PropertyInfo,
+                    ReverseIndex = IndexDocument.GetReverseIndex(attribute)
                 };
             }
 
@@ -1115,6 +1118,45 @@ namespace WebExpress.WebIndex.Wql
         public void RemoveFunction(string name)
         {
             Functions.Remove(name);
+        }
+
+        /// <summary>
+        /// Recursively retrieves the field names of the specified type.
+        /// </summary>
+        /// <param name="type">The type whose field names to retrieve.</param>
+        /// <param name="prefix">The prefix to prepend to each field name.</param>
+        /// <param name="processedTypes">A set of types that have already been processed to avoid circular references.</param>
+        /// <returns>An enumerable collection of field names.</returns>
+        private static IEnumerable<IndexFieldData> GetFieldData(Type type, string prefix = "", HashSet<Type> processedTypes = null)
+        {
+            processedTypes ??= [];
+
+            if (processedTypes.Contains(type))
+            {
+                yield break;
+            }
+
+            processedTypes.Add(type);
+
+            foreach (var property in type.GetProperties())
+            {
+                string propertyName = string.IsNullOrEmpty(prefix) ? property.Name : $"{prefix}.{property.Name}";
+
+                yield return new IndexFieldData
+                {
+                    Name = propertyName,
+                    Type = property.PropertyType,
+                    PropertyInfo = property
+                };
+
+                if (property.PropertyType.IsClass && property.PropertyType != typeof(string))
+                {
+                    foreach (var subProperty in GetFieldData(property.PropertyType, propertyName, processedTypes))
+                    {
+                        yield return subProperty;
+                    }
+                }
+            }
         }
     }
 }

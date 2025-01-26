@@ -15,9 +15,12 @@ namespace WebExpress.WebIndex
     /// Key: The field name.
     /// Value: The reverse index.
     /// </summary>
-    public class IndexDocument<TIndexItem> : Dictionary<PropertyInfo, IIndexReverse<TIndexItem>>, IIndexDocument<TIndexItem>
+    public class IndexDocument<TIndexItem> : IIndexDocument<TIndexItem>
         where TIndexItem : IIndexItem
     {
+        private readonly Dictionary<PropertyInfo, IIndexReverse<TIndexItem>> _dict = [];
+        private readonly List<IndexFieldData> _fields = [];
+
         /// <summary>
         /// Event that is triggered when the schema has changed.
         /// </summary>
@@ -41,7 +44,7 @@ namespace WebExpress.WebIndex
         /// <summary>
         /// Return the index field names.
         /// </summary>
-        public IEnumerable<string> Fields => Keys.Select(x => x.Name);
+        public IEnumerable<IndexFieldData> Fields => _fields;
 
         /// <summary>
         /// Returns the index context.
@@ -122,9 +125,13 @@ namespace WebExpress.WebIndex
                 }
             }
 
-            foreach (var property in typeof(TIndexItem).GetProperties())
+            _fields.Clear();
+            _fields.AddRange(GetFieldData(typeof(TIndexItem)));
+            _dict.Clear();
+
+            foreach (var field in _fields)
             {
-                Add(property);
+                Add(field);
             }
         }
 
@@ -177,7 +184,7 @@ namespace WebExpress.WebIndex
                 }
             }
 
-            var properties = typeof(TIndexItem).GetProperties();
+            var properties = GetFieldData(typeof(TIndexItem));
             var tasks = properties.Select(property => Task.Run(() => Add(property)));
 
             await Task.WhenAll(tasks);
@@ -188,9 +195,9 @@ namespace WebExpress.WebIndex
         /// </summary>
         /// <typeparam name="T">The data type. This must have the IIndexData interface.</typeparam>
         /// <param name="property">The property that makes up the index.</param>
-        public virtual void Add(PropertyInfo property)
+        public virtual void Add(IndexFieldData property)
         {
-            if (property.GetCustomAttribute<IndexIgnoreAttribute>() != null || ContainsKey(property))
+            if (property.PropertyInfo.GetCustomAttribute<IndexIgnoreAttribute>() != null || _dict.ContainsKey(property.PropertyInfo))
             {
                 return;
             }
@@ -199,25 +206,41 @@ namespace WebExpress.WebIndex
             {
                 case IndexType.Memory:
                     {
-                        if (IsNumericType(property))
+                        if (IsNumericType(property.PropertyInfo))
                         {
-                            Add(property, new IndexMemoryReverseNumeric<TIndexItem>(Context, property, Culture));
+                            _dict.Add
+                            (
+                                property.PropertyInfo,
+                                new IndexMemoryReverseNumeric<TIndexItem>(Context, property, Culture)
+                            );
                         }
                         else
                         {
-                            Add(property, new IndexMemoryReverseTerm<TIndexItem>(Context, property, Culture));
+                            _dict.Add
+                            (
+                                property.PropertyInfo,
+                                new IndexMemoryReverseTerm<TIndexItem>(Context, property, Culture)
+                            );
                         }
                         break;
                     }
                 default:
                     {
-                        if (IsNumericType(property))
+                        if (IsNumericType(property.PropertyInfo))
                         {
-                            Add(property, new IndexStorageReverseNumeric<TIndexItem>(Context, property, Culture));
+                            _dict.Add
+                            (
+                                property.PropertyInfo,
+                                new IndexStorageReverseNumeric<TIndexItem>(Context, property, Culture)
+                            );
                         }
                         else
                         {
-                            Add(property, new IndexStorageReverseTerm<TIndexItem>(Context, property, Culture));
+                            _dict.Add
+                            (
+                                property.PropertyInfo,
+                                new IndexStorageReverseTerm<TIndexItem>(Context, property, Culture)
+                            );
                         }
                         break;
                     }
@@ -235,9 +258,9 @@ namespace WebExpress.WebIndex
                 return;
             }
 
-            foreach (var property in typeof(TIndexItem).GetProperties())
+            foreach (var field in Fields)
             {
-                if (GetReverseIndex(property) is IIndexReverse<TIndexItem> reverseIndex)
+                if (GetReverseIndex(field) is IIndexReverse<TIndexItem> reverseIndex)
                 {
                     reverseIndex.Add(item);
                 }
@@ -263,8 +286,7 @@ namespace WebExpress.WebIndex
                 Task.Run(() => DocumentStore.Add(item))
             };
 
-            var properties = typeof(TIndexItem).GetProperties();
-            var reverseIndexes = properties
+            var reverseIndexes = Fields
                 .Select(GetReverseIndex)
                 .Where(x => x != null);
 
@@ -290,15 +312,15 @@ namespace WebExpress.WebIndex
 
             var currentItem = DocumentStore.GetItem(item.Id);
 
-            foreach (var property in typeof(TIndexItem).GetProperties())
+            foreach (var field in Fields)
             {
-                var currentValue = property?.GetValue(currentItem)?.ToString();
+                var currentValue = GetPropertyValue(currentItem, field)?.ToString();
                 var currentTerms = Context.TokenAnalyzer.Analyze(currentValue, Culture);
 
-                var changedValue = property?.GetValue(item)?.ToString();
+                var changedValue = GetPropertyValue(item, field)?.ToString();
                 var changedTerms = Context.TokenAnalyzer.Analyze(changedValue, Culture);
 
-                if (GetReverseIndex(property) is IIndexReverse<TIndexItem> reverseIndex)
+                if (GetReverseIndex(field) is IIndexReverse<TIndexItem> reverseIndex)
                 {
                     var deleteTerms = currentTerms.Except(changedTerms);
                     var addTerms = changedTerms.Except(currentTerms);
@@ -331,25 +353,24 @@ namespace WebExpress.WebIndex
                 Task.Run(() => DocumentStore.Add(item))
             };
 
-            var properties = typeof(TIndexItem).GetProperties();
-            var reverseIndexes = properties
-                .Select(property => new { Index = GetReverseIndex(property), Property = property })
+            var reverseIndexes = Fields
+                .Select(property => new { Index = GetReverseIndex(property), Field = property })
                 .Where(x => x.Index != null);
 
             tasks.AddRange(reverseIndexes.Select(async reverseIndex =>
             {
-                var property = reverseIndex.Property;
+                var field = reverseIndex.Field;
                 var index = reverseIndex.Index;
 
                 await Task.Run(() =>
                 {
-                    var currentValue = property?.GetValue(currentItem)?.ToString();
+                    var currentValue = GetPropertyValue(currentItem, field)?.ToString();
                     var currentTerms = Context.TokenAnalyzer.Analyze(currentValue, Culture);
 
-                    var changedValue = property?.GetValue(item)?.ToString();
+                    var changedValue = GetPropertyValue(item, field)?.ToString();
                     var changedTerms = Context.TokenAnalyzer.Analyze(changedValue, Culture);
 
-                    if (GetReverseIndex(property) is IIndexReverse<TIndexItem> reverseIndex)
+                    if (GetReverseIndex(field) is IIndexReverse<TIndexItem> reverseIndex)
                     {
                         var deleteTerms = currentTerms.Except(changedTerms);
                         var addTerms = changedTerms.Except(currentTerms);
@@ -375,9 +396,9 @@ namespace WebExpress.WebIndex
                 return;
             }
 
-            foreach (var property in typeof(TIndexItem).GetProperties())
+            foreach (var field in Fields)
             {
-                if (GetReverseIndex(property) is IIndexReverse<TIndexItem> reverseIndex)
+                if (GetReverseIndex(field) is IIndexReverse<TIndexItem> reverseIndex)
                 {
                     reverseIndex.Delete(item);
                 }
@@ -403,9 +424,9 @@ namespace WebExpress.WebIndex
                 Task.Run(() => DocumentStore.Delete(item))
             };
 
-            foreach (var property in typeof(TIndexItem).GetProperties())
+            foreach (var field in Fields)
             {
-                if (GetReverseIndex(property) is IIndexReverse<TIndexItem> reverseIndex)
+                if (GetReverseIndex(field) is IIndexReverse<TIndexItem> reverseIndex)
                 {
                     tasks.Add(Task.Run(() => reverseIndex.Delete(item)));
                 }
@@ -435,11 +456,11 @@ namespace WebExpress.WebIndex
         /// <summary>
         /// Returns an index field based on its name.
         /// </summary>
-        /// <param name="property">The property that makes up the index.</param>
+        /// <param name="field">The field that makes up the index.</param>
         /// <returns>The index field or null.</returns>
-        public virtual IIndexReverse<TIndexItem> GetReverseIndex(PropertyInfo property)
+        public virtual IIndexReverse<TIndexItem> GetReverseIndex(IndexFieldData field)
         {
-            if (TryGetValue(property, out var reverseIndex))
+            if (_dict.TryGetValue(field.PropertyInfo, out var reverseIndex))
             {
                 return reverseIndex;
             }
@@ -452,9 +473,9 @@ namespace WebExpress.WebIndex
         /// </summary>
         public void Drop()
         {
-            foreach (var property in typeof(TIndexItem).GetProperties())
+            foreach (var field in Fields)
             {
-                if (GetReverseIndex(property) is IIndexReverse<TIndexItem> reverseIndex)
+                if (GetReverseIndex(field) is IIndexReverse<TIndexItem> reverseIndex)
                 {
                     reverseIndex.Drop();
                 }
@@ -476,9 +497,9 @@ namespace WebExpress.WebIndex
                 Task.Run(() => Schema.Drop())
             };
 
-            foreach (var property in typeof(TIndexItem).GetProperties())
+            foreach (var field in Fields)
             {
-                if (GetReverseIndex(property) is IIndexReverse<TIndexItem> reverseIndex)
+                if (GetReverseIndex(field) is IIndexReverse<TIndexItem> reverseIndex)
                 {
                     tasks.Add(Task.Run(() => reverseIndex.Drop()));
                 }
@@ -492,9 +513,9 @@ namespace WebExpress.WebIndex
         /// </summary>
         public virtual new void Clear()
         {
-            foreach (var property in typeof(TIndexItem).GetProperties())
+            foreach (var fielld in Fields)
             {
-                if (GetReverseIndex(property) is IIndexReverse<TIndexItem> reverseIndex)
+                if (GetReverseIndex(fielld) is IIndexReverse<TIndexItem> reverseIndex)
                 {
                     reverseIndex.Clear();
                 }
@@ -514,9 +535,9 @@ namespace WebExpress.WebIndex
                 Task.Run(() => DocumentStore.Clear())
             };
 
-            foreach (var property in typeof(TIndexItem).GetProperties())
+            foreach (var field in Fields)
             {
-                if (GetReverseIndex(property) is IIndexReverse<TIndexItem> reverseIndex)
+                if (GetReverseIndex(field) is IIndexReverse<TIndexItem> reverseIndex)
                 {
                     tasks.Add(Task.Run(() => reverseIndex.Clear()));
                 }
@@ -533,13 +554,15 @@ namespace WebExpress.WebIndex
         {
             DocumentStore.Dispose();
 
-            foreach (var property in typeof(TIndexItem).GetProperties())
+            foreach (var field in Fields)
             {
-                if (GetReverseIndex(property) is IIndexReverse<TIndexItem> reverseIndex)
+                if (GetReverseIndex(field) is IIndexReverse<TIndexItem> reverseIndex)
                 {
                     reverseIndex.Dispose();
                 }
             }
+
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>
@@ -558,5 +581,66 @@ namespace WebExpress.WebIndex
                    type == typeof(float) || type == typeof(double) ||
                    type == typeof(decimal);
         }
-    }
+
+        /// <summary>
+        /// Recursively retrieves the field names of the specified type.
+        /// </summary>
+        /// <param name="type">The type whose field names to retrieve.</param>
+        /// <param name="prefix">The prefix to prepend to each field name.</param>
+        /// <param name="processedTypes">A set of types that have already been processed to avoid circular references.</param>
+        /// <returns>An enumerable collection of field names.</returns>
+        private static IEnumerable<IndexFieldData> GetFieldData(Type type, string prefix = "", HashSet<Type> processedTypes = null)
+        {
+            processedTypes ??= [];
+
+            if (processedTypes.Contains(type))
+            {
+                yield break;
+            }
+
+            processedTypes.Add(type);
+
+            foreach (var property in type.GetProperties())
+            {
+                string propertyName = string.IsNullOrEmpty(prefix) ? property.Name : $"{prefix}.{property.Name}";
+
+                yield return new IndexFieldData
+                {
+                    Name = propertyName,
+                    Type = property.PropertyType,
+                    PropertyInfo = property
+                };
+
+                if (property.PropertyType.IsClass && property.PropertyType != typeof(string))
+                {
+                    foreach (var subProperty in GetFieldData(property.PropertyType, propertyName, processedTypes))
+                    {
+                        yield return subProperty;
+                    }
+                }
+            }
+        }        /// <summary>
+        /// Retrieves the value of a property from an object based on the specified field.
+        /// </summary>
+        /// <param name="item">The object from which to retrieve the property value.</param>
+        /// <param name="field">The field that specifies the property to retrieve.</param>
+        /// <returns>The value of the specified property, or null if the property is not found.</returns>
+        protected static object GetPropertyValue(object item, IndexFieldData field)
+        {
+            var propertyNames = field.Name.Split('.');
+            object currentObject = item;
+
+            foreach (var propertyName in propertyNames)
+            {
+                if (currentObject == null)
+                {
+                    return null;
+                }
+
+                var property = currentObject.GetType().GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public);
+                currentObject = property.GetValue(currentObject);
+            }
+
+            return currentObject;
+        }    }
 }
