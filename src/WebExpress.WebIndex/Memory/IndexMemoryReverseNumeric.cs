@@ -59,7 +59,7 @@ namespace WebExpress.WebIndex.Memory
         {
             foreach (var term in terms)
             {
-                Numeric.Add(item.Id, Convert.ToDecimal(term.Value));
+                Numeric = Numeric.AddAndBalance(item.Id, Convert.ToDecimal(term.Value));
             }
         }
 
