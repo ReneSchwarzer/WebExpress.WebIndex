@@ -340,6 +340,33 @@ namespace WebExpress.WebIndex.Test.IndexManager
         }
 
         /// <summary>
+        /// Tests the retrieve function in a series of tests from the index manager.
+        /// </summary>
+        [Theory]
+        [InlineData("name = 'Name_3'", "en", "Name_3")]
+        [InlineData("Summary = 'Name_3'", "en", "Name_3")]
+        [InlineData("Price = 3", "en", "Name_3")]
+        [InlineData("Price = '3'", "en", "Name_3")]
+        [InlineData("Adress.Street = 3", "en", "Name_3")]
+        [InlineData("Adress.Country = usa", "en", "Name_3")]
+        public void Retrieve(string wqlString, string cultureString, string expected)
+        {
+            // preconditions
+            Preconditions();
+            IndexManager.Create<UnitTestIndexTestDocumentB>(CultureInfo.GetCultureInfo(cultureString), IndexType.Storage);
+            IndexManager.ReIndex(Fixture.TestData);
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentB>(wqlString);
+            Assert.NotNull(wql);
+
+            // test execution
+            var items = wql.Apply();
+            Assert.Contains(expected, items.Select(x => x.Name.ToString()));
+
+            // postconditions
+            Postconditions();
+        }
+
+        /// <summary>
         /// Tests the close and open function from the index manager.
         /// </summary>
         [Theory]
@@ -347,7 +374,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
         [InlineData("de")]
         [InlineData("de-DE")]
         [InlineData("fr")]
-        public void Reopen(string culture)
+        public void ReOpen(string culture)
         {
             // preconditions
             Preconditions();

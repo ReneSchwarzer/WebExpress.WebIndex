@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Reflection;
 using WebExpress.WebIndex.Term;
 
 namespace WebExpress.WebIndex.Storage
@@ -125,31 +124,6 @@ namespace WebExpress.WebIndex.Storage
         {
             IndexFile.Dispose();
             GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Retrieves the value of a property from an object based on the specified field.
-        /// </summary>
-        /// <param name="item">The object from which to retrieve the property value.</param>
-        /// <param name="field">The field that specifies the property to retrieve.</param>
-        /// <returns>The value of the specified property, or null if the property is not found.</returns>
-        protected static object GetPropertyValue(object item, IndexFieldData field)
-        {
-            var propertyNames = field.Name.Split('.');
-            object currentObject = item;
-
-            foreach (var propertyName in propertyNames)
-            {
-                if (currentObject == null)
-                {
-                    return null;
-                }
-
-                var property = currentObject.GetType().GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public);
-                currentObject = property.GetValue(currentObject);
-            }
-
-            return currentObject;
         }
     }
 }

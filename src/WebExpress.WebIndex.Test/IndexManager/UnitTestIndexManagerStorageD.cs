@@ -311,7 +311,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
         [InlineData("de")]
         [InlineData("de-DE")]
         [InlineData("fr")]
-        public void Reopen(string culture)
+        public void ReOpen(string culture)
         {
             // preconditions
             Preconditions();

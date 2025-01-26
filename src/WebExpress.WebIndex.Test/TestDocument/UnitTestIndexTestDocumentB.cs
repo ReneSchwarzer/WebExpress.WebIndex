@@ -1,18 +1,50 @@
 ﻿namespace WebExpress.WebIndex.Test.Document
 {
-
     /// <summary>
     /// Data class for unit testing.
     /// </summary>
     public class UnitTestIndexTestDocumentB : UnitTestIndexTestDocument
     {
         /// <summary>
+        /// Enumeration representing various countries.
+        /// </summary>
+        public enum Country
+        {
+            Germany,
+            France,
+            Italy,
+            Spain,
+            England,
+            USA,
+            Canada,
+            Australia,
+            Japan,
+            China
+        }
+
+        /// <summary>
         /// Class representing an address with street, city, and zip code.
         /// </summary>
         public class AdressClass
         {
+            /// <summary>
+            /// Returns or sets the country.
+            /// </summary>
+            public Country Country { get; set; }
+
+            /// <summary>
+            /// Returns or sets the street.
+            /// </summary>
             public string Street { get; set; }
+
+            /// <summary>
+            /// Returns or sets the city.
+            /// </summary>
             public string City { get; set; }
+
+            /// <summary>
+            /// Returns or sets the zip code.
+            /// </summary>
             public int Zip { get; set; }
         }
 

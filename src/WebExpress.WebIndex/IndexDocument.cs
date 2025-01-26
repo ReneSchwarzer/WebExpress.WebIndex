@@ -314,10 +314,10 @@ namespace WebExpress.WebIndex
 
             foreach (var field in Fields)
             {
-                var currentValue = GetPropertyValue(currentItem, field)?.ToString();
+                var currentValue = field.GetPropertyValue(currentItem)?.ToString();
                 var currentTerms = Context.TokenAnalyzer.Analyze(currentValue, Culture);
 
-                var changedValue = GetPropertyValue(item, field)?.ToString();
+                var changedValue = field.GetPropertyValue(item)?.ToString();
                 var changedTerms = Context.TokenAnalyzer.Analyze(changedValue, Culture);
 
                 if (GetReverseIndex(field) is IIndexReverse<TIndexItem> reverseIndex)
@@ -364,10 +364,10 @@ namespace WebExpress.WebIndex
 
                 await Task.Run(() =>
                 {
-                    var currentValue = GetPropertyValue(currentItem, field)?.ToString();
+                    var currentValue = field.GetPropertyValue(currentItem)?.ToString();
                     var currentTerms = Context.TokenAnalyzer.Analyze(currentValue, Culture);
 
-                    var changedValue = GetPropertyValue(item, field)?.ToString();
+                    var changedValue = field.GetPropertyValue(item)?.ToString();
                     var changedTerms = Context.TokenAnalyzer.Analyze(changedValue, Culture);
 
                     if (GetReverseIndex(field) is IIndexReverse<TIndexItem> reverseIndex)
@@ -619,28 +619,6 @@ namespace WebExpress.WebIndex
                     }
                 }
             }
-        }        /// <summary>
-        /// Retrieves the value of a property from an object based on the specified field.
-        /// </summary>
-        /// <param name="item">The object from which to retrieve the property value.</param>
-        /// <param name="field">The field that specifies the property to retrieve.</param>
-        /// <returns>The value of the specified property, or null if the property is not found.</returns>
-        protected static object GetPropertyValue(object item, IndexFieldData field)
-        {
-            var propertyNames = field.Name.Split('.');
-            object currentObject = item;
-
-            foreach (var propertyName in propertyNames)
-            {
-                if (currentObject == null)
-                {
-                    return null;
-                }
-
-                var property = currentObject.GetType().GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public);
-                currentObject = property.GetValue(currentObject);
-            }
-
-            return currentObject;
-        }    }
+        }
+    }
 }

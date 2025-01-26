@@ -214,7 +214,7 @@ namespace WebExpress.WebIndex.Test.DocumentStore
         /// Reopen the document store.
         /// </summary>
         [Fact]
-        public void Reopen()
+        public void ReOpen()
         {
             // preconditions
             Preconditions();

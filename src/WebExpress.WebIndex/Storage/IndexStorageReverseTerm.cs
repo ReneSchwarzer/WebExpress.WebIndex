@@ -61,7 +61,7 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="item">The data to be added to the index.</param>
         public override void Add(TIndexItem item)
         {
-            var value = GetPropertyValue(item, Field)?.ToString();
+            var value = Field.GetPropertyValue(item)?.ToString();
             var terms = Context.TokenAnalyzer.Analyze(value, Culture);
 
             Add(item, terms);
@@ -92,7 +92,7 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="item">The data to be removed from the field.</param>
         public override void Delete(TIndexItem item)
         {
-            var value = GetPropertyValue(item, Field)?.ToString();
+            var value = Field.GetPropertyValue(item)?.ToString();
             var terms = Context.TokenAnalyzer.Analyze(value?.ToString(), Culture);
 
             Delete(item, terms);
