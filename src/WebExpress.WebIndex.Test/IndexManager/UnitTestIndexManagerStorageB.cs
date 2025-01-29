@@ -146,7 +146,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
             Assert.NotNull(wql);
 
             var before = wql.Apply().ToList();
-            Assert.True(before.Any());
+            Assert.NotEmpty(before);
 
             // test execution
             IndexManager.Delete(randomItem);

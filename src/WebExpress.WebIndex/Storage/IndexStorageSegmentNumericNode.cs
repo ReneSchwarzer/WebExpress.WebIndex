@@ -12,9 +12,6 @@ namespace WebExpress.WebIndex.Storage
     /// information about the value, such as its frequency, position in the document, and other relevant information that can be
     /// useful in search queries.
     /// </summary>
-    /// <remarks> 
-    /// TODO: Implement balanced tree algorithm for optimal performance. 
-    /// </remarks>
     /// <param name="context">The reference to the context of the index.</param>
     /// <param name="addr">The adress of the segment.</param>
     [SegmentCached]
@@ -89,65 +86,51 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Returns the height of the tree.
         /// </summary>
-        public uint Height
-        {
-            get
-            {
-                var leftHeight = Left?.Height ?? 0;
-                var rightHeight = Right?.Height ?? 0;
-
-                return Math.Max(leftHeight, rightHeight) + 1;
-            }
-        }
+        public uint Height { get; private set; } = 1;
 
         /// <summary>
         /// Returns the balance factor of the tree.
         /// </summary>
-        public uint Balance
-        {
-            get
-            {
-                var leftHeight = Left?.Height ?? 0;
-                var rightHeight = Right?.Height ?? 0;
+        private int BalanceFactor => (int)(GetHeight(Left) - GetHeight(Right));
 
-                return leftHeight > rightHeight ? leftHeight - rightHeight : rightHeight - leftHeight;
-            }
+        /// <summary>
+        /// Returns the height of the given node.
+        /// </summary>
+        /// <param name="node">The node whose height is to be determined.</param>
+        /// <returns>The height of the node.</returns>
+        private static uint GetHeight(IndexStorageSegmentNumericNode node)
+        {
+            return node?.Height ?? 0;
         }
 
         /// <summary>
-        /// Passes through the tree in pre order.
+        /// Updates the height of the current node based on the heights of its children.
+        /// </summary>
+        private void UpdateHeight()
+        {
+            Height = (uint)(Math.Max(GetHeight(Left), GetHeight(Right)) + 1);
+        }
+
+        /// <summary>
+        /// Passes through the tree in post order.
         /// </summary>
         /// <returns>The tree as a list.</returns>
-        public IEnumerable<IndexStorageSegmentNumericNode> PreOrder
+        public IEnumerable<IndexStorageSegmentNumericNode> PostOrder
         {
             get
             {
                 yield return this;
 
                 // recurse on the left subtree
-                foreach (var n in Left?.PreOrder ?? [])
+                foreach (var n in Left?.PostOrder ?? [])
                 {
                     yield return n;
                 }
 
                 // recurse on the right subtree
-                foreach (var n in Right?.PreOrder ?? [])
+                foreach (var n in Right?.PostOrder ?? [])
                 {
                     yield return n;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Returns all values.
-        /// </summary>
-        public IEnumerable<(decimal, IndexStorageSegmentNumericNode)> Values
-        {
-            get
-            {
-                foreach (var node in PreOrder)
-                {
-                    yield return (node.Value, node);
                 }
             }
         }
@@ -155,8 +138,8 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Returns all document ids.
         /// </summary>
-        public IEnumerable<Guid> All => Values
-            .SelectMany(x => x.Item2.Posting?.All);
+        public IEnumerable<Guid> All => PostOrder
+            .SelectMany(x => x.Posting?.All);
 
         /// <summary>
         /// Returns the root element of the posting tree.
@@ -198,58 +181,17 @@ namespace WebExpress.WebIndex.Storage
         }
 
         /// <summary>
-        /// Adds a new value to the binary tree. If the value is less than the current node's value, it is added to the left subtree.
-        /// If the value is greater than the current node's value, it is added to the right subtree.
+        /// Adds a new node with the specified value and balances the tree.
         /// </summary>
-        /// <remarks>
-        /// Works recursively and inserts the value into the tree.
-        /// </remarks>
-        /// <param name="value">The value to be added to the tree.</param>
+        /// <param name="id">The unique identifier of the document.</param>
+        /// <param name="value">The numeric value to be added to the tree.</param>
         /// <returns>The node where the value was added.</returns>
-        public IndexStorageSegmentNumericNode Add(decimal value)
+        public IndexStorageSegmentNumericNode AddAndBalance(Guid id, decimal value)
         {
-            if (value.CompareTo(Value) < 0)
-            {
-                if (LeftAddr == 0)
-                {
-                    LeftAddr = Context.Allocator.Alloc(SegmentSize);
-                    var item = new IndexStorageSegmentNumericNode(Context, LeftAddr)
-                    {
-                        Value = value
-                    };
+            var node = Add(id, value);
+            Balance();
 
-                    Context.IndexFile.Write(this);
-
-                    return item;
-                }
-                else
-                {
-                    return Left.Add(value);
-                }
-            }
-            else if (value.CompareTo(Value) > 0)
-            {
-                if (RightAddr == 0)
-                {
-                    RightAddr = Context.Allocator.Alloc(SegmentSize);
-                    var item = new IndexStorageSegmentNumericNode(Context, RightAddr)
-                    {
-                        Value = value
-                    };
-
-                    Context.IndexFile.Write(this);
-
-                    return item;
-                }
-                else
-                {
-                    return Right.Add(value);
-                }
-            }
-
-            Value = value;
-
-            return this;
+            return node;
         }
 
         /// <summary>
@@ -400,9 +342,6 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>An enumeration of data ids of the terms.</returns>
         public virtual IEnumerable<Guid> Retrieve(decimal search, IndexRetrieveOptions options)
         {
-            var left = Left;
-            var right = Right;
-
             switch (options.Method)
             {
                 case IndexRetrieveMethod.Phrase:
@@ -415,19 +354,19 @@ namespace WebExpress.WebIndex.Storage
                         }
                     }
 
-                    if (left?.Value >= search)
+                    if (Left != null && search < Value)
                     {
                         // recurse on the left subtree
-                        foreach (var value in left?.Retrieve(search, options) ?? [])
+                        foreach (var value in Left.Retrieve(search, options))
                         {
                             yield return value;
                         }
                     }
 
-                    if (right?.Value <= search)
+                    if (Right != null && search > Value)
                     {
                         // recurse on the right subtree
-                        foreach (var value in right?.Retrieve(search, options) ?? [])
+                        foreach (var value in Right.Retrieve(search, options))
                         {
                             yield return value;
                         }
@@ -443,19 +382,20 @@ namespace WebExpress.WebIndex.Storage
                         }
                     }
 
-                    if (left?.Value >= search)
+                    if (Left != null)
                     {
-                        // recurse on the left subtree
-                        foreach (var value in left?.Retrieve(search, options) ?? [])
+                        foreach (var value in Left.Retrieve(search, options))
                         {
                             yield return value;
                         }
                     }
 
-                    // recurse on the right subtree
-                    foreach (var value in right?.Retrieve(search, options) ?? [])
+                    if (Right != null)
                     {
-                        yield return value;
+                        foreach (var value in Right.Retrieve(search, options))
+                        {
+                            yield return value;
+                        }
                     }
 
                     break;
@@ -469,19 +409,20 @@ namespace WebExpress.WebIndex.Storage
                         }
                     }
 
-                    if (left?.Value >= search)
+                    if (Left != null)
                     {
-                        // recurse on the left subtree
-                        foreach (var value in left?.Retrieve(search, options) ?? [])
+                        foreach (var value in Left.Retrieve(search, options))
                         {
                             yield return value;
                         }
                     }
 
-                    // recurse on the right subtree
-                    foreach (var value in right?.Retrieve(search, options) ?? [])
+                    if (Right != null)
                     {
-                        yield return value;
+                        foreach (var value in Right.Retrieve(search, options))
+                        {
+                            yield return value;
+                        }
                     }
 
                     break;
@@ -495,16 +436,17 @@ namespace WebExpress.WebIndex.Storage
                         }
                     }
 
-                    // recurse on the left subtree
-                    foreach (var value in left?.Retrieve(search, options) ?? [])
+                    if (Left != null)
                     {
-                        yield return value;
+                        foreach (var value in Left.Retrieve(search, options))
+                        {
+                            yield return value;
+                        }
                     }
 
-                    if (right?.Value <= search)
+                    if (Right != null && search > Value)
                     {
-                        // recurse on the right subtree
-                        foreach (var value in right?.Retrieve(search, options) ?? [])
+                        foreach (var value in Right.Retrieve(search, options))
                         {
                             yield return value;
                         }
@@ -521,16 +463,17 @@ namespace WebExpress.WebIndex.Storage
                         }
                     }
 
-                    // recurse on the left subtree
-                    foreach (var value in left?.Retrieve(search, options) ?? [])
+                    if (Left != null)
                     {
-                        yield return value;
+                        foreach (var value in Left.Retrieve(search, options))
+                        {
+                            yield return value;
+                        }
                     }
 
-                    if (right?.Value <= search)
+                    if (Right != null && search >= Value)
                     {
-                        // recurse on the right subtree
-                        foreach (var value in right?.Retrieve(search, options) ?? [])
+                        foreach (var value in Right.Retrieve(search, options))
                         {
                             yield return value;
                         }
@@ -590,6 +533,145 @@ namespace WebExpress.WebIndex.Storage
         public override string ToString()
         {
             return $"{Value}";
+        }
+
+        /// <summary>
+        /// Performs a right rotation on the current node.
+        /// </summary>
+        /// <returns>The new root after the rotation.</returns>
+        private void RotateRight()
+        {
+            var value = Value;
+            var rightAddr = RightAddr;
+            var newRight = Left;
+            var rightAddr1 = Left.RightAddr;
+            var postingAddr = PostingAddr;
+
+            Value = newRight.Value;
+            PostingAddr = newRight.PostingAddr;
+            LeftAddr = newRight.LeftAddr;
+            RightAddr = newRight.Addr;
+            newRight.Value = value;
+            newRight.PostingAddr = postingAddr;
+            newRight.LeftAddr = rightAddr1;
+            newRight.RightAddr = rightAddr;
+
+            Context.IndexFile.Write(this);
+            Context.IndexFile.Write(newRight);
+        }
+
+        /// <summary>
+        /// Performs a left rotation on the current node.
+        /// </summary>
+        private void RotateLeft()
+        {
+            var value = Value;
+            var leftAddr = LeftAddr;
+            var newLeft = Right;
+            var leftAddr1 = newLeft.LeftAddr;
+            var postingAddr = PostingAddr;
+
+            Value = newLeft.Value;
+            PostingAddr = newLeft.PostingAddr;
+            LeftAddr = newLeft.Addr;
+            RightAddr = newLeft.RightAddr;
+            newLeft.Value = value;
+            newLeft.PostingAddr = postingAddr;
+            newLeft.LeftAddr = leftAddr;
+            newLeft.RightAddr = leftAddr1;
+
+            Context.IndexFile.Write(this);
+            Context.IndexFile.Write(newLeft);
+        }
+
+        /// <summary>
+        /// Balances the tree node by performing rotations if necessary.
+        /// </summary>
+        private void Balance()
+        {
+            UpdateHeight();
+
+            if (BalanceFactor > 1)
+            {
+                if (Left.BalanceFactor < 0)
+                {
+                    Left.RotateLeft();
+                }
+                RotateRight();
+            }
+            else if (BalanceFactor < -1)
+            {
+                if (Right.BalanceFactor > 0)
+                {
+                    Right.RotateRight();
+                }
+                RotateLeft();
+            }
+        }
+
+        /// <summary>
+        /// Adds a new value to the binary tree. If the value is less than the current node's value, it is added to the left subtree.
+        /// If the value is greater than the current node's value, it is added to the right subtree.
+        /// </summary>
+        /// <remarks>
+        /// Works recursively and inserts the value into the tree.
+        /// </remarks>
+        /// <param name="id">The document id.</params>
+        /// <param name="value">The value to be added to the tree.</param>
+        /// <returns>The node where the value was added.</returns>
+        private IndexStorageSegmentNumericNode Add(Guid id, decimal value)
+        {
+            if (value.CompareTo(Value) < 0)
+            {
+                if (LeftAddr == 0)
+                {
+                    LeftAddr = Context.Allocator.Alloc(SegmentSize);
+                    var item = new IndexStorageSegmentNumericNode(Context, LeftAddr)
+                    {
+                        Value = value
+                    };
+                    item.AddPosting(id);
+
+                    Context.IndexFile.Write(this);
+                    Context.IndexFile.Write(item);
+
+                    return item;
+                }
+                else
+                {
+                    return Left.AddAndBalance(id, value);
+                }
+            }
+            else if (value.CompareTo(Value) > 0)
+            {
+                if (RightAddr == 0)
+                {
+                    RightAddr = Context.Allocator.Alloc(SegmentSize);
+                    var item = new IndexStorageSegmentNumericNode(Context, RightAddr)
+                    {
+                        Value = value
+                    };
+
+                    item.AddPosting(id);
+
+                    Context.IndexFile.Write(this);
+                    Context.IndexFile.Write(item);
+
+                    return item;
+                }
+                else
+                {
+                    return Right.AddAndBalance(id, value);
+                }
+            }
+
+            Value = value;
+
+            AddPosting(id);
+
+            Context.IndexFile.Write(this);
+
+            return this;
         }
     }
 }

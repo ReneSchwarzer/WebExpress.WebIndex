@@ -1,4 +1,6 @@
-﻿namespace WebExpress.WebIndex.Test.Document
+﻿using WebExpress.WebIndex.WebAttribute;
+
+namespace WebExpress.WebIndex.Test.Document
 {
     /// <summary>
     /// Data class for unit testing.
@@ -45,6 +47,7 @@
             /// <summary>
             /// Returns or sets the zip code.
             /// </summary>
+            [IndexIgnore]
             public int Zip { get; set; }
         }
 

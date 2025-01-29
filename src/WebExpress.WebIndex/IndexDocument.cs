@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using WebExpress.WebIndex.Memory;
 using WebExpress.WebIndex.Storage;
-using WebExpress.WebIndex.WebAttribute;
 
 namespace WebExpress.WebIndex
 {
@@ -197,7 +196,7 @@ namespace WebExpress.WebIndex
         /// <param name="property">The property that makes up the index.</param>
         public virtual void Add(IndexFieldData property)
         {
-            if (property.PropertyInfo.GetCustomAttribute<IndexIgnoreAttribute>() != null || _dict.ContainsKey(property.PropertyInfo))
+            if (!property.Enabled || _dict.ContainsKey(property.PropertyInfo))
             {
                 return;
             }

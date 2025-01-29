@@ -78,8 +78,7 @@ namespace WebExpress.WebIndex.Storage
             {
                 var value = Convert.ToDecimal(term.Value);
 
-                Numeric.Add(value)?
-                    .AddPosting(item.Id);
+                Numeric.AddAndBalance(item.Id, value);
 
                 Statistic.Count++;
                 IndexFile.Write(Statistic);

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq.Expressions;
 using System.Reflection;
+using WebExpress.WebIndex.WebAttribute;
 
 namespace WebExpress.WebIndex
 {
@@ -22,9 +23,17 @@ namespace WebExpress.WebIndex
         public Type Type { get; internal set; }
 
         /// <summary>
-        /// returns the PropertyInfo of the index field.
+        /// Returns the PropertyInfo of the index field.
         /// </summary>
         public PropertyInfo PropertyInfo { get; internal set; }
+
+        /// <summary>
+        /// Returns a value indicating whether the index field is enabled.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if the index field is enabled; otherwise, <c>false</c>.
+        /// </value>
+        public bool Enabled => PropertyInfo.GetCustomAttribute<IndexIgnoreAttribute>() == null;
 
         /// <summary>
         /// Retrieves the value of a property from an object based on the specified field.
@@ -80,5 +89,16 @@ namespace WebExpress.WebIndex
 
             return _cachedLambda(item);
         }
+
+        /// <summary>
+        /// Returns a string that represents the current object.
+        /// </summary>
+        /// <returns>A string that represents the current object.</returns>
+        public override string ToString()
+        {
+
+            return $"Field: {Name}";
+
+        }
     }
 }

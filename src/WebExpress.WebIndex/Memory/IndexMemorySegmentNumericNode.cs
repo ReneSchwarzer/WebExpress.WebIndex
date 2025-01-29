@@ -288,8 +288,6 @@ namespace WebExpress.WebIndex.Memory
             Left = newRoot.Right;
             newRoot.Right = this;
 
-            newRoot.UpdateHeight();
-
             return newRoot;
         }
 
@@ -302,9 +300,6 @@ namespace WebExpress.WebIndex.Memory
             var newRoot = Right;
             Right = newRoot.Left;
             newRoot.Left = this;
-
-            UpdateHeight();
-            newRoot.UpdateHeight();
 
             return newRoot;
         }
