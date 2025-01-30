@@ -16,6 +16,8 @@ namespace WebExpress.WebIndex.Storage
     {
         private readonly string _extentions = "ws";
         private readonly int _version = 1;
+        private static readonly JsonSerializerOptions _jsonSerializerOptions = new() { WriteIndented = true };
+        private static readonly JsonSerializerOptions _jsonDeserializerOptions = new() { PropertyNameCaseInsensitive = true };
 
         /// <summary>
         /// Returns the file name.
@@ -61,9 +63,8 @@ namespace WebExpress.WebIndex.Storage
             var currentSchema = GetSchema();
             var storedSchema = Read();
 
-            var options = new JsonSerializerOptions { WriteIndented = true };
-            var currentJson = JsonSerializer.Serialize(currentSchema, options);
-            var storedJson = JsonSerializer.Serialize(storedSchema, options);
+            var currentJson = JsonSerializer.Serialize(currentSchema, _jsonSerializerOptions);
+            var storedJson = JsonSerializer.Serialize(storedSchema, _jsonSerializerOptions);
 
             return !currentJson.Equals(storedJson);
         }
@@ -133,8 +134,7 @@ namespace WebExpress.WebIndex.Storage
         private void Write()
         {
             var schema = GetSchema();
-            var options = new JsonSerializerOptions { WriteIndented = true };
-            var json = JsonSerializer.Serialize(schema, options);
+            var json = JsonSerializer.Serialize(schema, _jsonSerializerOptions);
 
             File.WriteAllText(FileName, json);
         }
@@ -142,14 +142,13 @@ namespace WebExpress.WebIndex.Storage
         /// <summary>
         /// Reads the object schema from the storage medium.
         /// </summary>
-        /// /// <returns>
+        /// <returns>
         /// The deserialized schema as an dynamic object.
         /// </returns>
         private dynamic Read()
         {
             var json = File.ReadAllText(FileName);
-            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-            var schema = JsonSerializer.Deserialize<dynamic>(json, options);
+            var schema = JsonSerializer.Deserialize<dynamic>(json, _jsonDeserializerOptions);
 
             return schema;
         }
@@ -169,7 +168,7 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         public virtual void Dispose()
         {
-
+            GC.SuppressFinalize(this);
         }
     }
 }

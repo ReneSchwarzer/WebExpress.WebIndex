@@ -148,8 +148,9 @@ namespace WebExpress.WebIndex.Wi.Model
             var runtimeClass = CurrentObjectType.BuildRuntimeClass();
             var document = IndexManager.GetIndexDocument(runtimeClass);
             var fieldProperty = runtimeClass.GetProperty(CurrentIndexField?.Name);
+            var fieldData = new IndexFieldData(fieldProperty);
             var methodInfo = document.GetType().GetMethod("GetReverseIndex");
-            var reverseIndex = methodInfo.Invoke(document, [fieldProperty]);
+            var reverseIndex = methodInfo.Invoke(document, [fieldData]);
             var termProperty = reverseIndex.GetType().GetProperty("Term");
             var term = termProperty.GetValue(reverseIndex) as IndexStorageSegmentTerm;
 

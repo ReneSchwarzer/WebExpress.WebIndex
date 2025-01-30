@@ -263,8 +263,9 @@ namespace WebExpress.WebIndex.WiUI.Model
             var runtimeClass = _selectedObjectType?.BuildRuntimeClass();
             var document = IndexManager?.GetIndexDocument(runtimeClass!);
             var fieldProperty = runtimeClass?.GetProperty(_selectedIndexField?.Name!);
+            var fieldData = new IndexFieldData(fieldProperty);
             var methodInfo = document?.GetType().GetMethod("GetReverseIndex");
-            var reverseIndex = methodInfo?.Invoke(document, [fieldProperty]);
+            var reverseIndex = methodInfo?.Invoke(document, [fieldData]);
             var termProperty = reverseIndex?.GetType().GetProperty("Term");
             var term = termProperty?.GetValue(reverseIndex) as IndexStorageSegmentTerm;
 

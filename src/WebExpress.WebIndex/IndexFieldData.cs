@@ -36,6 +36,24 @@ namespace WebExpress.WebIndex
         public bool Enabled => PropertyInfo.GetCustomAttribute<IndexIgnoreAttribute>() == null;
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="IndexFieldData"/> class.
+        /// </summary>
+        public IndexFieldData()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IndexFieldData"/> class with the specified property.
+        /// </summary>
+        /// <param name="property">The property information to initialize the index field 
+        public IndexFieldData(PropertyInfo property)
+        {
+            Name = property?.Name;
+            Type = property?.PropertyType;
+            PropertyInfo = property;
+        }
+
+        /// <summary>
         /// Retrieves the value of a property from an object based on the specified field.
         /// </summary>
         /// <param name="item">The object from which to retrieve the property value.</param>
