@@ -18,7 +18,6 @@ namespace WebExpress.WebIndex
         where TIndexItem : IIndexItem
     {
         private readonly Dictionary<PropertyInfo, IIndexReverse<TIndexItem>> _dict = [];
-        private readonly List<IndexFieldData> _fields = [];
 
         /// <summary>
         /// Event that is triggered when the schema has changed.
@@ -41,9 +40,9 @@ namespace WebExpress.WebIndex
         public IndexType IndexType { get; private set; }
 
         /// <summary>
-        /// Return the index field names.
+        /// Return the index field data.
         /// </summary>
-        public IEnumerable<IndexFieldData> Fields => _fields;
+        public IEnumerable<IndexFieldData> Fields => Schema.Fields;
 
         /// <summary>
         /// Returns the index context.
@@ -124,11 +123,9 @@ namespace WebExpress.WebIndex
                 }
             }
 
-            _fields.Clear();
-            _fields.AddRange(GetFieldData(typeof(TIndexItem)));
             _dict.Clear();
 
-            foreach (var field in _fields)
+            foreach (var field in Schema.Fields)
             {
                 Add(field);
             }
@@ -183,8 +180,7 @@ namespace WebExpress.WebIndex
                 }
             }
 
-            var properties = GetFieldData(typeof(TIndexItem));
-            var tasks = properties.Select(property => Task.Run(() => Add(property)));
+            var tasks = Schema.Fields.Select(property => Task.Run(() => Add(property)));
 
             await Task.WhenAll(tasks);
         }
@@ -579,45 +575,6 @@ namespace WebExpress.WebIndex
                    type == typeof(long) || type == typeof(ulong) ||
                    type == typeof(float) || type == typeof(double) ||
                    type == typeof(decimal);
-        }
-
-        /// <summary>
-        /// Recursively retrieves the field names of the specified type.
-        /// </summary>
-        /// <param name="type">The type whose field names to retrieve.</param>
-        /// <param name="prefix">The prefix to prepend to each field name.</param>
-        /// <param name="processedTypes">A set of types that have already been processed to avoid circular references.</param>
-        /// <returns>An enumerable collection of field names.</returns>
-        private static IEnumerable<IndexFieldData> GetFieldData(Type type, string prefix = "", HashSet<Type> processedTypes = null)
-        {
-            processedTypes ??= [];
-
-            if (processedTypes.Contains(type))
-            {
-                yield break;
-            }
-
-            processedTypes.Add(type);
-
-            foreach (var property in type.GetProperties())
-            {
-                string propertyName = string.IsNullOrEmpty(prefix) ? property.Name : $"{prefix}.{property.Name}";
-
-                yield return new IndexFieldData
-                {
-                    Name = propertyName,
-                    Type = property.PropertyType,
-                    PropertyInfo = property
-                };
-
-                if (property.PropertyType.IsClass && property.PropertyType != typeof(string))
-                {
-                    foreach (var subProperty in GetFieldData(property.PropertyType, propertyName, processedTypes))
-                    {
-                        yield return subProperty;
-                    }
-                }
-            }
         }
     }
 }

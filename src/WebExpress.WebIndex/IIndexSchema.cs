@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace WebExpress.WebIndex
 {
@@ -11,6 +12,11 @@ namespace WebExpress.WebIndex
         /// Returns the index context.
         /// </summary>
         IIndexContext Context { get; }
+
+        /// <summary>
+        /// Return the index field data.
+        /// </summary>
+        IEnumerable<IndexFieldData> Fields { get; }
 
         /// <summary>
         /// Delete this file from storage.

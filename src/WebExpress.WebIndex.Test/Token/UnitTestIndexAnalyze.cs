@@ -70,6 +70,7 @@ namespace WebExpress.WebIndex.Test.Token
             var tokens = Fixture.TokenAnalyzer.Analyze(input, CultureInfo.GetCultureInfo(culture));
 
             Assert.Equal(count, tokens.Count());
+            Assert.DoesNotContain(tokens.Select(x => x.Value), new object[] { "it", "or" });
         }
     }
 }
