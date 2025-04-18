@@ -211,7 +211,6 @@ namespace WebExpress.WebIndex.Test.DocumentStore
 
             documentStore.Add(Fixture.TestData[0]);
 
-            //var all = documentStore.All.ToList();
             documentStore.Add(Fixture.TestData[1]);
 
             var all = documentStore.All.ToList();
