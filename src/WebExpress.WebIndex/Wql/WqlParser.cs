@@ -13,33 +13,37 @@ namespace WebExpress.WebIndex.Wql
     /// input string that contains a WQL query and returns a WQL object that represents the structure of the query.
     /// To use the parser, call the Parse method with the string to be parsed to get a WQL object. This object 
     /// contains the structure of the WQL query and can be used to evaluate or process the query.
+    /// </summary>
+    /// <remarks>
     /// The parser implements the following bnf:
     /// <code>
-    /// WQL                       ::= Filter Order Partitioning | ε
-    /// Filter                   ::= "(" Filter ")" | Filter LogicalOperator Filter | Condition | ε
-    /// Condition                ::= Attribute BinaryOperator Parameter | Attribute SetOperator "(" Parameter ParameterNext ")"
-    /// LogicalOperator          ::= "and" | "or" | "&" | "||"
-    /// Attribute                ::= Name
-    /// Parameter                ::= Function> | DoubleValue | """ StringValue """ | "'" StringValue "'"  | StringValue
-    /// ParameterOptions         ::= ParameterFuzzyOptions | ParameterDistanceOptions | ParameterFuzzyOptions ParameterDistanceOptions | ParameterDistanceOptions ParameterFuzzyOptions | ε
-    /// ParameterFuzzyOptions    ::= "~" Number
-    /// ParameterDistanceOptions ::= ":" Number
-    /// Function                 ::= Name "(" Parameter ParameterNext ")" | Name "(" ")"
-    /// ParameterNext            ::= "," Parameter ParameterNext | ε
-    /// BinaryOperator           ::= "=" | ">" | "<![CDATA[<]]>" | ">=" | "<![CDATA[<=]]>" | "!=" | "~" | "is" | "is not" | "was"
-    /// SetOperator              ::= "in" | "not in" | "was in"
-    /// Order                    ::= "order" "by" Attribute DescendingOrder OrderNext | ε
-    /// OrderNext                ::= "," Attribute DescendingOrder OrderNext | ε
-    /// DescendingOrder          ::= "asc" | "desc" | ε
-    /// Partitioning             ::= Partitioning Partitioning | PartitioningOperator Number | ε
-    /// PartitioningOperator     ::= "take" | "skip"
-    /// Name                     ::= [A-Za-z_.][A-Za-z0-9_.]+
-    /// StringValue              ::= [A-Za-z0-9_@<>=~$%/!+.,;:\-]+
-    /// DoubleValue              ::= [+-]?[0-9]*[.]?[0-9]+
-    /// Number                   ::= [0-9]+
-    /// </code>
-    /// </summary>
-    public partial class WqlParser<T> : IWqlParser<T> where T : IIndexItem
+    /// [<![CDATA[
+    /// <WQL>                      ::= <Filter> <Order> <Partitioning> | ε
+    /// <Filter>                   ::= "(" <Filter> ")" | <Filter> <LogicalOperator> <Filter> |<Condition> | ε
+    /// <Condition>                ::= <Attribute> <BinaryOperator> <Parameter> <ParameterOptions> | <Attribute> <SetOperator> "(" <Parameter> <ParameterNext> ")"
+    /// <LogicalOperator>          ::= "and" | "or" | "&" | "||"
+    /// <Attribute>                ::= <Name> | <Name> "." <Name>
+    /// <Parameter>                ::= <Function> | <DoubleValue> | """ <StringValue> """ | "'" <StringValue> "'"  | <StringValue>
+    /// <ParameterOptions>         ::= <ParameterFuzzyOptions> | <ParameterDistanceOptions> | <ParameterFuzzyOptions> <ParameterDistanceOptions> | <ParameterDistanceOptions> <ParameterFuzzyOptions> | ε
+    /// <ParameterFuzzyOptions>    ::= "~" <Number>
+    /// <ParameterDistanceOptions> ::= ":" <Number>
+    /// <Function>                 ::= <Name> "(" <Parameter> <ParameterNext> ")" | Name "(" ")"
+    /// <ParameterNext>            ::= "," <Parameter> <ParameterNext> | ε
+    /// <BinaryOperator>           ::= "=" | ">" | "<" | ">=" | "<=" | "!=" | "~" | "is" | "is not"
+    /// <SetOperator>              ::= "in" | "not in"
+    /// <Order>                    ::= "order" "by" <Attribute> <DescendingOrder> <OrderNext> | ε
+    /// <OrderNext>                ::= "," <Attribute> <DescendingOrder> <OrderNext> | ε
+    /// <DescendingOrder>          ::= "asc" | "desc" | ε
+    /// <Partitioning>             ::= <Partitioning> <Partitioning> | <PartitioningOperator> <Number> | ε
+    /// <PartitioningOperator>     ::= "take" | "skip"
+    /// <Name>                     ::= [A-Za-z_][A-Za-z0-9_]+
+    /// <StringValue>              ::= [A-Za-z0-9_@<>=~$%/!+.,;:\-]+
+    /// <DoubleValue>              ::= [+-]?[0-9]*[.]?[0-9]+
+    /// <Number>                   ::= [0-9]+
+    /// ]]></code>
+    /// </remarks>
+    public partial class WqlParser<TIndexItem> : IWqlParser<TIndexItem>
+        where TIndexItem : IIndexItem
     {
         [GeneratedRegex("^[0-9]+$", RegexOptions.Compiled)]
         private static partial Regex NumberRegex();
@@ -71,38 +75,38 @@ namespace WebExpress.WebIndex.Wql
         /// <summary>
         /// Returns an enumeration of the existing attributes.
         /// </summary>
-        protected IEnumerable<string> Attributes { get; private set; }
+        protected IEnumerable<IndexFieldData> Attributes { get; private set; }
 
         /// <summary>
         /// Returns the index document.
         /// </summary>
-        protected IIndexDocument<T> IndexDocument { get; private set; }
+        protected IIndexDocument<TIndexItem> IndexDocument { get; private set; }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         internal WqlParser()
         {
-            Attributes = typeof(T).GetProperties().Select(x => x.Name);
+            Attributes = GetFieldData(typeof(TIndexItem));
 
-            RegisterCondition<WqlExpressionNodeFilterConditionBinaryEqual<T>>();
-            RegisterCondition<WqlExpressionNodeFilterConditionBinaryLike<T>>();
-            RegisterCondition<WqlExpressionNodeFilterConditionBinaryGreaterThan<T>>();
-            RegisterCondition<WqlExpressionNodeFilterConditionBinaryGreaterThanOrEqual<T>>();
-            RegisterCondition<WqlExpressionNodeFilterConditionBinaryLessThan<T>>();
-            RegisterCondition<WqlExpressionNodeFilterConditionBinaryLessThanOrEqual<T>>();
-            RegisterCondition<WqlExpressionNodeFilterConditionSetIn<T>>();
-            RegisterCondition<WqlExpressionNodeFilterConditionSetNotIn<T>>();
+            RegisterCondition<WqlExpressionNodeFilterConditionBinaryEqual<TIndexItem>>();
+            RegisterCondition<WqlExpressionNodeFilterConditionBinaryLike<TIndexItem>>();
+            RegisterCondition<WqlExpressionNodeFilterConditionBinaryGreaterThan<TIndexItem>>();
+            RegisterCondition<WqlExpressionNodeFilterConditionBinaryGreaterThanOrEqual<TIndexItem>>();
+            RegisterCondition<WqlExpressionNodeFilterConditionBinaryLessThan<TIndexItem>>();
+            RegisterCondition<WqlExpressionNodeFilterConditionBinaryLessThanOrEqual<TIndexItem>>();
+            RegisterCondition<WqlExpressionNodeFilterConditionSetIn<TIndexItem>>();
+            RegisterCondition<WqlExpressionNodeFilterConditionSetNotIn<TIndexItem>>();
 
-            RegisterFunction<WqlExpressionNodeFilterFunctionDay<T>>();
-            RegisterFunction<WqlExpressionNodeFilterFunctionNow<T>>();
+            RegisterFunction<WqlExpressionNodeFilterFunctionDay<TIndexItem>>();
+            RegisterFunction<WqlExpressionNodeFilterFunctionNow<TIndexItem>>();
         }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="indexFiled">The index field.</param>
-        internal WqlParser(IIndexDocument<T> indexFiled)
+        internal WqlParser(IIndexDocument<TIndexItem> indexFiled)
             : this()
         {
             IndexDocument = indexFiled;
@@ -115,13 +119,18 @@ namespace WebExpress.WebIndex.Wql
         /// <param name="input">An input string that contains a wql query.</param>
         /// <param name="culture">The culture in which to run the wql.</param>
         /// <returns>A wql object that represents the structure of the query.</returns>
-        public IWqlStatement<T> Parse(string input)
+        public IWqlStatement<TIndexItem> Parse(string input)
         {
-            var wql = new WqlStatement<T>(input)
+            var wql = new WqlStatement<TIndexItem>(input)
             {
                 Culture = Culture,
                 IndexDocument = IndexDocument
             };
+
+            if (input == null)
+            {
+                return wql;
+            }
 
             try
             {
@@ -164,7 +173,7 @@ namespace WebExpress.WebIndex.Wql
         /// </summary>
         /// <param name="tokenQueue">The token queue with the remaining tokens.</param>
         /// <returns>The filter.</returns>
-        private WqlExpressionNodeFilter<T> ParseFilter(Queue<WqlToken> tokenQueue)
+        private WqlExpressionNodeFilter<TIndexItem> ParseFilter(Queue<WqlToken> tokenQueue)
         {
             if (PeekToken(tokenQueue, "order") || PeekToken(tokenQueue, "orderby") || PeekToken(tokenQueue, "take") || PeekToken(tokenQueue, "skip"))
             {
@@ -181,7 +190,7 @@ namespace WebExpress.WebIndex.Wql
                 {
                     var logicalOperator = ParseLogicalOperator(tokenQueue);
 
-                    return new WqlExpressionNodeFilterBinary<T>
+                    return new WqlExpressionNodeFilterBinary<TIndexItem>
                     {
                         LeftFilter = filter,
                         LogicalOperator = logicalOperator,
@@ -200,15 +209,15 @@ namespace WebExpress.WebIndex.Wql
                 {
                     var logicalOperator = ParseLogicalOperator(tokenQueue);
 
-                    return new WqlExpressionNodeFilterBinary<T>
+                    return new WqlExpressionNodeFilterBinary<TIndexItem>
                     {
-                        LeftFilter = new WqlExpressionNodeFilter<T> { Condition = condition },
+                        LeftFilter = new WqlExpressionNodeFilter<TIndexItem> { Condition = condition },
                         LogicalOperator = logicalOperator,
                         RightFilter = ParseFilter(tokenQueue)
                     };
                 }
 
-                return new WqlExpressionNodeFilter<T>
+                return new WqlExpressionNodeFilter<TIndexItem>
                 {
                     Condition = condition
                 };
@@ -220,7 +229,7 @@ namespace WebExpress.WebIndex.Wql
                 var logicalOperator = ParseLogicalOperator(tokenQueue);
                 var rightFilter = ParseFilter(tokenQueue);
 
-                return new WqlExpressionNodeFilterBinary<T>
+                return new WqlExpressionNodeFilterBinary<TIndexItem>
                 {
                     LeftFilter = leftFilter,
                     LogicalOperator = logicalOperator,
@@ -236,7 +245,7 @@ namespace WebExpress.WebIndex.Wql
         /// </summary>
         /// <param name="tokenQueue">The token queue with the remaining tokens.</param>
         /// <returns>The condition.</returns>
-        private WqlExpressionNodeFilterCondition<T> ParseCondition(Queue<WqlToken> tokenQueue)
+        private WqlExpressionNodeFilterCondition<TIndexItem> ParseCondition(Queue<WqlToken> tokenQueue)
         {
             var attribute = ParseAttribute(tokenQueue);
             var conditionToken = PeekToken(tokenQueue);
@@ -246,11 +255,11 @@ namespace WebExpress.WebIndex.Wql
 
             try
             {
-                var instance = Activator.CreateInstance(condition.Value) as WqlExpressionNodeFilterCondition<T>;
+                var instance = Activator.CreateInstance(condition.Value) as WqlExpressionNodeFilterCondition<TIndexItem>;
 
                 ReadToken(tokenQueue, condition.Key.Split(' '));
 
-                if (instance is WqlExpressionNodeFilterConditionBinary<T> binary)
+                if (instance is WqlExpressionNodeFilterConditionBinary<TIndexItem> binary)
                 {
                     binary.Culture = Culture;
                     binary.Attribute = attribute;
@@ -260,9 +269,9 @@ namespace WebExpress.WebIndex.Wql
 
                     return binary;
                 }
-                else if (instance is WqlExpressionNodeFilterConditionSet<T> set)
+                else if (instance is WqlExpressionNodeFilterConditionSet<TIndexItem> set)
                 {
-                    var parameters = new List<WqlExpressionNodeParameter<T>>();
+                    var parameters = new List<WqlExpressionNodeParameter<TIndexItem>>();
 
                     ReadToken(tokenQueue, "(");
                     parameters.Add(ParseParameter(tokenQueue));
@@ -353,22 +362,22 @@ namespace WebExpress.WebIndex.Wql
         /// </summary>
         /// <param name="tokenQueue">The token queue with the remaining tokens.</param>
         /// <returns>The attribute.</returns>
-        private WqlExpressionNodeAttribute<T> ParseAttribute(Queue<WqlToken> tokenQueue)
+        private WqlExpressionNodeAttribute<TIndexItem> ParseAttribute(Queue<WqlToken> tokenQueue)
         {
             var attributeToken = PeekToken(tokenQueue);
             var attribute = Attributes
-                .Where(x => x.Equals(attributeToken?.Value, StringComparison.OrdinalIgnoreCase))
+                .Where(x => x.Name.Equals(attributeToken?.Value, StringComparison.OrdinalIgnoreCase))
                 .FirstOrDefault();
 
             ReadToken(tokenQueue);
 
             if (attribute != null)
             {
-                return new WqlExpressionNodeAttribute<T>
+                return new WqlExpressionNodeAttribute<TIndexItem>
                 {
-                    Name = attribute,
-                    Property = typeof(T).GetProperty(attribute),
-                    ReverseIndex = IndexDocument.GetReverseIndex(typeof(T).GetProperty(attribute))
+                    Name = attribute.Name,
+                    Property = attribute.PropertyInfo,
+                    ReverseIndex = IndexDocument.GetReverseIndex(attribute)
                 };
             }
 
@@ -384,7 +393,7 @@ namespace WebExpress.WebIndex.Wql
         /// </summary>
         /// <param name="tokenQueue">The token queue with the remaining tokens.</param>
         /// <returns>The parameter.</returns>
-        private WqlExpressionNodeParameter<T> ParseParameter(Queue<WqlToken> tokenQueue)
+        private WqlExpressionNodeParameter<TIndexItem> ParseParameter(Queue<WqlToken> tokenQueue)
         {
             var functionOrValueToken = PeekToken(tokenQueue);
             var function = Functions
@@ -393,16 +402,16 @@ namespace WebExpress.WebIndex.Wql
 
             if (PeekToken(tokenQueue, function.Key ?? functionOrValueToken?.Value, "("))
             {
-                return new WqlExpressionNodeParameter<T>
+                return new WqlExpressionNodeParameter<TIndexItem>
                 {
                     Function = ParseFunction(tokenQueue)
                 };
             }
             else if (PeekToken(tokenQueue, DoubleRegex()))
             {
-                return new WqlExpressionNodeParameter<T>
+                return new WqlExpressionNodeParameter<TIndexItem>
                 {
-                    Value = new WqlExpressionNodeValue<T>()
+                    Value = new WqlExpressionNodeValue<TIndexItem>()
                     {
                         Culture = Culture,
                         NumberValue = ParseDoubleValue(tokenQueue)
@@ -412,9 +421,9 @@ namespace WebExpress.WebIndex.Wql
             else if (functionOrValueToken?.Value == "\"")
             {
                 ReadToken(tokenQueue);
-                var parameter = new WqlExpressionNodeParameter<T>
+                var parameter = new WqlExpressionNodeParameter<TIndexItem>
                 {
-                    Value = new WqlExpressionNodeValue<T>()
+                    Value = new WqlExpressionNodeValue<TIndexItem>()
                     {
                         Culture = Culture,
                         StringValue = ParseStringValue(tokenQueue)
@@ -437,9 +446,9 @@ namespace WebExpress.WebIndex.Wql
             else if (functionOrValueToken?.Value == "'")
             {
                 ReadToken(tokenQueue);
-                var parameter = new WqlExpressionNodeParameter<T>
+                var parameter = new WqlExpressionNodeParameter<TIndexItem>
                 {
-                    Value = new WqlExpressionNodeValue<T>()
+                    Value = new WqlExpressionNodeValue<TIndexItem>()
                     {
                         Culture = Culture,
                         StringValue = ParseStringValue(tokenQueue)
@@ -461,9 +470,9 @@ namespace WebExpress.WebIndex.Wql
             }
             else
             {
-                return new WqlExpressionNodeParameter<T>
+                return new WqlExpressionNodeParameter<TIndexItem>
                 {
-                    Value = new WqlExpressionNodeValue<T>()
+                    Value = new WqlExpressionNodeValue<TIndexItem>()
                     {
                         Culture = Culture,
                         StringValue = ParseStringValue(tokenQueue)
@@ -483,9 +492,9 @@ namespace WebExpress.WebIndex.Wql
         /// </summary>
         /// <param name="tokenQueue">The token queue with the remaining tokens.</param>
         /// <returns>The parameter options</returns>
-        private static WqlExpressionNodeParameterOption<T> ParseParameterOptions(Queue<WqlToken> tokenQueue)
+        private static WqlExpressionNodeParameterOption<TIndexItem> ParseParameterOptions(Queue<WqlToken> tokenQueue)
         {
-            var options = new WqlExpressionNodeParameterOption<T>();
+            var options = new WqlExpressionNodeParameterOption<TIndexItem>();
 
             if (PeekToken(tokenQueue, FuzzyRegex()))
             {
@@ -540,9 +549,9 @@ namespace WebExpress.WebIndex.Wql
         /// </summary>
         /// <param name="tokenQueue">The token queue with the remaining tokens.</param>
         /// <returns>The function.</returns>
-        private WqlExpressionNodeFilterFunction<T> ParseFunction(Queue<WqlToken> tokenQueue)
+        private WqlExpressionNodeFilterFunction<TIndexItem> ParseFunction(Queue<WqlToken> tokenQueue)
         {
-            var parameters = new List<WqlExpressionNodeParameter<T>>();
+            var parameters = new List<WqlExpressionNodeParameter<TIndexItem>>();
             var function = Functions
                     .Where(x => PeekToken(tokenQueue, x.Key))
                     .FirstOrDefault();
@@ -550,7 +559,7 @@ namespace WebExpress.WebIndex.Wql
 
             try
             {
-                var instance = Activator.CreateInstance(function.Value) as WqlExpressionNodeFilterFunction<T>;
+                var instance = Activator.CreateInstance(function.Value) as WqlExpressionNodeFilterFunction<TIndexItem>;
 
                 ReadToken(tokenQueue, "(");
 
@@ -590,11 +599,11 @@ namespace WebExpress.WebIndex.Wql
         /// </summary>
         /// <param name="tokenQueue">The token queue with the remaining tokens.</param>
         /// <returns>The order.</returns>
-        private WqlExpressionNodeOrder<T> ParseOrder(Queue<WqlToken> tokenQueue)
+        private WqlExpressionNodeOrder<TIndexItem> ParseOrder(Queue<WqlToken> tokenQueue)
         {
             if (PeekToken(tokenQueue, "order", "by"))
             {
-                var attributes = new List<WqlExpressionNodeOrderAttribute<T>>();
+                var attributes = new List<WqlExpressionNodeOrderAttribute<TIndexItem>>();
                 var i = 0;
 
                 ReadToken(tokenQueue, "order");
@@ -607,11 +616,11 @@ namespace WebExpress.WebIndex.Wql
                     attributes.Add(ParseOrderAttribute(tokenQueue, i++));
                 }
 
-                return new WqlExpressionNodeOrder<T> { Attributes = attributes };
+                return new WqlExpressionNodeOrder<TIndexItem> { Attributes = attributes };
             }
             else if (PeekToken(tokenQueue, "orderby"))
             {
-                var attributes = new List<WqlExpressionNodeOrderAttribute<T>>();
+                var attributes = new List<WqlExpressionNodeOrderAttribute<TIndexItem>>();
                 var i = 0;
 
                 ReadToken(tokenQueue, "orderby");
@@ -623,7 +632,7 @@ namespace WebExpress.WebIndex.Wql
                     attributes.Add(ParseOrderAttribute(tokenQueue, i++));
                 }
 
-                return new WqlExpressionNodeOrder<T> { Attributes = attributes };
+                return new WqlExpressionNodeOrder<TIndexItem> { Attributes = attributes };
             }
             else
             {
@@ -637,12 +646,12 @@ namespace WebExpress.WebIndex.Wql
         /// <param name="tokenQueue">The tokens.</param>
         /// <param name="position">The position of the attribute within the order by statement.</param>
         /// <returns>The order attribute.</returns>
-        private WqlExpressionNodeOrderAttribute<T> ParseOrderAttribute(Queue<WqlToken> tokenQueue, int position)
+        private WqlExpressionNodeOrderAttribute<TIndexItem> ParseOrderAttribute(Queue<WqlToken> tokenQueue, int position)
         {
             var attribute = ParseAttribute(tokenQueue);
             var descending = ParseDescendingOrder(tokenQueue);
 
-            return new WqlExpressionNodeOrderAttribute<T>
+            return new WqlExpressionNodeOrderAttribute<TIndexItem>
             {
                 Attribute = attribute,
                 Descending = descending,
@@ -678,9 +687,9 @@ namespace WebExpress.WebIndex.Wql
         /// </summary>
         /// <param name="tokenQueue">The token queue with the remaining tokens.</param>
         /// <returns>The partitioning.</returns>
-        private static WqlExpressionNodePartitioning<T> ParsePartitioning(Queue<WqlToken> tokenQueue)
+        private static WqlExpressionNodePartitioning<TIndexItem> ParsePartitioning(Queue<WqlToken> tokenQueue)
         {
-            var function = new List<WqlExpressionNodePartitioningFunction<T>>();
+            var function = new List<WqlExpressionNodePartitioningFunction<TIndexItem>>();
 
             if (!PeekToken(tokenQueue, "take") && !PeekToken(tokenQueue, "skip"))
             {
@@ -692,14 +701,14 @@ namespace WebExpress.WebIndex.Wql
                 var op = ParsePartitioningOperator(tokenQueue);
                 var number = ParseNumberValue(tokenQueue);
 
-                function.Add(new WqlExpressionNodePartitioningFunction<T>()
+                function.Add(new WqlExpressionNodePartitioningFunction<TIndexItem>()
                 {
                     Operator = op,
                     Value = number
                 });
             }
 
-            return new WqlExpressionNodePartitioning<T>()
+            return new WqlExpressionNodePartitioning<TIndexItem>()
             {
                 PartitioningFunctions = function
             };
@@ -1056,15 +1065,16 @@ namespace WebExpress.WebIndex.Wql
         /// <summary>
         /// Registers a condition expression.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <exception cref="WqlParseException"></exception>
-        public void RegisterCondition<C>() where C : WqlExpressionNodeFilterCondition<T>, new()
+        /// <typeparam name="TCondition">The type of the condition expression to register.</typeparam>
+        /// <exception cref="Exception">Thrown when the condition expression cannot be registered because it already exists.</exception>
+        public void RegisterCondition<TCondition>()
+            where TCondition : IWqlExpressionNodeFilterCondition<TIndexItem>, new()
         {
-            var op = new C().Operator;
+            var op = new TCondition().Operator;
 
             if (!Conditions.ContainsKey(op))
             {
-                Conditions.Add(op, typeof(C));
+                Conditions.Add(op, typeof(TCondition));
 
                 return;
             }
@@ -1075,15 +1085,16 @@ namespace WebExpress.WebIndex.Wql
         /// <summary>
         /// Registers a function expression.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <exception cref="WqlParseException"></exception>
-        public void RegisterFunction<F>() where F : WqlExpressionNodeFilterFunction<T>, new()
+        /// <typeparam name="TFunction">The type of the function expression to register.</typeparam>
+        /// <exception cref="Exception">Thrown when the function expression cannot be registered because it already exists.</exception>
+        public void RegisterFunction<TFunction>()
+            where TFunction : IWqlExpressionNodeFilterFunction, new()
         {
-            var name = new F().Name?.ToLower();
+            var name = new TFunction().Name?.ToLower();
 
             if (!Functions.ContainsKey(name))
             {
-                Functions.Add(name, typeof(T));
+                Functions.Add(name, typeof(TIndexItem));
 
                 return;
             }
@@ -1097,12 +1108,7 @@ namespace WebExpress.WebIndex.Wql
         /// <param name="op">The operator to be derisgistrated.</param>
         public void RemoveCondition(string op)
         {
-            if (Conditions.ContainsKey(op))
-            {
-                Conditions.Remove(op);
-
-                return;
-            }
+            Conditions.Remove(op);
         }
 
         /// <summary>
@@ -1111,11 +1117,45 @@ namespace WebExpress.WebIndex.Wql
         /// <param name="name">The function name to be derisgistrated.</param>
         public void RemoveFunction(string name)
         {
-            if (Functions.ContainsKey(name))
-            {
-                Functions.Remove(name);
+            Functions.Remove(name);
+        }
 
-                return;
+        /// <summary>
+        /// Recursively retrieves the field names of the specified type.
+        /// </summary>
+        /// <param name="type">The type whose field names to retrieve.</param>
+        /// <param name="prefix">The prefix to prepend to each field name.</param>
+        /// <param name="processedTypes">A set of types that have already been processed to avoid circular references.</param>
+        /// <returns>An enumerable collection of field names.</returns>
+        private static IEnumerable<IndexFieldData> GetFieldData(Type type, string prefix = "", HashSet<Type> processedTypes = null)
+        {
+            processedTypes ??= [];
+
+            if (processedTypes.Contains(type))
+            {
+                yield break;
+            }
+
+            processedTypes.Add(type);
+
+            foreach (var property in type.GetProperties())
+            {
+                string propertyName = string.IsNullOrEmpty(prefix) ? property.Name : $"{prefix}.{property.Name}";
+
+                yield return new IndexFieldData
+                {
+                    Name = propertyName,
+                    Type = property.PropertyType,
+                    PropertyInfo = property
+                };
+
+                if (property.PropertyType.IsClass && property.PropertyType != typeof(string))
+                {
+                    foreach (var subProperty in GetFieldData(property.PropertyType, propertyName, processedTypes))
+                    {
+                        yield return subProperty;
+                    }
+                }
             }
         }
     }

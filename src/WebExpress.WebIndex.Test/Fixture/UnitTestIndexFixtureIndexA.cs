@@ -15,7 +15,7 @@ namespace WebExpress.WebIndex.Test.Fixture
         public UnitTestIndexTestDocumentA RandomItem => TestData[Rand.Next(TestData.Count)];
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         public UnitTestIndexFixtureIndexA()
         {

@@ -2,6 +2,9 @@
 
 namespace WebExpress.WebIndex.Storage
 {
+    /// <summary>
+    /// Abstract class representing a segment of index storage.
+    /// </summary>
     public abstract class IndexStorageSegment : IIndexStorageSegment
     {
         /// <summary>
@@ -15,7 +18,7 @@ namespace WebExpress.WebIndex.Storage
         public IndexStorageContext Context { get; private set; }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="context">The reference to the context of the index.</param>
         /// <param name="addr">The address of the segment.</param>

@@ -1,5 +1,10 @@
-﻿namespace WebExpress.WebIndex.Test.Document
+﻿using static WebExpress.WebIndex.Test.Document.UnitTestIndexTestDocumentB;
+
+namespace WebExpress.WebIndex.Test.Document
 {
+    /// <summary>
+    /// Factory class for creating unit test documents of type UnitTestIndexTestDocumentB.
+    /// </summary>
     public class UnitTestIndexTestDocumentFactoryB : UnitTestIndexTestDocumentFactory
     {
         /// <summary>
@@ -19,12 +24,18 @@
                 {
                     Id = Guid.NewGuid(),
                     Name = $"Name_{i}",
-                    Summary = $"Der Name_{i}",
+                    Summary = $"The Name_{i}",
                     Description = GenerateLoremIpsum(100),
                     Date = DateTime.Now.AddMonths(i % 12),
                     Price = i,
                     New = i % 2 != 0,
-                    Adress = new UnitTestIndexTestDocumentB.AdressClass() { City = GenerateCity(1), Zip = GenerateZip(i), Street = GenerateSreet(i)}
+                    Adress = new UnitTestIndexTestDocumentB.AdressClass()
+                    {
+                        Country = Country.USA,
+                        City = GenerateCity(1),
+                        Zip = GenerateZip(i),
+                        Street = GenerateSreet(i)
+                    }
                 });
             }
 

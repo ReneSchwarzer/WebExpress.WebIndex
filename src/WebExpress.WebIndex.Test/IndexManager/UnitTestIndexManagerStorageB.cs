@@ -8,10 +8,11 @@ namespace WebExpress.WebIndex.Test.IndexManager
     /// <summary>
     /// Test class for testing the storage-based index manager.
     /// </summary>
+    [Collection("NonParallelTests")]
     public class UnitTestIndexManagerStorageB : UnitTestIndexManager<UnitTestIndexFixtureIndexB>
     {
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="fixture">The log.</param>
         /// <param name="output">The test context.</param>
@@ -41,13 +42,17 @@ namespace WebExpress.WebIndex.Test.IndexManager
         /// <summary>
         /// Tests the reindex function from the index manager.
         /// </summary>
-        [Fact]
-        public void ReIndex_En()
+        [Theory]
+        [InlineData("en")]
+        [InlineData("de")]
+        [InlineData("de-DE")]
+        [InlineData("fr")]
+        public void ReIndex(string culture)
         {
             // preconditions
             Preconditions();
             var randomItem = Fixture.RandomItem;
-            IndexManager.Create<UnitTestIndexTestDocumentB>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
+            IndexManager.Create<UnitTestIndexTestDocumentB>(CultureInfo.GetCultureInfo(culture), IndexType.Storage);
 
             // test execution
             IndexManager.ReIndex(Fixture.TestData);
@@ -65,13 +70,17 @@ namespace WebExpress.WebIndex.Test.IndexManager
         /// <summary>
         /// Tests the reindex function from the index manager.
         /// </summary>
-        [Fact]
-        public async Task ReIndexAsync_En()
+        [Theory]
+        [InlineData("en")]
+        [InlineData("de")]
+        [InlineData("de-DE")]
+        [InlineData("fr")]
+        public async Task ReIndexAsync(string culture)
         {
             // preconditions
             Preconditions();
             var randomItem = Fixture.RandomItem;
-            IndexManager.Create<UnitTestIndexTestDocumentB>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
+            IndexManager.Create<UnitTestIndexTestDocumentB>(CultureInfo.GetCultureInfo(culture), IndexType.Storage);
 
             // test execution
             await IndexManager.ReIndexAsync(Fixture.TestData);
@@ -91,7 +100,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
         /// Tests the reindex function from the index manager.
         /// </summary>
         [Fact]
-        public async Task ReIndexAsyncCancel_En()
+        public async Task ReIndexAsyncCancel()
         {
             // preconditions
             Preconditions();
@@ -122,78 +131,6 @@ namespace WebExpress.WebIndex.Test.IndexManager
         }
 
         /// <summary>
-        /// Tests the reindex function from the index manager.
-        /// </summary>
-        [Fact]
-        public void ReIndex_De()
-        {
-            // preconditions
-            Preconditions();
-            var randomItem = Fixture.RandomItem;
-            IndexManager.Create<UnitTestIndexTestDocumentB>(CultureInfo.GetCultureInfo("de"), IndexType.Storage);
-
-            // test execution
-            IndexManager.ReIndex(Fixture.TestData);
-
-            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentB>($"name = '{randomItem.Name}'");
-            Assert.NotNull(wql);
-
-            var item = wql.Apply();
-            Assert.NotEmpty(item);
-
-            // postconditions
-            Postconditions();
-        }
-
-        /// <summary>
-        /// Tests the reindex function from the index manager.
-        /// </summary>
-        [Fact]
-        public void ReIndex_DeDE()
-        {
-            // preconditions
-            Preconditions();
-            var randomItem = Fixture.RandomItem;
-            IndexManager.Create<UnitTestIndexTestDocumentB>(CultureInfo.GetCultureInfo("de-DE"), IndexType.Storage);
-
-            // test execution
-            IndexManager.ReIndex(Fixture.TestData);
-
-            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentB>($"name = '{randomItem.Name}'");
-            Assert.NotNull(wql);
-
-            var item = wql.Apply();
-            Assert.NotEmpty(item);
-
-            // postconditions
-            Postconditions();
-        }
-
-        /// <summary>
-        /// Tests the reindex function from the index manager.
-        /// </summary>
-        [Fact]
-        public void ReIndex_Fr()
-        {
-            // preconditions
-            Preconditions();
-            var randomItem = Fixture.RandomItem;
-            IndexManager.Create<UnitTestIndexTestDocumentB>(CultureInfo.GetCultureInfo("fr"), IndexType.Storage);
-
-            // test execution
-            IndexManager.ReIndex(Fixture.TestData);
-
-            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentB>($"name = '{randomItem.Name}'");
-            Assert.NotNull(wql);
-
-            var item = wql.Apply();
-            Assert.NotEmpty(item);
-
-            // postconditions
-            Postconditions();
-        }
-
-        /// <summary>
         /// Tests the removal of a document from the index manager.
         /// </summary>
         [Fact]
@@ -209,7 +146,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
             Assert.NotNull(wql);
 
             var before = wql.Apply().ToList();
-            Assert.True(before.Any());
+            Assert.NotEmpty(before);
 
             // test execution
             IndexManager.Delete(randomItem);
@@ -397,6 +334,68 @@ namespace WebExpress.WebIndex.Test.IndexManager
             // test execution
             var document = IndexManager.GetIndexDocument<UnitTestIndexTestDocumentB>();
             Assert.Null(document);
+
+            // postconditions
+            Postconditions();
+        }
+
+        /// <summary>
+        /// Tests the retrieve function in a series of tests from the index manager.
+        /// </summary>
+        [Theory]
+        [InlineData("name = 'Name_3'", "en", "Name_3")]
+        [InlineData("Summary = 'Name_3'", "en", "Name_3")]
+        [InlineData("Price = 3", "en", "Name_3")]
+        [InlineData("Price = '3'", "en", "Name_3")]
+        [InlineData("Adress.Street = 3", "en", "Name_3")]
+        [InlineData("Adress.Country = usa", "en", "Name_3")]
+        public void Retrieve(string wqlString, string cultureString, string expected)
+        {
+            // preconditions
+            Preconditions();
+            IndexManager.Create<UnitTestIndexTestDocumentB>(CultureInfo.GetCultureInfo(cultureString), IndexType.Storage);
+            IndexManager.ReIndex(Fixture.TestData);
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentB>(wqlString);
+            Assert.NotNull(wql);
+
+            // test execution
+            var items = wql.Apply();
+            Assert.Contains(expected, items.Select(x => x.Name.ToString()));
+
+            // postconditions
+            Postconditions();
+        }
+
+        /// <summary>
+        /// Tests the close and open function from the index manager.
+        /// </summary>
+        [Theory]
+        [InlineData("en")]
+        [InlineData("de")]
+        [InlineData("de-DE")]
+        [InlineData("fr")]
+        public void ReOpen(string culture)
+        {
+            // preconditions
+            Preconditions();
+            var randomItem = Fixture.RandomItem;
+            IndexManager.Create<UnitTestIndexTestDocumentB>(CultureInfo.GetCultureInfo(culture), IndexType.Storage);
+            IndexManager.ReIndex(Fixture.TestData);
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentB>($"name = '{randomItem.Name}'");
+            Assert.NotNull(wql);
+
+            var item = wql.Apply();
+            var count = item.Count();
+
+            // test execution
+            IndexManager.Close<UnitTestIndexTestDocumentB>();
+
+            IndexManager.Create<UnitTestIndexTestDocumentB>(CultureInfo.GetCultureInfo(culture), IndexType.Storage);
+            wql = IndexManager.Retrieve<UnitTestIndexTestDocumentB>($"name = '{randomItem.Name}'");
+            Assert.NotNull(wql);
+
+            item = wql.Apply();
+            Assert.Equal(count, item.Count());
 
             // postconditions
             Postconditions();

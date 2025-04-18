@@ -3,7 +3,7 @@
     internal class IndexManagerTest : WebIndex.IndexManager
     {
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         public IndexManagerTest()
         {

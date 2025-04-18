@@ -15,7 +15,7 @@ namespace WebExpress.WebIndex.Term.Pipeline
         public string Name => "Normalizer";
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="context">The reference to the context.</param>
         public IndexPipeStageConverterNormalizer(IIndexContext context)

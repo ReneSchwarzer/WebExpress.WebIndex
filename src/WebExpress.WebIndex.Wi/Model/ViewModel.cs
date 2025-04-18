@@ -6,6 +6,9 @@ using WebExpress.WebIndex.Wi.Converter;
 
 namespace WebExpress.WebIndex.Wi.Model
 {
+    /// <summary>
+    /// Represents the ViewModel for managing the indexing of project objects.
+    /// </summary>
     internal class ViewModel
     {
         /// <summary>
@@ -56,7 +59,10 @@ namespace WebExpress.WebIndex.Wi.Model
             var runtimeClass = CurrentObjectType.BuildRuntimeClass();
             var context = new IndexContext { IndexDirectory = CurrentDirectory };
             IndexManager = new IndexManager();
-            IndexManager.Initialization(context);
+
+            // use reflection to call the protected Initialization method
+            var method = typeof(IndexManager).GetMethod("Initialization", BindingFlags.Instance | BindingFlags.NonPublic);
+            method.Invoke(IndexManager, [context]);
 
             IndexManager.Create(runtimeClass, CultureInfo.GetCultureInfo("en"), IndexType.Storage);
 
@@ -81,7 +87,10 @@ namespace WebExpress.WebIndex.Wi.Model
 
             var context = new IndexContext { IndexDirectory = CurrentDirectory };
             IndexManager = new IndexManager();
-            IndexManager.Initialization(context);
+
+            // use reflection to call the protected Initialization method
+            var method = typeof(IndexManager).GetMethod("Initialization", BindingFlags.Instance | BindingFlags.NonPublic);
+            method.Invoke(IndexManager, [context]);
 
             IndexManager.Create(runtimeClass, CultureInfo.GetCultureInfo("en"), IndexType.Storage);
 
@@ -137,10 +146,11 @@ namespace WebExpress.WebIndex.Wi.Model
         public IEnumerable<(string, uint, uint, uint, IEnumerable<Guid>)> GetIndexTerms()
         {
             var runtimeClass = CurrentObjectType.BuildRuntimeClass();
-            var document = WiApp.ViewModel.IndexManager.GetIndexDocument(runtimeClass);
+            var document = IndexManager.GetIndexDocument(runtimeClass);
             var fieldProperty = runtimeClass.GetProperty(CurrentIndexField?.Name);
+            var fieldData = new IndexFieldData(fieldProperty);
             var methodInfo = document.GetType().GetMethod("GetReverseIndex");
-            var reverseIndex = methodInfo.Invoke(document, [fieldProperty]);
+            var reverseIndex = methodInfo.Invoke(document, [fieldData]);
             var termProperty = reverseIndex.GetType().GetProperty("Term");
             var term = termProperty.GetValue(reverseIndex) as IndexStorageSegmentTerm;
 

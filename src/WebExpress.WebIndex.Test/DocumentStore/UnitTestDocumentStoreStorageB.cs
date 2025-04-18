@@ -8,10 +8,11 @@ namespace WebExpress.WebIndex.Test.DocumentStore
     /// <summary>
     /// Test class for testing the storage-based document store.
     /// </summary>
+    [Collection("NonParallelTests")]
     public class UnitTestDocumentStoreStorageB : UnitTestDocumentStore<UnitTestIndexFixtureIndexB>
     {
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="fixture">The log.</param>
         /// <param name="output">The test context.</param>

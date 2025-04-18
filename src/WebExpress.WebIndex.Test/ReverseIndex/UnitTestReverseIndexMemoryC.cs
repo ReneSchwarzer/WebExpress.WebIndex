@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using System.Reflection;
 using WebExpress.WebIndex.Memory;
 using WebExpress.WebIndex.Test.Document;
 using WebExpress.WebIndex.Test.Fixture;
@@ -12,12 +11,18 @@ namespace WebExpress.WebIndex.Test.ReverseIndex
     /// </summary>
     /// <param name="fixture">The log.</param>
     /// <param name="output">The test context.</param>
+    [Collection("NonParallelTests")]
     public class UnitTestReverseIndexMemoryC(UnitTestIndexFixtureIndexC fixture, ITestOutputHelper output) : UnitTestReverseIndex<UnitTestIndexFixtureIndexC>(fixture, output)
     {
         /// <summary>
-        /// Returns the property.
+        /// Returns the field.
         /// </summary>
-        protected static PropertyInfo Property => typeof(UnitTestIndexTestDocumentC).GetProperty("Text");
+        protected static IndexFieldData Field => new()
+        {
+            Name = "Text",
+            PropertyInfo = typeof(UnitTestIndexTestDocumentC).GetProperty("Text"),
+            Type = typeof(UnitTestIndexTestDocumentC)
+        };
 
         /// <summary>
         /// Creates a reverse index.
@@ -29,7 +34,7 @@ namespace WebExpress.WebIndex.Test.ReverseIndex
             Preconditions();
 
             // test execution
-            var reverseIndex = new IndexMemoryReverse<UnitTestIndexTestDocumentC>(Context, Property, CultureInfo.GetCultureInfo("en"));
+            var reverseIndex = new IndexMemoryReverseTerm<UnitTestIndexTestDocumentC>(Context, Field, CultureInfo.GetCultureInfo("en"));
 
             // postconditions
             reverseIndex.Dispose();
@@ -44,7 +49,7 @@ namespace WebExpress.WebIndex.Test.ReverseIndex
         {
             // preconditions
             Preconditions();
-            var reverseIndex = new IndexMemoryReverse<UnitTestIndexTestDocumentC>(Context, Property, CultureInfo.GetCultureInfo("en"));
+            var reverseIndex = new IndexMemoryReverseTerm<UnitTestIndexTestDocumentC>(Context, Field, CultureInfo.GetCultureInfo("en"));
 
             reverseIndex.Clear();
 
@@ -70,7 +75,7 @@ namespace WebExpress.WebIndex.Test.ReverseIndex
             // preconditions
             Preconditions();
             var randomItem = Fixture.RandomItem;
-            var reverseIndex = new IndexMemoryReverse<UnitTestIndexTestDocumentC>(Context, Property, CultureInfo.GetCultureInfo("en"));
+            var reverseIndex = new IndexMemoryReverseTerm<UnitTestIndexTestDocumentC>(Context, Field, CultureInfo.GetCultureInfo("en"));
 
             reverseIndex.Clear();
             foreach (var item in Fixture.TestData)
@@ -100,7 +105,7 @@ namespace WebExpress.WebIndex.Test.ReverseIndex
             // preconditions
             Preconditions();
             var randomItem = Fixture.RandomItem;
-            var reverseIndex = new IndexMemoryReverse<UnitTestIndexTestDocumentC>(Context, Property, CultureInfo.GetCultureInfo("en"));
+            var reverseIndex = new IndexMemoryReverseTerm<UnitTestIndexTestDocumentC>(Context, Field, CultureInfo.GetCultureInfo("en"));
 
             reverseIndex.Clear();
             foreach (var item in Fixture.TestData)
@@ -132,7 +137,7 @@ namespace WebExpress.WebIndex.Test.ReverseIndex
             // preconditions
             Preconditions();
             var randomItem = Fixture.RandomItem;
-            var reverseIndex = new IndexMemoryReverse<UnitTestIndexTestDocumentC>(Context, Property, CultureInfo.GetCultureInfo("en"));
+            var reverseIndex = new IndexMemoryReverseTerm<UnitTestIndexTestDocumentC>(Context, Field, CultureInfo.GetCultureInfo("en"));
 
             reverseIndex.Clear();
             foreach (var item in Fixture.TestData)
@@ -163,7 +168,7 @@ namespace WebExpress.WebIndex.Test.ReverseIndex
             // preconditions
             Preconditions();
             var randomItem = Fixture.RandomItem;
-            var reverseIndex = new IndexMemoryReverse<UnitTestIndexTestDocumentC>(Context, Property, CultureInfo.GetCultureInfo("en"));
+            var reverseIndex = new IndexMemoryReverseTerm<UnitTestIndexTestDocumentC>(Context, Field, CultureInfo.GetCultureInfo("en"));
 
             reverseIndex.Clear();
             foreach (var item in Fixture.TestData)
@@ -189,7 +194,7 @@ namespace WebExpress.WebIndex.Test.ReverseIndex
         {
             // preconditions
             Preconditions();
-            var reverseIndex = new IndexMemoryReverse<UnitTestIndexTestDocumentC>(Context, Property, CultureInfo.GetCultureInfo("en"));
+            var reverseIndex = new IndexMemoryReverseTerm<UnitTestIndexTestDocumentC>(Context, Field, CultureInfo.GetCultureInfo("en"));
 
             reverseIndex.Clear();
             foreach (var item in Fixture.TestData)

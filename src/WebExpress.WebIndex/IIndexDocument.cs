@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Threading.Tasks;
 
 namespace WebExpress.WebIndex
@@ -19,43 +18,43 @@ namespace WebExpress.WebIndex
     /// <summary>
     /// Defines the functionality of an index document for a specific type of index item.
     /// </summary>
-    /// <typeparam name="T">The type of the index item. This type parameter must implement the IIndexItem interface.</typeparam>
-    public interface IIndexDocument<T> : IIndexDocument where T : IIndexItem
+    /// <typeparam name="TIndexItem">The type of the index item. This type parameter must implement the IIndexItem interface.</typeparam>
+    public interface IIndexDocument<TIndexItem> : IIndexDocument where TIndexItem : IIndexItem
     {
         /// <summary>
         /// Returns the document store.
         /// </summary>
-        IIndexDocumentStore<T> DocumentStore { get; }
+        IIndexDocumentStore<TIndexItem> DocumentStore { get; }
 
         /// <summary>
         /// Return the index field names.
         /// </summary>
-        IEnumerable<string> Fields { get; }
+        IEnumerable<IndexFieldData> Fields { get; }
 
         /// <summary>
         /// Returns all documents from the index.
         /// </summary>
-        IEnumerable<T> All { get; }
+        IEnumerable<TIndexItem> All { get; }
 
         /// <summary>
         /// Adds a item to the index.
         /// </summary>
         /// <param name="item">The data to be added to the index.</param>
-        void Add(T item);
+        void Add(TIndexItem item);
 
         /// <summary>
         /// Performs an asynchronous addition of an item in the index.
         /// </summary>
         /// <param name="item">The data to be added to the index.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        Task AddAsync(T item);
+        Task AddAsync(TIndexItem item);
 
         /// <summary>
         /// Updates a item in the index.
         /// </summary>
         /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
         /// <param name="item">The data to be updated to the index.</param>
-        void Update(T item);
+        void Update(TIndexItem item);
 
         /// <summary>
         /// Performs an asynchronous update of an item in the index.
@@ -63,20 +62,20 @@ namespace WebExpress.WebIndex
         /// <typeparam name="T">The data type. This must have the IIndexItem interface.</typeparam>
         /// <param name="item">The data to be updated to the index.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        Task UpdateAsync(T item);
+        Task UpdateAsync(TIndexItem item);
 
         /// <summary>
         /// The data to be removed from the index.
         /// </summary>
         /// <param name="item">The data to be removed from the index.</param>
-        void Remove(T item);
+        void Remove(TIndexItem item);
 
         /// <summary>
         /// Removes an item from the index asynchronously.
         /// </summary>
         /// <param name="item">The data to be removed from the index.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        Task RemoveAsync(T item);
+        Task RemoveAsync(TIndexItem item);
 
         /// <summary>
         /// Returns the number of items.
@@ -115,8 +114,8 @@ namespace WebExpress.WebIndex
         /// <summary>
         /// Returns an index field based on its name.
         /// </summary>
-        /// <param name="property">The property that makes up the index.</param>
+        /// <param name="field">The field that makes up the index.</param>
         /// <returns>The index field or null.</returns>
-        IIndexReverse<T> GetReverseIndex(PropertyInfo property);
+        IIndexReverse<TIndexItem> GetReverseIndex(IndexFieldData field);
     }
 }

@@ -3,9 +3,11 @@
 namespace WebExpress.WebIndex.Wql
 {
     /// <summary>
-    /// Describes the attribute expression of a wql statement.
+    /// Describes the attribute expression node of a WQL statement.
     /// </summary>
-    public class WqlExpressionNodeAttribute<T> : IWqlExpressionNode<T> where T : IIndexItem
+    /// <typeparam name="TIndexItem">The type of the index item.</typeparam>
+    public class WqlExpressionNodeAttribute<TIndexItem> : IWqlExpressionNode<TIndexItem>
+        where TIndexItem : IIndexItem
     {
         /// <summary>
         /// Returns the name of the attribute.
@@ -20,10 +22,10 @@ namespace WebExpress.WebIndex.Wql
         /// <summary>
         /// Returns the reverse index.
         /// </summary>
-        public IIndexReverse<T> ReverseIndex { get; internal set; }
+        public IIndexReverse<TIndexItem> ReverseIndex { get; internal set; }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         internal WqlExpressionNodeAttribute()
         {

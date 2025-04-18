@@ -6,17 +6,19 @@ using WebExpress.WebIndex.Wql.Condition;
 namespace WebExpress.WebIndex.Wql
 {
     /// <summary>
-    /// Describes the filter expression of a wql statement.
+    /// Describes the filter expression of a WQL statement.
     /// </summary>
-    public class WqlExpressionNodeFilter<T> : IWqlExpressionNodeApply<T> where T : IIndexItem
+    /// <typeparam name="TIndexItem">The type of the index item.</typeparam>
+    public class WqlExpressionNodeFilter<TIndexItem> : IWqlExpressionNodeApply<TIndexItem>
+        where TIndexItem : IIndexItem
     {
         /// <summary>
         /// Returns the condition expression.
         /// </summary>
-        public WqlExpressionNodeFilterCondition<T> Condition { get; internal set; }
+        public WqlExpressionNodeFilterCondition<TIndexItem> Condition { get; internal set; }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         internal WqlExpressionNodeFilter()
         {
@@ -36,7 +38,7 @@ namespace WebExpress.WebIndex.Wql
         /// </summary>
         /// <param name="unfiltered">The unfiltered data.</param>
         /// <returns>The filtered data.</returns>
-        public virtual IQueryable<T> Apply(IQueryable<T> unfiltered)
+        public virtual IQueryable<TIndexItem> Apply(IQueryable<TIndexItem> unfiltered)
         {
             return Condition?.Apply(unfiltered) ?? unfiltered;
         }

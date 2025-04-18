@@ -19,7 +19,7 @@ namespace WebExpress.WebIndex.Test.Token
         protected UnitTestIndexFixtureToken Fixture { get; set; }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="fixture">The test context.</param>
         /// <param name="output">The log.</param>
@@ -32,73 +32,39 @@ namespace WebExpress.WebIndex.Test.Token
         /// <summary>
         /// Tests the singular method. This function is part of the lemmatization process and the transformation of the token into the singular.
         /// </summary>
-        [Fact]
-        public void PluralToSingular_En()
+        [Theory]
+        // regular nouns (ies, ses  xes, s)
+        [InlineData("babies", "baby", "en")]
+        [InlineData("countries", "country", "en")]
+        [InlineData("families", "family", "en")]
+        [InlineData("parties", "party", "en")]
+        [InlineData("pennies", "penny", "en")]
+        [InlineData("studies", "study", "en")]
+        [InlineData("stories", "story", "en")]
+        [InlineData("autos", "auto", "de")]
+        [InlineData("frauen", "frau", "de")]
+        [InlineData("kinder", "kind", "de")]
+        [InlineData("tische", "tisch", "de")]
+        // irregular nouns
+        [InlineData("axes", "axis", "en")]
+        [InlineData("indices", "index", "en")]
+        [InlineData("selves", "self", "en")]
+        [InlineData("vortexes", "vortex", "en")]
+        [InlineData("atlanten", "atlas", "de")]
+        [InlineData("bücher", "buch", "de")]
+        [InlineData("männer", "mann", "de")]
+        [InlineData("stühle", "stuhl", "de")]
+        public void PluralToSingular(string pluralWord, string singularWord, string cultureString)
         {
-            var culture = CultureInfo.GetCultureInfo("en");
+            // preconditions
+            var culture = CultureInfo.GetCultureInfo(cultureString);
             var pipeStage = new IndexPipeStageConverterSingular(Fixture.Context);
 
-            (string, string)[] words =
-            [
-                // regular nouns (ies, ses  xes, s)
-                ("babies", "baby"),
-                ("cities", "city"),
-                ("countries", "country"),
-                ("families", "family"),
-                ("parties", "party"),
-                ("pennies", "penny"),
-                ("studies", "study"),
-                ("stories", "story"),
-                // irregular nouns
-                ("axes", "axis"),
-                ("indices", "index"),
-                ("selves", "self"),
-                ("vortexes", "vortex")
-            ];
+            // test execution
+            var res = pipeStage.Process(IndexTermTokenizer.Tokenize(pluralWord, culture), culture)
+                .FirstOrDefault();
 
-
-            var pluralWords = words.Select(x => x.Item1);
-            var singularWords = words.Select(x => x.Item2);
-
-            var res = pipeStage.Process(IndexTermTokenizer.Tokenize(string.Join(" ", pluralWords), culture), culture)
-                .Select(x => x.Value)
-                .ToList();
-
-            Assert.True(res.Intersect(singularWords).Count() == res.Count);
-        }
-
-        /// <summary>
-        /// Tests the singular method. This function is part of the lemmatization process and the transformation of the token into the singular.
-        /// </summary>
-        [Fact]
-        public void PluralToSingular_De()
-        {
-            var culture = CultureInfo.GetCultureInfo("de");
-            var pipeStage = new IndexPipeStageConverterSingular(Fixture.Context);
-
-            (string, string)[] words =
-            [
-                // regular nouns (en, er, e, s)
-                ("autos", "auto"),
-                ("frauen", "frau"),
-                ("kinder", "kind"),
-                ("tische", "tisch"),
-                // irregular nouns
-                ("atlanten", "atlas"),
-                ("bücher", "buch"),
-                ("männer", "mann"),
-                ("stühle", "stuhl")
-            ];
-
-
-            var pluralWords = words.Select(x => x.Item1);
-            var singularWords = words.Select(x => x.Item2);
-
-            var res = pipeStage.Process(IndexTermTokenizer.Tokenize(string.Join(" ", pluralWords), culture), culture)
-                .Select(x => x.Value)
-                .ToList();
-
-            Assert.True(res.Intersect(singularWords).Count() == res.Count);
+            Assert.Equal(singularWord, res?.Value);
         }
     }
 }

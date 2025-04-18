@@ -8,10 +8,11 @@ namespace WebExpress.WebIndex.Test.IndexManager
     /// <summary>
     /// Test class for testing the storage-based index manager.
     /// </summary>
+    [Collection("NonParallelTests")]
     public class UnitTestIndexManagerStorageD : UnitTestIndexManager<UnitTestIndexFixtureIndexD>
     {
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="fixture">The log.</param>
         /// <param name="output">The test context.</param>
@@ -41,13 +42,17 @@ namespace WebExpress.WebIndex.Test.IndexManager
         /// <summary>
         /// Tests the reindex function from the index manager.
         /// </summary>
-        [Fact]
-        public void ReIndex_En()
+        [Theory]
+        [InlineData("en")]
+        [InlineData("de")]
+        [InlineData("de-DE")]
+        [InlineData("fr")]
+        public void ReIndex(string culture)
         {
             // preconditions
             Preconditions();
             var randomItem = Fixture.RandomItem;
-            IndexManager.Create<UnitTestIndexTestDocumentD>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
+            IndexManager.Create<UnitTestIndexTestDocumentD>(CultureInfo.GetCultureInfo(culture), IndexType.Storage);
 
             // test execution
             IndexManager.ReIndex(Fixture.TestData);
@@ -64,89 +69,20 @@ namespace WebExpress.WebIndex.Test.IndexManager
 
         /// <summary>
         /// Tests the reindex function from the index manager.
-        /// </summary>
-        [Fact]
-        public async Task ReIndexAsync_En()
+        [Theory]
+        [InlineData("en")]
+        [InlineData("de")]
+        [InlineData("de-DE")]
+        [InlineData("fr")]
+        public async Task ReIndexAsync(string culture)
         {
             // preconditions
             Preconditions();
             var randomItem = Fixture.RandomItem;
-            IndexManager.Create<UnitTestIndexTestDocumentD>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
+            IndexManager.Create<UnitTestIndexTestDocumentD>(CultureInfo.GetCultureInfo(culture), IndexType.Storage);
 
             // test execution
             await IndexManager.ReIndexAsync(Fixture.TestData);
-
-            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentD>($"firstname = '{randomItem.FirstName}'");
-            Assert.NotNull(wql);
-
-            var item = wql.Apply();
-            Assert.NotEmpty(item);
-
-            // postconditions
-            Postconditions();
-        }
-
-        /// <summary>
-        /// Tests the reindex function from the index manager.
-        /// </summary>
-        [Fact]
-        public void ReIndex_De()
-        {
-            // preconditions
-            Preconditions();
-            var randomItem = Fixture.RandomItem;
-            IndexManager.Create<UnitTestIndexTestDocumentD>(CultureInfo.GetCultureInfo("de"), IndexType.Storage);
-
-            // test execution
-            IndexManager.ReIndex(Fixture.TestData);
-
-            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentD>($"firstname = '{randomItem.FirstName}'");
-            Assert.NotNull(wql);
-
-            var item = wql.Apply();
-            Assert.NotEmpty(item);
-
-            // postconditions
-            Postconditions();
-        }
-
-        /// <summary>
-        /// Tests the reindex function from the index manager.
-        /// </summary>
-        [Fact]
-        public void ReIndex_DeDE()
-        {
-            // preconditions
-            Preconditions();
-            var randomItem = Fixture.RandomItem;
-            IndexManager.Create<UnitTestIndexTestDocumentD>(CultureInfo.GetCultureInfo("de-DE"), IndexType.Storage);
-
-            // test execution
-            IndexManager.ReIndex(Fixture.TestData);
-
-            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentD>($"firstname = '{randomItem.FirstName}'");
-            Assert.NotNull(wql);
-
-            var item = wql.Apply();
-            Assert.NotEmpty(item);
-
-            // postconditions
-            Postconditions();
-        }
-
-        /// <summary>
-        /// Tests the reindex function from the index manager.
-        /// </summary>
-        [Fact]
-        public void ReIndex_Fr()
-        {
-            // preconditions
-            Preconditions();
-            var randomItem = Fixture.RandomItem;
-            IndexManager.Create<UnitTestIndexTestDocumentD>(CultureInfo.GetCultureInfo("fr"), IndexType.Storage);
-
-            // test execution
-            IndexManager.ReIndex(Fixture.TestData);
 
             var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentD>($"firstname = '{randomItem.FirstName}'");
             Assert.NotNull(wql);
@@ -362,6 +298,41 @@ namespace WebExpress.WebIndex.Test.IndexManager
             // test execution
             var document = IndexManager.GetIndexDocument<UnitTestIndexTestDocumentD>();
             Assert.Null(document);
+
+            // postconditions
+            Postconditions();
+        }
+
+        /// <summary>
+        /// Tests the close and open function from the index manager.
+        /// </summary>
+        [Theory]
+        [InlineData("en")]
+        [InlineData("de")]
+        [InlineData("de-DE")]
+        [InlineData("fr")]
+        public void ReOpen(string culture)
+        {
+            // preconditions
+            Preconditions();
+            var randomItem = Fixture.RandomItem;
+            IndexManager.Create<UnitTestIndexTestDocumentD>(CultureInfo.GetCultureInfo(culture), IndexType.Storage);
+            IndexManager.ReIndex(Fixture.TestData);
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentD>($"firstname = '{randomItem.FirstName}'");
+            Assert.NotNull(wql);
+
+            var item = wql.Apply();
+            var count = item.Count();
+
+            // test execution
+            IndexManager.Close<UnitTestIndexTestDocumentD>();
+
+            IndexManager.Create<UnitTestIndexTestDocumentD>(CultureInfo.GetCultureInfo(culture), IndexType.Storage);
+            wql = IndexManager.Retrieve<UnitTestIndexTestDocumentD>($"firstname = '{randomItem.FirstName}'");
+            Assert.NotNull(wql);
+
+            item = wql.Apply();
+            Assert.Equal(count, item.Count());
 
             // postconditions
             Postconditions();

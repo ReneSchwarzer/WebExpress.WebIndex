@@ -6,6 +6,12 @@ using Xunit.Abstractions;
 
 namespace WebExpress.WebIndex.Test.Token
 {
+    /// <summary>
+    /// Unit tests for the IndexPipeStageLowerCase class.
+    /// </summary>
+    /// <remarks>
+    /// This class tests the functionality of converting terms to lower case as part of the stemming process.
+    /// </remarks>
     public class UnitTestIndexPipeStageLowerCase : IClassFixture<UnitTestIndexFixtureToken>
     {
         /// <summary>
@@ -19,7 +25,7 @@ namespace WebExpress.WebIndex.Test.Token
         protected UnitTestIndexFixtureToken Fixture { get; set; }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="fixture">The test context.</param>
         /// <param name="output">The log.</param>
@@ -32,25 +38,22 @@ namespace WebExpress.WebIndex.Test.Token
         /// <summary>
         /// Tests the lower case method. This function is part of the stemming process and convert characters in lower case.
         /// </summary>
-        [Fact]
-        public void LowerCase()
+        [Theory]
+        [InlineData("Babies", "babies", "en")]
+        [InlineData("Cities", "cities", "en")]
+        [InlineData("Countries", "countries", "en")]
+        [InlineData("Families", "families", "en")]
+        public void LowerCase(string term, string normalizeTerm, string cultureString)
         {
-            var culture = CultureInfo.GetCultureInfo("en");
+            // preconditions
+            var culture = CultureInfo.GetCultureInfo(cultureString);
             var pipeStage = new IndexPipeStageConverterLowerCase(Fixture.Context);
 
-            (string, string)[] words =
-            [
-                ("Babies", "babies"),
-                ("Cities", "cities"),
-                ("Countries", "countries"),
-                ("Families", "families")
-            ];
+            // test execution
+            var res = pipeStage.Process(IndexTermTokenizer.Tokenize(term, culture), culture)
+                .FirstOrDefault();
 
-            var res = pipeStage.Process(IndexTermTokenizer.Tokenize(string.Join(" ", words.Select(x => x.Item1)), culture), culture)
-                .Select(x => x.Value)
-                .ToList();
-
-            Assert.True(res.Intersect(words.Select(x => x.Item2)).Count() == res.Count);
+            Assert.Equal(normalizeTerm, res.Value);
         }
     }
 }

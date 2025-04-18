@@ -6,14 +6,16 @@ using System.Linq;
 namespace WebExpress.WebIndex.Wql.Condition
 {
     /// <summary>
-    /// Interface of a condition expression.
+    /// Represents an abstract base class for a WQL expression node filter condition.
     /// </summary>
-    public abstract class WqlExpressionNodeFilterCondition<T> : IWqlExpressionNodeFilterCondition, IWqlExpressionNodeApply<T> where T : IIndexItem
+    /// <typeparam name="TIndexItem">The type of the index item.</typeparam>
+    public abstract class WqlExpressionNodeFilterCondition<TIndexItem> : IWqlExpressionNodeFilterCondition<TIndexItem>
+        where TIndexItem : IIndexItem
     {
         /// <summary>
         /// Returns the attribute expression.
         /// </summary>
-        public WqlExpressionNodeAttribute<T> Attribute { get; internal set; }
+        public WqlExpressionNodeAttribute<TIndexItem> Attribute { get; internal set; }
 
         /// <summary>
         /// Returns the operator expression.
@@ -26,7 +28,7 @@ namespace WebExpress.WebIndex.Wql.Condition
         public CultureInfo Culture { get; internal set; }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="token">One or more tokens that determine the operation. Multiple tokens are separated by spaces.</param>
         protected WqlExpressionNodeFilterCondition(string token)
@@ -45,7 +47,7 @@ namespace WebExpress.WebIndex.Wql.Condition
         /// </summary>
         /// <param name="unfiltered">The unfiltered data.</param>
         /// <returns>The filtered data.</returns>
-        public abstract IQueryable<T> Apply(IQueryable<T> unfiltered);
+        public abstract IQueryable<TIndexItem> Apply(IQueryable<TIndexItem> unfiltered);
 
         /// <summary>
         /// Returns the sql query string.

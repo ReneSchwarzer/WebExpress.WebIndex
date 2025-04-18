@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Reflection;
 using WebExpress.WebIndex.Test.Document;
 using WebExpress.WebIndex.Wql;
 
@@ -27,13 +28,17 @@ namespace WebExpress.WebIndex.Test.Fixture
         public string Term { get; private set; }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         public UnitTestIndexFixtureWqlC()
         {
             var context = new IndexContext();
             context.IndexDirectory = Path.Combine(context.IndexDirectory, Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
-            IndexManager.Initialization(context);
+
+            // use reflection to call the protected Initialization method
+            var method = typeof(IndexManagerTest).GetMethod("Initialization", BindingFlags.Instance | BindingFlags.NonPublic);
+            method.Invoke(IndexManager, [context]);
+
             IndexManager.Create<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
             IndexManager.ReIndex(TestData);
             RandomItem = TestData.Skip(Rand.Next(TestData.Count())).FirstOrDefault();
@@ -52,7 +57,7 @@ namespace WebExpress.WebIndex.Test.Fixture
         /// <summary>
         /// Executes a wql statement.
         /// </summary>
-        /// <param name="wql">Tje wql statement.</param>
+        /// <param name="wql">The wql statement.</param>
         /// <returns>The WQL parser.</returns>
         public IWqlStatement<UnitTestIndexTestDocumentC> ExecuteWql(string wql)
         {

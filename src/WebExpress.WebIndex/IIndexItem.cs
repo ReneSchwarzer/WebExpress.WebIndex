@@ -3,6 +3,9 @@ using WebExpress.WebIndex.WebAttribute;
 
 namespace WebExpress.WebIndex
 {
+    /// <summary>
+    /// Represents an item in the index.
+    /// </summary>
     public interface IIndexItem
     {
         /// <summary>

@@ -18,7 +18,7 @@ namespace WebExpress.WebIndex.Storage
         public ulong NextFreeAddr { get; protected set; } = 0ul;
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="context">The reference to the context of the index.</param>
         /// <param name="addr">The address of the segment.</param>
@@ -28,11 +28,21 @@ namespace WebExpress.WebIndex.Storage
         }
 
         /// <summary>
-        /// Initialization
+        /// Initializes the allocator segment.
         /// </summary>
-        public virtual void Initialization()
+        /// <param name="initializationFromFile">If true, initializes from file. Otherwise, initializes and writes to file.</param>
+        public virtual void Initialization(bool initializationFromFile)
         {
             NextFreeAddr = Context.IndexFile.NextFreeAddr;
+
+            if (initializationFromFile)
+            {
+                Context.IndexFile.Read(this);
+            }
+            else
+            {
+                Context.IndexFile.Write(this);
+            }
         }
 
         /// <summary>

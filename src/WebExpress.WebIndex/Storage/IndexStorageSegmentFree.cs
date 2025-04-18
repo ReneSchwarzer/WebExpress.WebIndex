@@ -23,7 +23,7 @@ namespace WebExpress.WebIndex.Storage
         public ulong SuccessorAddr { get; set; }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="context">The reference to the context of the index.</param>
         public IndexStorageSegmentFree(IndexStorageContext context)
@@ -32,7 +32,7 @@ namespace WebExpress.WebIndex.Storage
         }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="context">The reference to the context of the index.</param>
         /// <param name="addr">The adress of the free segment.</param>

@@ -21,7 +21,7 @@ namespace WebExpress.WebIndex.Term.Pipeline
         private Dictionary<CultureInfo, HashSet<string>> StopWordDictionary { get; } = [];
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="context">The reference to the context.</param>
         public IndexPipeStageFilterStopWord(IIndexContext context)

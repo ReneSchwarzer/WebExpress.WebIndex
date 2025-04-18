@@ -2,17 +2,23 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 
 namespace WebExpress.WebIndex.Storage
 {
     /// <summary>
     /// Each document stored as separate nodes in a binary search tree.
     /// </summary>
+    /// <remarks> 
+    /// TODO: Implement balanced tree algorithm for optimal performance. 
+    /// </remarks>
     /// <typeparam name="T">The data type. This must have the IIndexData interface.</typeparam>
     /// <param name="context">The reference to the context of the index.</param>
     /// <param name="addr">The adress of the segment.</param>
     public class IndexStorageSegmentPostingNode(IndexStorageContext context, ulong addr) : IndexStorageSegment(context, addr)
     {
+        private readonly Lock _guard = new();
+
         /// <summary>
         /// Returns the amount of space required on the storage device.
         /// </summary>
@@ -37,11 +43,6 @@ namespace WebExpress.WebIndex.Storage
         /// Returns the adress of the first position element of a sorted list or 0 if there is no element.
         /// </summary>
         public ulong PositionAddr { get; private set; }
-
-        /// <summary>
-        /// Returns a guard to protect against concurrent access.
-        /// </summary>
-        private object Guard { get; } = new object();
 
         /// <summary>
         /// Returns the left child of the node.
@@ -136,29 +137,15 @@ namespace WebExpress.WebIndex.Storage
                 yield return this;
 
                 // recurse on the left subtree
-                foreach (var n in Left?.PreOrder ?? Enumerable.Empty<IndexStorageSegmentPostingNode>())
+                foreach (var n in Left?.PreOrder ?? [])
                 {
                     yield return n;
                 }
 
                 // recurse on the right subtree
-                foreach (var n in Right?.PreOrder ?? Enumerable.Empty<IndexStorageSegmentPostingNode>())
+                foreach (var n in Right?.PreOrder ?? [])
                 {
                     yield return n;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Returns all documents.
-        /// </summary>
-        public IEnumerable<(Guid, IEnumerable<IndexStorageSegmentPosition>)> Documents
-        {
-            get
-            {
-                foreach (var node in PreOrder)
-                {
-                    yield return (node.DocumentID, node.Positions);
                 }
             }
         }
@@ -330,7 +317,7 @@ namespace WebExpress.WebIndex.Storage
         {
             var item = default(IndexStorageSegmentPosition);
 
-            lock (Guard)
+            lock (_guard)
             {
                 if (PositionAddr == 0)
                 {
@@ -408,7 +395,7 @@ namespace WebExpress.WebIndex.Storage
                 return;
             }
 
-            lock (Guard)
+            lock (_guard)
             {
                 foreach (var position in Positions)
                 {
@@ -426,10 +413,11 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="reader">The reader for i/o operations.</param>
         public override void Read(BinaryReader reader)
         {
-            DocumentID = new Guid(reader.ReadBytes(16));
+            var guid = reader.ReadBytes(16);
             LeftAddr = reader.ReadUInt64();
             RightAddr = reader.ReadUInt64();
             PositionAddr = reader.ReadUInt64();
+            DocumentID = new Guid(guid);
         }
 
         /// <summary>
@@ -464,7 +452,7 @@ namespace WebExpress.WebIndex.Storage
                 return DocumentID.CompareTo(posting.DocumentID);
             }
 
-            throw new ArgumentException();
+            throw new ArgumentException("Object is not the same type as this instance.", nameof(obj));
         }
 
         /// <summary>

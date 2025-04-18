@@ -9,7 +9,7 @@ namespace WebExpress.WebIndex.Wi
     internal class IndexManager : WebIndex.IndexManager
     {
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         public IndexManager()
         {

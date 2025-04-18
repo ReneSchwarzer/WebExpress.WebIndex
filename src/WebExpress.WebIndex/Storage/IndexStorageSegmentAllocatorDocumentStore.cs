@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 
 namespace WebExpress.WebIndex.Storage
 {
@@ -8,6 +9,8 @@ namespace WebExpress.WebIndex.Storage
     /// </summary>
     public class IndexStorageSegmentAllocatorDocumentStore : IndexStorageSegmentAllocator
     {
+        private readonly Lock _guard = new();
+
         /// <summary>
         /// Returns the amount of space required on the storage device.
         /// </summary>
@@ -22,11 +25,6 @@ namespace WebExpress.WebIndex.Storage
         /// Returns or sets the adress pointer to the free chunk list.
         /// </summary>
         public ulong FreeChunkAddr { get; set; }
-
-        /// <summary>
-        /// Returns a guard to protect against concurrent access.
-        /// </summary>
-        private object Guard { get; } = new object();
 
         /// <summary>
         /// Returns the a sorted list of the free items segments.
@@ -77,20 +75,12 @@ namespace WebExpress.WebIndex.Storage
         }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="context">The reference to the context of the index.</param>
         public IndexStorageSegmentAllocatorDocumentStore(IndexStorageContext context)
             : base(context, context.IndexFile.Alloc(SegmentSize))
         {
-        }
-
-        /// <summary>
-        /// Initialization
-        /// </summary>
-        public override void Initialization()
-        {
-            base.Initialization();
         }
 
         /// <summary>
@@ -100,7 +90,7 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>The start address of the reserved storage area.</returns>
         public override ulong Alloc(uint size)
         {
-            lock (Guard)
+            lock (_guard)
             {
                 switch (size)
                 {
@@ -147,7 +137,7 @@ namespace WebExpress.WebIndex.Storage
 
             Context.IndexFile.Invalidation(segment);
 
-            lock (Guard)
+            lock (_guard)
             {
                 if (segment is IndexStorageSegmentItem)
                 {
@@ -200,7 +190,7 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>A string that represents the current object.</returns>
         public override string ToString()
         {
-            return $"[{string.Join(", ", FreeItemSegments)}];[{string.Join(", ", FreeChunkSegments)}]";
+            return $"{Addr}: FreeItems[{string.Join(", ", FreeItemSegments)}];FreeChunks[{string.Join(", ", FreeChunkSegments)}]";
         }
     }
 }

@@ -4,7 +4,7 @@ using System.Globalization;
 namespace WebExpress.WebIndex.Term.Pipeline
 {
     /// <summary>
-    /// Removes emty words.
+    /// Removes empty words.
     /// </summary>
     public class IndexPipeStageFilterEmpty : IIndexPipeStage
     {

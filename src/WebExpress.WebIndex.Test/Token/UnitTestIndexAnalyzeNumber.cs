@@ -4,6 +4,10 @@ using Xunit.Abstractions;
 
 namespace WebExpress.WebIndex.Test.Token
 {
+    /// <summary>
+    /// Unit tests for analyzing numbers in different cultures.
+    /// </summary>
+    /// <seealso cref="Xunit.IClassFixture{WebExpress.WebIndex.Test.Fixture.UnitTestIndexFixtureToken}" />
     public class UnitTestIndexAnalyzeNumber : IClassFixture<UnitTestIndexFixtureToken>
     {
         /// <summary>
@@ -17,7 +21,7 @@ namespace WebExpress.WebIndex.Test.Token
         protected UnitTestIndexFixtureToken Fixture { get; set; }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="fixture">The test context.</param>
         /// <param name="output">The log.</param>
@@ -30,205 +34,179 @@ namespace WebExpress.WebIndex.Test.Token
         /// <summary>
         /// Tests the number input.
         /// </summary>
-        [Fact]
-        public void Number_En()
+        [Theory]
+        [InlineData("1", 1, "en")]
+        [InlineData("1", 1, "de")]
+        [InlineData("-1", -1, "en")]
+        [InlineData("-1", -1, "de")]
+        public void Number(string term, double expected, string culture)
         {
             // test execution
-            var tokens = Fixture.TokenAnalyzer.Analyze("1", CultureInfo.GetCultureInfo("en"));
+            var tokens = Fixture.TokenAnalyzer.Analyze(term, CultureInfo.GetCultureInfo(culture));
 
-            Assert.Equal(1, (double)tokens.FirstOrDefault()?.Value);
+            Assert.Equal(expected, (double)tokens.FirstOrDefault()?.Value);
+        }
+
+        /// <summary>
+        /// Tests the invalid number input.
+        /// </summary>
+        [Theory]
+        [InlineData("-st", "st", "en")]
+        [InlineData("-st", "st", "de")]
+        [InlineData("10b0", "10 b0", "en")]
+        public void InvalidNumber(string term, string expected, string culture)
+        {
+            // test execution
+            var tokens = Fixture.TokenAnalyzer.Analyze(term, CultureInfo.GetCultureInfo(culture));
+
+            Assert.Equal(expected, string.Join(" ", tokens.Select(x => x.Value)));
+        }
+
+        /// <summary>
+        /// Tests the double input.
+        /// </summary>
+        [Theory]
+        [InlineData("10038.76", 10038.76, "en")]
+        [InlineData("1,0038.76", 10038.76, "en")]
+        [InlineData("10038,76", 10038.76, "de")]
+        [InlineData("1.0038,76", 10038.76, "de")]
+        [InlineData("-1,0038.76", -10038.76, "en")]
+        [InlineData("-1.0038,76", -10038.76, "de")]
+        public void Double(string term, double expected, string culture)
+        {
+            // test execution
+            var tokens = Fixture.TokenAnalyzer.Analyze(term, CultureInfo.GetCultureInfo(culture));
+
+            Assert.Equal(expected, (double)tokens.FirstOrDefault()?.Value);
         }
 
         /// <summary>
         /// Tests the number input.
         /// </summary>
-        [Fact]
-        public void Number_De()
+        [Theory]
+        [InlineData("1.0038,76", new double[] { 1.0038, 76 }, "en")]
+        [InlineData("1,0038.76", new double[] { 1.0038, 76 }, "de")]
+        public void InvalidDouble(string term, double[] expected, string culture)
         {
             // test execution
-            var tokens = Fixture.TokenAnalyzer.Analyze("1", CultureInfo.GetCultureInfo("de"));
+            var tokens = Fixture.TokenAnalyzer.Analyze(term, CultureInfo.GetCultureInfo(culture));
 
-            Assert.Equal(1, (double)tokens.FirstOrDefault()?.Value);
-        }
-
-        /// <summary>
-        /// Tests the number input.
-        /// </summary>
-        [Fact]
-        public void NevativeNumber_En()
-        {
-            // test execution
-            var tokens = Fixture.TokenAnalyzer.Analyze("-1", CultureInfo.GetCultureInfo("en"));
-
-            Assert.Equal(-1, (double)tokens.FirstOrDefault()?.Value);
-        }
-
-        /// <summary>
-        /// Tests the number input.
-        /// </summary>
-        [Fact]
-        public void NevativeNumber_De()
-        {
-            // test execution
-            var tokens = Fixture.TokenAnalyzer.Analyze("-1", CultureInfo.GetCultureInfo("de"));
-
-            Assert.Equal(-1, (double)tokens.FirstOrDefault()?.Value);
-        }
-
-        /// <summary>
-        /// Tests the number input.
-        /// </summary>
-        [Fact]
-        public void InvalidNevativeNumber_En()
-        {
-            // test execution
-            var tokens = Fixture.TokenAnalyzer.Analyze("-st", CultureInfo.GetCultureInfo("en"));
-
-            Assert.Equal("st", tokens.FirstOrDefault()?.Value);
-        }
-
-        /// <summary>
-        /// Tests the number input.
-        /// </summary>
-        [Fact]
-        public void InvalidNevativeNumber_De()
-        {
-            // test execution
-            var tokens = Fixture.TokenAnalyzer.Analyze("-st", CultureInfo.GetCultureInfo("de"));
-
-            Assert.Equal("st", tokens.FirstOrDefault()?.Value);
-        }
-
-        /// <summary>
-        /// Tests the number input.
-        /// </summary>
-        [Fact]
-        public void Double_En()
-        {
-            // test execution
-            var tokens = Fixture.TokenAnalyzer.Analyze("1,0038.76", CultureInfo.GetCultureInfo("en"));
-
-            Assert.Equal(10038.76, (double)tokens.FirstOrDefault()?.Value);
-        }
-
-        /// <summary>
-        /// Tests the number input.
-        /// </summary>
-        [Fact]
-        public void Double_De()
-        {
-            // test execution
-            var tokens = Fixture.TokenAnalyzer.Analyze("1.0038,76", CultureInfo.GetCultureInfo("de"));
-
-            Assert.Equal(10038.76, (double)tokens.FirstOrDefault()?.Value);
-        }
-
-        /// <summary>
-        /// Tests the number input.
-        /// </summary>
-        [Fact]
-        public void InvalidDouble_En()
-        {
-            // test execution
-            var tokens = Fixture.TokenAnalyzer.Analyze("1.0038,76", CultureInfo.GetCultureInfo("en"));
-
-            Assert.Equal("1.0038,76", tokens.FirstOrDefault()?.Value);
-        }
-
-        /// <summary>
-        /// Tests the number input.
-        /// </summary>
-        [Fact]
-        public void InvalidDouble_De()
-        {
-            // test execution
-            var tokens = Fixture.TokenAnalyzer.Analyze("1,0038.76", CultureInfo.GetCultureInfo("de"));
-
-            Assert.Equal(10038.76, (double)tokens.FirstOrDefault()?.Value);
+            Assert.Equal(expected, tokens.Select(x => (double)x.Value));
         }
 
         /// <summary>
         /// Tests the number with exponent input.
         /// </summary>
-        [Fact]
-        public void Exponent_En()
+        [Theory]
+        [InlineData("1.0038e76", 1.0038e76, "en")]
+        [InlineData("1.0038E76", 1.0038e76, "en")]
+        [InlineData("1.0038e+76", 1.0038e76, "en")]
+        [InlineData("1.0038E+76", 1.0038e76, "en")]
+        [InlineData("1.0038e-76", 1.0038e-76, "en")]
+        [InlineData("1.0038E-76", 1.0038e-76, "en")]
+        [InlineData("1,0038e76", 1.0038e76, "de")]
+        [InlineData("+1.0038e76", 1.0038e76, "en")]
+        [InlineData("+1,0038e76", 1.0038e76, "de")]
+        [InlineData("-1.0038e76", -1.0038e76, "en")]
+        [InlineData("-1,0038e76", -1.0038e76, "de")]
+        public void Exponent(string term, double expected, string culture)
         {
             // test execution
-            var tokens = Fixture.TokenAnalyzer.Analyze("1.0038e76", CultureInfo.GetCultureInfo("en"));
+            var tokens = Fixture.TokenAnalyzer.Analyze(term, CultureInfo.GetCultureInfo(culture));
 
-            Assert.Equal(1.0038E+76, (double)tokens.FirstOrDefault()?.Value);
+            Assert.Equal(expected, (double)tokens.FirstOrDefault()?.Value);
         }
 
         /// <summary>
         /// Tests the number with exponent input.
         /// </summary>
-        [Fact]
-        public void Exponent_De()
+        [Theory]
+        [InlineData("∞", double.PositiveInfinity, "en")]
+        [InlineData("-∞", double.NegativeInfinity, "en")]
+        [InlineData("∞", double.PositiveInfinity, "de")]
+        [InlineData("-∞", double.NegativeInfinity, "de")]
+        public void Infinity(string term, double expected, string culture)
         {
             // test execution
-            var tokens = Fixture.TokenAnalyzer.Analyze("1,0038e76", CultureInfo.GetCultureInfo("de"));
+            var tokens = Fixture.TokenAnalyzer.Analyze(term, CultureInfo.GetCultureInfo(culture));
 
-            Assert.Equal(1.0038E+76, (double)tokens.FirstOrDefault()?.Value);
+            Assert.Equal(expected, (double)tokens.FirstOrDefault()?.Value);
         }
 
         /// <summary>
-        /// Tests the negative number input.
+        /// Tests the add with input.
         /// </summary>
-        [Fact]
-        public void NevativeExponent_En()
+        [Theory]
+        [InlineData("2+3", new double[] { 2, 3 }, "en")]
+        [InlineData("2 + 3", new double[] { 2, 3 }, "en")]
+        [InlineData("2+3", new double[] { 2, 3 }, "de")]
+        [InlineData("2 + 3", new double[] { 2, 3 }, "de")]
+        public void Add(string term, double[] expected, string culture)
         {
             // test execution
-            var tokens = Fixture.TokenAnalyzer.Analyze("1e-76", CultureInfo.GetCultureInfo("en"));
+            var tokens = Fixture.TokenAnalyzer.Analyze(term, CultureInfo.GetCultureInfo(culture));
 
-            Assert.Equal(1E-76, (double)tokens.FirstOrDefault()?.Value);
+            Assert.Equal(expected, tokens.Select(x => (double)x.Value));
         }
 
         /// <summary>
-        /// Tests the number input.
+        /// Tests the minus with input.
         /// </summary>
-        [Fact]
-        public void NevativeExponent_De()
+        [Theory]
+        [InlineData("2-3", new double[] { 2, 3 }, "en")]
+        [InlineData("2 - 3", new double[] { 2, 3 }, "en")]
+        [InlineData("2-3", new double[] { 2, 3 }, "de")]
+        [InlineData("2 - 3", new double[] { 2, 3 }, "de")]
+        public void Minus(string term, double[] expected, string culture)
         {
             // test execution
-            var tokens = Fixture.TokenAnalyzer.Analyze("1e-76", CultureInfo.GetCultureInfo("de"));
+            var tokens = Fixture.TokenAnalyzer.Analyze(term, CultureInfo.GetCultureInfo(culture));
 
-            Assert.Equal(1E-76, (double)tokens.FirstOrDefault()?.Value);
+            Assert.Equal(expected, tokens.Select(x => (double)x.Value));
+        }
+
+        /// <summary>
+        /// Tests the power with input.
+        /// </summary>
+        [Theory]
+        [InlineData("2^3", new double[] { 2, 3 }, "en")]
+        [InlineData("2 ^ 3", new double[] { 2, 3 }, "en")]
+        [InlineData("2^3", new double[] { 2, 3 }, "de")]
+        [InlineData("2 ^ 3", new double[] { 2, 3 }, "de")]
+        public void Power(string term, double[] expected, string culture)
+        {
+            // test execution
+            var tokens = Fixture.TokenAnalyzer.Analyze(term, CultureInfo.GetCultureInfo(culture));
+
+            Assert.Equal(expected, tokens.Select(x => (double)x.Value));
         }
 
         /// <summary>
         /// Tests the text_number input.
         /// </summary>
-        [Fact]
-        public void TextWithNumber_En1()
+        [Theory]
+        [InlineData("N1", "n1", "en")]
+        [InlineData("N1", "n1", "de")]
+        public void TextWithNumber(string term, string expected, string culture)
         {
             // test execution
-            var tokens = Fixture.TokenAnalyzer.Analyze("N_1", CultureInfo.GetCultureInfo("en"));
+            var tokens = Fixture.TokenAnalyzer.Analyze(term, CultureInfo.GetCultureInfo(culture));
 
-            Assert.Equal("n_1", tokens.FirstOrDefault()?.Value);
+            Assert.Equal(expected, tokens.FirstOrDefault()?.Value);
         }
 
         /// <summary>
-        /// Tests the text_number input.
+        /// Tests the text_number with wildcatd input.
         /// </summary>
-        [Fact]
-        public void TextWithNumber_En2()
+        [Theory]
+        [InlineData("Name?23", "name?23", "en")]
+        [InlineData("Name?23", "name?23", "de")]
+        public void NumberWithWildcard(string term, string expected, string culture)
         {
             // test execution
-            var tokens = Fixture.TokenAnalyzer.Analyze("N1", CultureInfo.GetCultureInfo("en"));
+            var tokens = Fixture.TokenAnalyzer.Analyze(term, CultureInfo.GetCultureInfo(culture), true);
 
-            Assert.Equal("n1", tokens.FirstOrDefault()?.Value);
-        }
-
-        /// <summary>
-        /// Tests the wildcard input.
-        /// </summary>
-        [Fact]
-        public void NumberWithWildcard_En()
-        {
-            // test execution
-            var tokens = Fixture.TokenAnalyzer.Analyze("Name_?23", CultureInfo.GetCultureInfo("en"), true);
-
-            Assert.Equal("name_?23", tokens.FirstOrDefault()?.Value);
+            Assert.Equal(expected, tokens.FirstOrDefault()?.Value);
         }
     }
 }

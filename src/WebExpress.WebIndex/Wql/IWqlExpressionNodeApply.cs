@@ -5,9 +5,11 @@ using System.Linq;
 namespace WebExpress.WebIndex.Wql
 {
     /// <summary>
-    /// Interface of a wql expression.
+    /// Interface of a WQL expression node that can apply.
     /// </summary>
-    public interface IWqlExpressionNodeApply<T> : IWqlExpressionNode<T> where T : IIndexItem
+    /// <typeparam name="TIndexItem">The type of the index item.</typeparam>
+    public interface IWqlExpressionNodeApply<TIndexItem> : IWqlExpressionNode<TIndexItem>
+        where TIndexItem : IIndexItem
     {
         /// <summary>
         /// Applies the filter to the index.
@@ -20,7 +22,7 @@ namespace WebExpress.WebIndex.Wql
         /// </summary>
         /// <param name="unfiltered">The unfiltered data.</param>
         /// <returns>The filtered data.</returns>
-        IQueryable<T> Apply(IQueryable<T> unfiltered);
+        IQueryable<TIndexItem> Apply(IQueryable<TIndexItem> unfiltered);
 
         /// <summary>
         /// Returns the sql query string.

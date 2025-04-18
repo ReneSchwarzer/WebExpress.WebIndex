@@ -8,10 +8,11 @@ namespace WebExpress.WebIndex.Test.IndexManager
     /// <summary>
     /// Test class for testing the storage-based index manager.
     /// </summary>
+    [Collection("NonParallelTests")]
     public class UnitTestIndexManagerStorageA : UnitTestIndexManager<UnitTestIndexFixtureIndexA>
     {
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="fixture">The log.</param>
         /// <param name="output">The test context.</param>
@@ -41,12 +42,16 @@ namespace WebExpress.WebIndex.Test.IndexManager
         /// <summary>
         /// Tests the reindex function from the index manager.
         /// </summary>
-        [Fact]
-        public void ReIndex_En()
+        [Theory]
+        [InlineData("en")]
+        [InlineData("de")]
+        [InlineData("de-DE")]
+        [InlineData("fr")]
+        public void ReIndex(string culture)
         {
             // preconditions
             Preconditions();
-            IndexManager.Create<UnitTestIndexTestDocumentA>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
+            IndexManager.Create<UnitTestIndexTestDocumentA>(CultureInfo.GetCultureInfo(culture), IndexType.Storage);
 
             // test execution
             IndexManager.ReIndex(Fixture.TestData);
@@ -64,84 +69,19 @@ namespace WebExpress.WebIndex.Test.IndexManager
         /// <summary>
         /// Tests the reindex function from the index manager.
         /// </summary>
-        [Fact]
-        public async Task ReIndexAsync_En()
+        [Theory]
+        [InlineData("en")]
+        [InlineData("de")]
+        [InlineData("de-DE")]
+        [InlineData("fr")]
+        public async Task ReIndexAsync(string culture)
         {
             // preconditions
             Preconditions();
-            IndexManager.Create<UnitTestIndexTestDocumentA>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
+            IndexManager.Create<UnitTestIndexTestDocumentA>(CultureInfo.GetCultureInfo(culture), IndexType.Storage);
 
             // test execution
             await IndexManager.ReIndexAsync(Fixture.TestData);
-
-            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentA>("text ~ 'Helena'");
-            Assert.NotNull(wql);
-
-            var item = wql.Apply();
-            Assert.Equal(4, item.Count());
-
-            // postconditions
-            Postconditions();
-        }
-
-        /// <summary>
-        /// Tests the reindex function from the index manager.
-        /// </summary>
-        [Fact]
-        public void ReIndex_De()
-        {
-            // preconditions
-            Preconditions();
-            IndexManager.Create<UnitTestIndexTestDocumentA>(CultureInfo.GetCultureInfo("de"), IndexType.Storage);
-
-            // test execution
-            IndexManager.ReIndex(Fixture.TestData);
-
-            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentA>("text ~ 'Helena'");
-            Assert.NotNull(wql);
-
-            var item = wql.Apply();
-            Assert.Equal(4, item.Count());
-
-            // postconditions
-            Postconditions();
-        }
-
-        /// <summary>
-        /// Tests the reindex function from the index manager.
-        /// </summary>
-        [Fact]
-        public void ReIndex_DeDE()
-        {
-            // preconditions
-            Preconditions();
-            IndexManager.Create<UnitTestIndexTestDocumentA>(CultureInfo.GetCultureInfo("de-DE"), IndexType.Storage);
-
-            // test execution
-            IndexManager.ReIndex(Fixture.TestData);
-
-            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentA>("text ~ 'Helena'");
-            Assert.NotNull(wql);
-
-            var item = wql.Apply();
-            Assert.Equal(4, item.Count());
-
-            // postconditions
-            Postconditions();
-        }
-
-        /// <summary>
-        /// Tests the reindex function from the index manager.
-        /// </summary>
-        [Fact]
-        public void ReIndex_Fr()
-        {
-            // preconditions
-            Preconditions();
-            IndexManager.Create<UnitTestIndexTestDocumentA>(CultureInfo.GetCultureInfo("fr"), IndexType.Storage);
-
-            // test execution
-            IndexManager.ReIndex(Fixture.TestData);
 
             var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentA>("text ~ 'Helena'");
             Assert.NotNull(wql);
@@ -206,6 +146,63 @@ namespace WebExpress.WebIndex.Test.IndexManager
 
             Assert.NotNull(wql);
             Assert.Equal(1, item.Count());
+
+            // postconditions
+            Postconditions();
+        }
+
+        /// <summary>
+        /// Tests the register wql function of the index manager.
+        /// </summary>
+        [Fact]
+        public void RegisterWqlFunction()
+        {
+            // preconditions
+            Preconditions();
+            IndexManager.Create<UnitTestIndexTestDocumentA>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
+            IndexManager.Insert(new UnitTestIndexTestDocumentA()
+            {
+                Id = Guid.Parse("ED242C79-E41B-4214-BFBC-C4673E87433B"),
+                Text = "abc"
+            });
+
+            // test execution
+            IndexManager.RegisterWqlFunction<TestWqlExpressionNodeFilterFunctionConstant<UnitTestIndexTestDocumentA>>();
+
+            var functions = IndexManager.WqlFunctions;
+            Assert.NotEmpty(functions);
+
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentA>("text ~ 'abc'");
+            Assert.NotNull(wql);
+
+            var item = wql.Apply();
+            Assert.Equal("abc", item.FirstOrDefault()?.Text);
+
+            // postconditions
+            Postconditions();
+        }
+
+        /// <summary>
+        /// Tests the remove wql function of the index manager.
+        /// </summary>
+        [Fact]
+        public void RemoveWqlFunction()
+        {
+            // preconditions
+            Preconditions();
+            IndexManager.Create<UnitTestIndexTestDocumentA>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
+            IndexManager.Insert(new UnitTestIndexTestDocumentA()
+            {
+                Id = Guid.Parse("ED242C79-E41B-4214-BFBC-C4673E87433B"),
+                Text = "abc"
+            });
+
+            IndexManager.RegisterWqlFunction<TestWqlExpressionNodeFilterFunctionConstant<UnitTestIndexTestDocumentA>>();
+            Assert.NotEmpty(IndexManager.WqlFunctions);
+
+            // test execution
+            IndexManager.RemoveWqlFunction<TestWqlExpressionNodeFilterFunctionConstant<UnitTestIndexTestDocumentA>>();
+            Assert.Empty(IndexManager.WqlFunctions);
 
             // postconditions
             Postconditions();
@@ -366,6 +363,40 @@ namespace WebExpress.WebIndex.Test.IndexManager
             // test execution
             var document = IndexManager.GetIndexDocument<UnitTestIndexTestDocumentA>();
             Assert.Null(document);
+
+            // postconditions
+            Postconditions();
+        }
+
+        /// <summary>
+        /// Tests the close and open function from the index manager.
+        /// </summary>
+        [Theory]
+        [InlineData("en")]
+        [InlineData("de")]
+        [InlineData("de-DE")]
+        [InlineData("fr")]
+        public void ReOpen(string culture)
+        {
+            // preconditions
+            Preconditions();
+            IndexManager.Create<UnitTestIndexTestDocumentA>(CultureInfo.GetCultureInfo(culture), IndexType.Storage);
+            IndexManager.ReIndex(Fixture.TestData);
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentA>("text ~ 'Helena'");
+            Assert.NotNull(wql);
+
+            var item = wql.Apply();
+            var count = item.Count();
+
+            // test execution
+            IndexManager.Close<UnitTestIndexTestDocumentA>();
+
+            IndexManager.Create<UnitTestIndexTestDocumentA>(CultureInfo.GetCultureInfo(culture), IndexType.Storage);
+            wql = IndexManager.Retrieve<UnitTestIndexTestDocumentA>("text ~ 'Helena'");
+            Assert.NotNull(wql);
+
+            item = wql.Apply();
+            Assert.Equal(count, item.Count());
 
             // postconditions
             Postconditions();

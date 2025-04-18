@@ -3,7 +3,12 @@ using WebExpress.WebIndex.Wql.Function;
 
 namespace WebExpress.WebIndex.Wql
 {
-    public interface IWqlParser<T> where T : IIndexItem
+    /// <summary>
+    /// Interface for parsing WQL (WebExpress Query Language) queries and managing condition and function expressions.
+    /// </summary>
+    /// <typeparam name="TIndexItem">The type of the index item that implements the IIndexItem interface.</typeparam>
+    public interface IWqlParser<TIndexItem>
+        where TIndexItem : IIndexItem
     {
         /// <summary>
         /// Parses a given wql query.
@@ -11,21 +16,23 @@ namespace WebExpress.WebIndex.Wql
         /// <param name="input">An input string that contains a wql query.</param>
         /// <param name="culture">The culture in which to run the wql.</param>
         /// <returns>A wql object that represents the structure of the query.</returns>
-        IWqlStatement<T> Parse(string input);
+        IWqlStatement<TIndexItem> Parse(string input);
 
         /// <summary>
         /// Registers a condition expression.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <exception cref="WqlParseException"></exception>
-        void RegisterCondition<C>() where C : WqlExpressionNodeFilterCondition<T>, new();
+        /// <typeparam name="TCondition">The type of the condition expression to register.</typeparam>
+        /// <exception cref="WqlParseException">Thrown when the condition expression cannot be registered.</exception>
+        void RegisterCondition<TCondition>()
+            where TCondition : IWqlExpressionNodeFilterCondition<TIndexItem>, new();
 
         /// <summary>
         /// Registers a function expression.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <exception cref="WqlParseException"></exception>
-        void RegisterFunction<F>() where F : WqlExpressionNodeFilterFunction<T>, new();
+        /// <typeparam name="TFunction">The type of the function expression to register.</typeparam>
+        /// <exception cref="WqlParseException">Thrown when the function expression cannot be registered.</exception>
+        void RegisterFunction<TFunction>()
+            where TFunction : IWqlExpressionNodeFilterFunction, new();
 
         /// <summary>
         /// Removes a condition expression.

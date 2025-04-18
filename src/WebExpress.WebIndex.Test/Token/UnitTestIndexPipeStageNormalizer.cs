@@ -19,7 +19,7 @@ namespace WebExpress.WebIndex.Test.Token
         protected UnitTestIndexFixtureToken Fixture { get; set; }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="fixture">The test context.</param>
         /// <param name="output">The log.</param>
@@ -32,31 +32,29 @@ namespace WebExpress.WebIndex.Test.Token
         /// <summary>
         /// Tests the Normalize method. This function is part of the stemming process and normalize terms.
         /// </summary>
-        [Fact]
-        public void Normalize()
+        [Theory]
+        [InlineData("résumé", "resume", "en")]
+        [InlineData("Mëtàl", "Metal", "en")]
+        [InlineData("élégant", "elegant", "en")]
+        [InlineData("cliché", "cliche", "en")]
+        [InlineData("naïve", "naive", "en")]
+        [InlineData("soufflé", "souffle", "en")]
+        [InlineData("déjà-vu", "deja vu", "en")]
+        [InlineData("tête-à-tête", "tete a tete", "en")]
+        [InlineData("São-Paulo", "Sao Paulo", "en")]
+        [InlineData("Björk", "Bjork", "en")]
+        public void Normalize(string term, string expected, string cultureString)
         {
-            var culture = CultureInfo.GetCultureInfo("en");
+            // preconditions
+            var culture = CultureInfo.GetCultureInfo(cultureString);
             var pipeStage = new IndexPipeStageConverterNormalizer(Fixture.Context);
 
-            (string, string)[] words =
-            [
-                ("résumé", "resume"),
-                ("Mëtàl", "Metal"),
-                ("élégant", "elegant"),
-                ("cliché", "cliche"),
-                ("naïve", "naive"),
-                ("soufflé", "souffle"),
-                ("déjà-vu", "deja-vu"),
-                ("tête-à-tête", "tete-a-tete"),
-                ("São-Paulo", "Sao-Paulo"),
-                ("Björk", "Bjork")
-            ];
-
-            var res = pipeStage.Process(IndexTermTokenizer.Tokenize(string.Join(" ", words.Select(x => x.Item1)), culture), culture)
+            // test execution
+            var res = pipeStage.Process(IndexTermTokenizer.Tokenize(term, culture), culture)
                 .Select(x => x.Value)
                 .ToList();
 
-            Assert.True(res.Intersect(words.Select(x => x.Item2)).Count() == res.Count);
+            Assert.Equal(expected, string.Join(" ", res));
         }
     }
 }

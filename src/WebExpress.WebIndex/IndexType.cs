@@ -1,5 +1,8 @@
 ﻿namespace WebExpress.WebIndex
 {
+    /// <summary>
+    /// Specifies the type of index.
+    /// </summary>
     public enum IndexType
     {
         /// <summary>

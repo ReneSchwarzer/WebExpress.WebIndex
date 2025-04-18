@@ -34,7 +34,7 @@ namespace WebExpress.WebIndex.Storage
         public ulong NextFreeAddr { get; internal set; } = 0ul;
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="fileName">The file name.</param>
         public IndexStorageFile(string fileName)
@@ -73,20 +73,24 @@ namespace WebExpress.WebIndex.Storage
         /// </summary>
         /// <param name="addr">The segment address.</param>
         /// <param name="context">The reference to the context of the index.</param>
-        /// <typeparam name="T">The type to be read.</typeparam>
+        /// <typeparam name="TIndexStorageSegment">The type to be read.</typeparam>
         /// <returns>The segment, how it was read by the storage medium.</returns>
-        public T Read<T>(ulong addr, IndexStorageContext context) where T : IIndexStorageSegment
+        public TIndexStorageSegment Read<TIndexStorageSegment>(ulong addr, IndexStorageContext context)
+            where TIndexStorageSegment : IIndexStorageSegment
         {
-            return Buffer.Read<T>(addr, context);
+            return Buffer.Read<TIndexStorageSegment>(addr, context);
         }
 
         /// <summary>
         /// Reads the record from the storage medium.
         /// </summary>
         /// <param name="segment">The segment.</param>
-        public T Read<T>(T segment) where T : IIndexStorageSegment
+        /// <typeparam name="TIndexStorageSegment">The type to be read.</typeparam>
+        /// <returns>The segment, how it was read by the storage medium.</returns>
+        public TIndexStorageSegment Read<TIndexStorageSegment>(TIndexStorageSegment segment)
+            where TIndexStorageSegment : IIndexStorageSegment
         {
-            return Buffer.Read<T>(segment);
+            return Buffer.Read<TIndexStorageSegment>(segment);
         }
 
         /// <summary>
@@ -133,6 +137,14 @@ namespace WebExpress.WebIndex.Storage
         public void Invalidation(IIndexStorageSegment segment)
         {
             Buffer.Invalidation(segment);
+        }
+
+        /// <summary>
+        /// Performs cache invalidation for a all IndexStorageSegment object.
+        /// </summary>
+        public void InvalidationAll()
+        {
+            Buffer.InvalidationAll();
         }
 
         /// <summary>

@@ -1,20 +1,21 @@
 ﻿using System.Collections.Generic;
-using WebExpress.WebIndex;
 
 namespace WebExpress.WebIndex.Wql.Condition
 {
     /// <summary>
-    /// Describes the condition value expression of a wql statement.
+    /// Represents s filter conditions for sets in a WQL expression node.
     /// </summary>
-    public abstract class WqlExpressionNodeFilterConditionSet<T> : WqlExpressionNodeFilterCondition<T> where T : IIndexItem
+    /// <typeparam name="TIndexItem">The type of the index item.</typeparam>
+    public abstract class WqlExpressionNodeFilterConditionSet<TIndexItem> : WqlExpressionNodeFilterCondition<TIndexItem>
+        where TIndexItem : IIndexItem
     {
         /// <summary>
         /// Returns the parameter expressions.
         /// </summary>
-        public IEnumerable<WqlExpressionNodeParameter<T>> Parameters { get; internal set; }
+        public IEnumerable<WqlExpressionNodeParameter<TIndexItem>> Parameters { get; internal set; }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="token">One or more tokens that determine the operation. Multiple tokens are separated by spaces.</param>
         protected WqlExpressionNodeFilterConditionSet(string token)

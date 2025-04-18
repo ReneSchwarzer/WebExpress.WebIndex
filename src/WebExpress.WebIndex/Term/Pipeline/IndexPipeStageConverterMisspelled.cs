@@ -21,7 +21,7 @@ namespace WebExpress.WebIndex.Term.Pipeline
         internal Dictionary<CultureInfo, Dictionary<string, string>> MisspelledWordDictionary { get; } = [];
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="context">The reference to the context.</param>
         public IndexPipeStageConverterMisspelled(IIndexContext context)

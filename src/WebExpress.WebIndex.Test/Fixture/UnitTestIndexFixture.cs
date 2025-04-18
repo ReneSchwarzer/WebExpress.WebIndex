@@ -1,6 +1,9 @@
 ﻿namespace WebExpress.WebIndex.Test.Fixture
 {
-    public abstract class UnitTestIndexFixture : IDisposable
+    /// <summary>
+    /// Provides a base class for unit test fixtures that require disposable resources.
+    /// </summary>
+    public class UnitTestIndexFixture : IDisposable
     {
         /// <summary>
         /// The random number generator.
@@ -10,6 +13,8 @@
         /// <summary>
         /// Disposes of the resources used by the current instance.
         /// </summary>
-        public abstract void Dispose();
+        public virtual void Dispose()
+        {
+        }
     }
 }

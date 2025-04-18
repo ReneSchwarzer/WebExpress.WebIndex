@@ -3,6 +3,9 @@ using System.IO;
 
 namespace WebExpress.WebIndex
 {
+    /// <summary>
+    /// Represents the context for the index, providing access to the index directory.
+    /// </summary>
     public class IndexContext : IIndexContext
     {
         /// <summary>

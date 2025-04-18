@@ -18,12 +18,28 @@ namespace WebExpress.WebIndex.Storage
         public uint Count { get; internal set; }
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="context">The reference to the context of the index.</param>
         public IndexStorageSegmentStatistic(IndexStorageContext context)
             : base(context, context.IndexFile.Alloc(SegmentSize))
         {
+        }
+
+        /// <summary>
+        /// Initialization method for the statistic segment.
+        /// </summary>
+        /// <param name="initializationFromFile">If true, initializes from file. Otherwise, initializes and writes to file.</param>
+        public virtual void Initialization(bool initializationFromFile)
+        {
+            if (initializationFromFile)
+            {
+                Context.IndexFile.Read(this);
+            }
+            else
+            {
+                Context.IndexFile.Write(this);
+            }
         }
 
         /// <summary>

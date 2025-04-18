@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Globalization;
+﻿using System.Globalization;
 using WebExpress.WebIndex.Storage;
 using WebExpress.WebIndex.Test.Document;
 using WebExpress.WebIndex.Test.Fixture;
@@ -12,6 +11,7 @@ namespace WebExpress.WebIndex.Test.IndexManager
     /// </summary>
     /// <param name="fixture">The log.</param>
     /// <param name="output">The test context.</param>
+    [Collection("NonParallelTests")]
     public class UnitTestIndexManagerStorageC(UnitTestIndexFixtureIndexC fixture, ITestOutputHelper output) : UnitTestIndexManager<UnitTestIndexFixtureIndexC>(fixture, output)
     {
         /// <summary>
@@ -35,109 +35,17 @@ namespace WebExpress.WebIndex.Test.IndexManager
         /// <summary>
         /// Tests the reindex function from the index manager.
         /// </summary>
-        [Fact]
-        public void ReIndex_En()
+        [Theory]
+        [InlineData("en")]
+        [InlineData("de")]
+        [InlineData("de-DE")]
+        [InlineData("fr")]
+        public void ReIndex(string culture)
         {
             // preconditions
             Preconditions();
             var randomItem = Fixture.RandomItem;
-            IndexManager.Create<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
-
-            // test execution
-            IndexManager.ReIndex(Fixture.TestData);
-
-            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text.Split(' ').FirstOrDefault()}'");
-            Assert.NotNull(wql);
-
-            var item = wql.Apply();
-            Assert.NotEmpty(item);
-
-            // postconditions
-            Postconditions();
-        }
-
-        /// <summary>
-        /// Tests the reindex function from the index manager.
-        /// </summary>
-        [Fact]
-        public async Task ReIndexAsync_En()
-        {
-            // preconditions
-            Preconditions();
-            var randomItem = Fixture.RandomItem;
-            IndexManager.Create<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
-
-            // test execution
-            await IndexManager.ReIndexAsync(Fixture.TestData);
-
-            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text}'");
-            Assert.NotNull(wql);
-
-            var item = wql.Apply();
-            Assert.NotEmpty(item);
-
-            // postconditions
-            Postconditions();
-        }
-
-        /// <summary>
-        /// Tests the reindex function from the index manager.
-        /// </summary>
-        [Fact]
-        public void ReIndex_De()
-        {
-            // preconditions
-            Preconditions();
-            var randomItem = Fixture.RandomItem;
-            IndexManager.Create<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo("de"), IndexType.Storage);
-
-            // test execution
-            IndexManager.ReIndex(Fixture.TestData);
-
-            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text.Split(' ').FirstOrDefault()}'");
-            Assert.NotNull(wql);
-
-            var item = wql.Apply();
-            Assert.NotEmpty(item);
-
-            // postconditions
-            Postconditions();
-        }
-
-        /// <summary>
-        /// Tests the reindex function from the index manager.
-        /// </summary>
-        [Fact]
-        public void ReIndex_DeDE()
-        {
-            // preconditions
-            Preconditions();
-            var randomItem = Fixture.RandomItem;
-            IndexManager.Create<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo("de-DE"), IndexType.Storage);
-
-            // test execution
-            IndexManager.ReIndex(Fixture.TestData);
-
-            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text.Split(' ').FirstOrDefault()}'");
-            Assert.NotNull(wql);
-
-            var item = wql.Apply();
-            Assert.NotEmpty(item);
-
-            // postconditions
-            Postconditions();
-        }
-
-        /// <summary>
-        /// Tests the reindex function from the index manager.
-        /// </summary>
-        [Fact]
-        public void ReIndex_Fr()
-        {
-            // preconditions
-            Preconditions();
-            var randomItem = Fixture.RandomItem;
-            IndexManager.Create<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo("fr"), IndexType.Storage);
+            IndexManager.Create<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo(culture), IndexType.Storage);
 
             // test execution
             IndexManager.ReIndex(Fixture.TestData);
@@ -155,207 +63,44 @@ namespace WebExpress.WebIndex.Test.IndexManager
         /// <summary>
         /// Tests the reindex function in a series of tests from the index manager.
         /// </summary>
-        [Fact]
-        public void ReIndex_Series()
+        [Theory]
+        [InlineData(100, 100, 100, 15, "en")]
+        [InlineData(1000, 100, 2000, 15, "en")]
+        public async Task ReIndexAsync(int itemCount, int wordCount, int vocabulary, int wordLength, string culture)
         {
-            var stopWatch = new Stopwatch();
-
-            var itemCount = Enumerable.Range(1, 1).Select(x => x * 100);
-            var wordCount = Enumerable.Range(1, 1).Select(x => x * 100);
-            var vocabulary = Enumerable.Range(1, 1).Select(x => x * 20000);
-            var wordLength = Enumerable.Range(1, 1).Select(x => x * 15);
-            var maxCachedSegments = Enumerable.Range(5, 1).Select(x => x * 10000);
-            var bufferSize = Enumerable.Range(12, 1).Select(x => Math.Pow(2, x));
-            var path = Path.Combine(Environment.CurrentDirectory, "storage-reindex_series.csv");
-            var exists = File.Exists(path);
-
-            if (!exists)
-            {
-                File.AppendAllText(path, "timestamp;item count;wordCount;vocabulary;wordLength;max cached segments;buffer size;elapsed reindex [hh:mm:ss];elapsed retrieval [ms];size of document store [MB];size of reverse index [MB];∑ storage space [MB];size of process mem [MB]" + Environment.NewLine);
-            }
-
-            foreach (var w in wordCount)
-            {
-                foreach (var i in itemCount)
-                {
-                    foreach (var v in vocabulary)
-                    {
-                        foreach (var l in wordLength)
-                        {
-                            var data = UnitTestIndexTestDocumentFactoryC.GenerateTestData(i, w, v, l);
-                            var randomItem = default(UnitTestIndexTestDocumentC);
-                            var mem = Fixture.GetUsedMemory();
-
-                            foreach (var m in maxCachedSegments)
-                            {
-                                foreach (var b in bufferSize)
-                                {
-                                    // preconditions
-                                    IndexStorageBuffer.MaxCachedSegments = (uint)m;
-                                    IndexStorageFile.BufferSize = (uint)b;
-
-                                    Preconditions();
-                                    var output = "";
-
-                                    IndexManager.Create<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
-                                    IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text = 'xyz'").Apply();
-
-                                    try
-                                    {
-                                        // preparing for a measurement
-                                        stopWatch.Start();
-
-                                        // test execution
-                                        IndexManager.ReIndex(data);
-
-                                        // stop measurement
-                                        var elapsedReindex = stopWatch.Elapsed;
-                                        stopWatch.Reset();
-
-                                        randomItem ??= IndexManager.All<UnitTestIndexTestDocumentC>().Skip(new Random().Next() % data.Count()).FirstOrDefault();
-                                        var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text ~ '{randomItem.Text.Split(' ').FirstOrDefault()}'");
-                                        Assert.NotNull(wql);
-
-                                        // preparing for a measurement
-                                        stopWatch.Start();
-
-                                        var item = wql.Apply();
-
-                                        // stop measurement
-                                        var elapsedRetrieval = stopWatch.Elapsed;
-                                        stopWatch.Reset();
-
-                                        Assert.NotEmpty(item);
-
-                                        IndexManager.Dispose();
-
-                                        var documentStoreSize = new DirectoryInfo(IndexManager.Context.IndexDirectory).GetFiles("*.wds", SearchOption.AllDirectories).Sum(file => file.Length);
-                                        var reverseIndexSize = new DirectoryInfo(IndexManager.Context.IndexDirectory).GetFiles("*.wri", SearchOption.AllDirectories).Sum(file => file.Length);
-
-                                        output = $"{DateTime.Now};{i};{w};{v};{l};{m};{b};{elapsedReindex:hh\\:mm\\:ss};{(int)Math.Ceiling(elapsedRetrieval.TotalMilliseconds)};{Math.Round((double)documentStoreSize / 1024 / 1024, 2)};{Math.Round((double)reverseIndexSize / 1024 / 1024, 2)};{Math.Round((double)(documentStoreSize + reverseIndexSize) / 1024 / 1024, 2)};{Fixture.GetUsedMemory() - mem}";
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        Output.WriteLine(ex.Message + " " + ex.StackTrace);
-                                        throw;
-                                    }
-                                    finally
-                                    {
-                                        // postconditions
-                                        File.AppendAllText(path, output + Environment.NewLine);
-                                        Postconditions();
-                                    }
-
-                                    Thread.Sleep(5000);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Tests the reindex function in a series of tests from the index manager.
-        /// </summary>
-        [Fact]
-        public async Task ReIndexAsync_Series()
-        {
-            var stopWatch = new Stopwatch();
-
-            var itemCount = Enumerable.Range(1, 1).Select(x => x * 10000);
-            var wordCount = Enumerable.Range(1, 1).Select(x => x * 100);
-            var vocabulary = Enumerable.Range(1, 1).Select(x => x * 20000);
-            var wordLength = Enumerable.Range(1, 1).Select(x => x * 15);
-            var maxCachedSegments = Enumerable.Range(5, 1).Select(x => x * 10000);
-            var bufferSize = Enumerable.Range(12, 1).Select(x => Math.Pow(2, x));
+            var w = wordCount;
+            var i = itemCount;
+            var v = vocabulary;
+            var l = wordLength;
+            var maxCachedSegmentsRange = 50000u;
+            var bufferSizeRange = Math.Pow(2, 12);
             var path = Path.Combine(Environment.CurrentDirectory, "storage-reindexasync_series.csv");
             var exists = File.Exists(path);
 
-            if (!exists)
-            {
-                File.AppendAllText(path, "timestamp;item count;wordCount;vocabulary;wordLength;max cached segments;buffer size;elapsed reindex [hh:mm:ss];elapsed retrieval [ms];size of document store [MB];size of reverse index [MB];∑ storage space [MB];size of process mem [MB]" + Environment.NewLine);
-            }
+            var data = UnitTestIndexTestDocumentFactoryC.GenerateTestData(i, w, v, l);
+            var randomItem = default(UnitTestIndexTestDocumentC);
+            var mem = Fixture.GetUsedMemory();
+            var tasks = new List<Task>();
 
-            foreach (var w in wordCount)
-            {
-                foreach (var i in itemCount)
-                {
-                    foreach (var v in vocabulary)
-                    {
-                        foreach (var l in wordLength)
-                        {
-                            var data = UnitTestIndexTestDocumentFactoryC.GenerateTestData(i, w, v, l);
-                            var randomItem = default(UnitTestIndexTestDocumentC);
-                            var mem = Fixture.GetUsedMemory();
+            // preconditions
+            IndexStorageBuffer.MaxCachedSegments = maxCachedSegmentsRange;
+            IndexStorageFile.BufferSize = (uint)bufferSizeRange;
 
-                            foreach (var m in maxCachedSegments)
-                            {
-                                foreach (var b in bufferSize)
-                                {
-                                    // preconditions
-                                    IndexStorageBuffer.MaxCachedSegments = (uint)m;
-                                    IndexStorageFile.BufferSize = (uint)b;
+            Preconditions();
+            IndexManager.Create<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo(culture), IndexType.Storage);
 
-                                    Preconditions();
-                                    var output = "";
+            // test execution
+            await IndexManager.ReIndexAsync(data);
 
-                                    IndexManager.Create<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo("en"), IndexType.Storage);
-                                    IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text = 'xyz'").Apply();
+            randomItem ??= IndexManager.All<UnitTestIndexTestDocumentC>().Skip(new Random().Next() % data.Count()).FirstOrDefault();
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text ~ '{randomItem.Text.Split(' ').FirstOrDefault()}'");
+            Assert.NotNull(wql);
 
-                                    try
-                                    {
-                                        // preparing for a measurement
-                                        stopWatch.Start();
+            var item = wql.Apply();
+            Assert.NotEmpty(item);
 
-                                        // test execution
-                                        await IndexManager.ReIndexAsync(data);
-
-                                        // stop measurement
-                                        var elapsedReindex = stopWatch.Elapsed;
-                                        stopWatch.Reset();
-
-                                        randomItem ??= IndexManager.All<UnitTestIndexTestDocumentC>().Skip(new Random().Next() % data.Count()).FirstOrDefault();
-                                        var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text ~ '{randomItem.Text.Split(' ').FirstOrDefault()}'");
-                                        Assert.NotNull(wql);
-
-                                        // preparing for a measurement
-                                        stopWatch.Start();
-
-                                        var item = wql.Apply();
-
-                                        // stop measurement
-                                        var elapsedRetrieval = stopWatch.Elapsed;
-                                        stopWatch.Reset();
-
-                                        Assert.NotEmpty(item);
-
-                                        IndexManager.Dispose();
-
-                                        var documentStoreSize = new DirectoryInfo(IndexManager.Context.IndexDirectory).GetFiles("*.wds", SearchOption.AllDirectories).Sum(file => file.Length);
-                                        var reverseIndexSize = new DirectoryInfo(IndexManager.Context.IndexDirectory).GetFiles("*.wri", SearchOption.AllDirectories).Sum(file => file.Length);
-
-                                        output = $"{DateTime.Now};{i};{w};{v};{l};{m};{b};{elapsedReindex:hh\\:mm\\:ss};{(int)Math.Ceiling(elapsedRetrieval.TotalMilliseconds)};{Math.Round((double)documentStoreSize / 1024 / 1024, 2)};{Math.Round((double)reverseIndexSize / 1024 / 1024, 2)};{Math.Round((double)(documentStoreSize + reverseIndexSize) / 1024 / 1024, 2)};{Fixture.GetUsedMemory() - mem}";
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        Output.WriteLine(ex.Message + " " + ex.StackTrace);
-                                        throw;
-                                    }
-                                    finally
-                                    {
-                                        // postconditions
-                                        File.AppendAllText(path, output + Environment.NewLine);
-                                        Postconditions();
-                                    }
-
-                                    Thread.Sleep(5000);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            // postconditions
+            Postconditions();
         }
 
         /// <summary>
@@ -562,6 +307,145 @@ namespace WebExpress.WebIndex.Test.IndexManager
             // test execution
             var document = IndexManager.GetIndexDocument<UnitTestIndexTestDocumentC>();
             Assert.Null(document);
+
+            // postconditions
+            Postconditions();
+        }
+
+        /// <summary>
+        /// Tests the close and open function from the index manager.
+        /// </summary>
+        [Theory]
+        [InlineData("en")]
+        [InlineData("de")]
+        [InlineData("de-DE")]
+        [InlineData("fr")]
+        public void ReOpen(string culture)
+        {
+            // preconditions
+            Preconditions();
+            var randomItem = Fixture.RandomItem;
+            IndexManager.Create<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo(culture), IndexType.Storage);
+            IndexManager.ReIndex(Fixture.TestData);
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text.Split(' ').FirstOrDefault()}'");
+            Assert.NotNull(wql);
+
+            var item = wql.Apply();
+            var count = item.Count();
+
+            // test execution
+            IndexManager.Close<UnitTestIndexTestDocumentC>();
+
+            IndexManager.Create<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo(culture), IndexType.Storage);
+            wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text.Split(' ').FirstOrDefault()}'");
+            Assert.NotNull(wql);
+
+            item = wql.Apply();
+            Assert.Equal(count, item.Count());
+
+            // postconditions
+            Postconditions();
+        }
+
+        /// <summary>
+        /// Tests the retrieve function in a series of tests from the index manager.
+        /// </summary>
+        [Theory]
+        [InlineData(100, 100, 100, 15, "en")]
+        [InlineData(1000, 100, 2000, 15, "en")]
+        public void Retrieve(int itemCount, int wordCount, int vocabulary, int wordLength, string culture)
+        {
+            var w = wordCount;
+            var i = itemCount;
+            var v = vocabulary;
+            var l = wordLength;
+            var maxCachedSegmentsRange = 50000u;
+            var bufferSizeRange = Math.Pow(2, 12);
+            var path = Path.Combine(Environment.CurrentDirectory, "storage-reindexasync_series.csv");
+            var exists = File.Exists(path);
+
+            var data = UnitTestIndexTestDocumentFactoryC.GenerateTestData(i, w, v, l);
+            var randomItem = default(UnitTestIndexTestDocumentC);
+            var mem = Fixture.GetUsedMemory();
+            var tasks = new List<Task>();
+
+            // preconditions
+            IndexStorageBuffer.MaxCachedSegments = maxCachedSegmentsRange;
+            IndexStorageFile.BufferSize = (uint)bufferSizeRange;
+
+            Preconditions();
+            IndexManager.Create<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo(culture), IndexType.Storage);
+            IndexManager.ReIndex(data);
+            randomItem ??= IndexManager.All<UnitTestIndexTestDocumentC>().Skip(new Random().Next() % data.Count()).FirstOrDefault();
+
+            for (int t = 0; t < 25; t++)
+            {
+                tasks.Add(Task.Run(() =>
+                {
+                    // test execution
+                    var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text ~ '{randomItem.Text.Split(' ').FirstOrDefault()}'");
+                    Assert.NotNull(wql);
+
+                    var item = wql.Apply();
+                    Assert.NotEmpty(item);
+
+                    return Task.CompletedTask;
+                }));
+            }
+
+            Task.WhenAll(tasks);
+
+            // postconditions
+            Postconditions();
+        }
+
+        /// <summary>
+        /// Tests the retrieve function in a series of tests from the index manager.
+        /// </summary>
+        [Theory]
+        [InlineData(100, 100, 100, 15, "en")]
+        [InlineData(1000, 100, 2000, 15, "en")]
+        public async Task RetrieveAsync(int itemCount, int wordCount, int vocabulary, int wordLength, string culture)
+        {
+            var w = wordCount;
+            var i = itemCount;
+            var v = vocabulary;
+            var l = wordLength;
+            var maxCachedSegmentsRange = 50000u;
+            var bufferSizeRange = Math.Pow(2, 12);
+            var path = Path.Combine(Environment.CurrentDirectory, "storage-reindexasync_series.csv");
+            var exists = File.Exists(path);
+
+            var data = UnitTestIndexTestDocumentFactoryC.GenerateTestData(i, w, v, l);
+            var randomItem = default(UnitTestIndexTestDocumentC);
+            var mem = Fixture.GetUsedMemory();
+            var tasks = new List<Task>();
+
+            // preconditions
+            IndexStorageBuffer.MaxCachedSegments = maxCachedSegmentsRange;
+            IndexStorageFile.BufferSize = (uint)bufferSizeRange;
+
+            Preconditions();
+            IndexManager.Create<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo(culture), IndexType.Storage);
+            await IndexManager.ReIndexAsync(data);
+            randomItem ??= IndexManager.All<UnitTestIndexTestDocumentC>().Skip(new Random().Next() % data.Count()).FirstOrDefault();
+
+            for (int t = 0; t < 25; t++)
+            {
+                tasks.Add(await Task.Run(async () =>
+                {
+                    // test execution
+                    var wql = await IndexManager.RetrieveAsync<UnitTestIndexTestDocumentC>($"text ~ '{randomItem.Text.Split(' ').FirstOrDefault()}'");
+                    Assert.NotNull(wql);
+
+                    var item = wql.Apply();
+                    Assert.NotEmpty(item);
+
+                    return Task.CompletedTask;
+                }));
+            }
+
+            await Task.WhenAll(tasks);
 
             // postconditions
             Postconditions();

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using WebExpress.WebIndex.WebAttribute;
 
 namespace WebExpress.WebIndex.Storage
@@ -14,16 +15,17 @@ namespace WebExpress.WebIndex.Storage
     /// information about the term, such as its frequency, position in the document, and other relevant information that can be
     /// useful in search queries.
     /// </summary>
-    /// <typeparam name="T">The data type. This must have the IIndexData interface.</typeparam>
     /// <param name="context">The reference to the context of the index.</param>
     /// <param name="addr">The adress of the segment.</param>
     [SegmentCached]
     public class IndexStorageSegmentTermNode(IndexStorageContext context, ulong addr) : IndexStorageSegment(context, addr)
     {
+        private readonly Lock _guard = new();
+
         /// <summary>
         /// Returns the amount of space required on the storage device.
         /// </summary>
-        public const uint SegmentSize = sizeof(char) + sizeof(ulong) + sizeof(ulong) + sizeof(uint) + sizeof(ulong);
+        public const uint SegmentSize = sizeof(uint) + sizeof(ulong) + sizeof(ulong) + sizeof(uint) + sizeof(ulong);
 
         /// <summary>
         /// Returns or sets the character of the node.
@@ -51,11 +53,6 @@ namespace WebExpress.WebIndex.Storage
         public ulong PostingAddr { get; private set; }
 
         /// <summary>
-        /// Returns a guard to protect against concurrent access.
-        /// </summary>
-        private object Guard { get; } = new object();
-
-        /// <summary>
         /// Returns the children list.
         /// </summary>
         public IEnumerable<IndexStorageSegmentTermNode> Children
@@ -72,9 +69,9 @@ namespace WebExpress.WebIndex.Storage
                 while (addr != 0)
                 {
                     var item = Context.IndexFile.Read<IndexStorageSegmentTermNode>(addr, Context);
-                    yield return item;
-
                     addr = item.SiblingAddr;
+
+                    yield return item;
                 }
             }
         }
@@ -146,7 +143,7 @@ namespace WebExpress.WebIndex.Storage
         }
 
         /// <summary>
-        /// Returns all items.
+        /// Returns all document ids.
         /// </summary>
         public IEnumerable<Guid> All => Terms
             .SelectMany(x => x.Item2.Posting?.All);
@@ -203,6 +200,7 @@ namespace WebExpress.WebIndex.Storage
         /// Create tree from term and save item in leaf.
         /// </summary>
         /// <param name="subterm">A subterm that is shortened by the first character at each tree level.</param>
+        /// <returns>The node where the term is added.</returns>
         public IndexStorageSegmentTermNode Add(string subterm)
         {
             if (subterm == null)
@@ -243,7 +241,7 @@ namespace WebExpress.WebIndex.Storage
         {
             var item = default(IndexStorageSegmentPostingNode);
 
-            lock (Guard)
+            lock (_guard)
             {
                 if (PostingAddr == 0)
                 {
@@ -286,7 +284,7 @@ namespace WebExpress.WebIndex.Storage
                 return false;
             }
 
-            lock (Guard)
+            lock (_guard)
             {
                 if (PostingAddr != 0)
                 {
@@ -383,13 +381,14 @@ namespace WebExpress.WebIndex.Storage
         /// <returns>The child node.<returns>
         private IndexStorageSegmentTermNode AddChild(IndexStorageSegmentTermNode node)
         {
-            lock (Guard)
+            lock (_guard)
             {
                 if (ChildAddr == 0)
                 {
                     ChildAddr = node.Addr;
 
                     Context.IndexFile.Write(this);
+                    Context.IndexFile.Write(node);
                 }
                 else
                 {
@@ -464,7 +463,7 @@ namespace WebExpress.WebIndex.Storage
         {
             foreach (var node in GetLeafs(term))
             {
-                foreach (var posting in node.Posting?.PreOrder ?? Enumerable.Empty<IndexStorageSegmentPostingNode>())
+                foreach (var posting in node.Posting?.PreOrder ?? [])
                 {
                     yield return posting;
                 }
@@ -533,7 +532,7 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="reader">The reader for i/o operations.</param>
         public override void Read(BinaryReader reader)
         {
-            Character = reader.ReadChar();
+            Character = (char)reader.ReadUInt32();
             SiblingAddr = reader.ReadUInt64();
             ChildAddr = reader.ReadUInt64();
             Fequency = reader.ReadUInt32();
@@ -546,7 +545,7 @@ namespace WebExpress.WebIndex.Storage
         /// <param name="writer">The writer for i/o operations.</param>
         public override void Write(BinaryWriter writer)
         {
-            writer.Write(Character);
+            writer.Write((uint)Character);
             writer.Write(SiblingAddr);
             writer.Write(ChildAddr);
             writer.Write(Fequency);

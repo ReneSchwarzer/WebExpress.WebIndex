@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Globalization;
+﻿using System.Globalization;
 using WebExpress.WebIndex.Test.Document;
 using WebExpress.WebIndex.Test.Fixture;
 using Xunit.Abstractions;
@@ -9,10 +8,11 @@ namespace WebExpress.WebIndex.Test.IndexManager
     /// <summary>
     /// Test class for testing the memory-based index manager.
     /// </summary>
+    [Collection("NonParallelTests")]
     public class UnitTestIndexManagerMemoryC : UnitTestIndexManager<UnitTestIndexFixtureIndexC>
     {
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="fixture">The log.</param>
         /// <param name="output">The test context.</param>
@@ -42,109 +42,17 @@ namespace WebExpress.WebIndex.Test.IndexManager
         /// <summary>
         /// Tests the reindex function from the index manager.
         /// </summary>
-        [Fact]
-        public void ReIndex_En()
+        [Theory]
+        [InlineData("en")]
+        [InlineData("de")]
+        [InlineData("de-DE")]
+        [InlineData("fr")]
+        public void ReIndex(string culture)
         {
             // preconditions
             Preconditions();
             var randomItem = Fixture.RandomItem;
-            IndexManager.Create<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo("en"), IndexType.Memory);
-
-            // test execution
-            IndexManager.ReIndex(Fixture.TestData);
-
-            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text}'");
-            Assert.NotNull(wql);
-
-            var item = wql.Apply();
-            Assert.NotEmpty(item);
-
-            // postconditions
-            Postconditions();
-        }
-
-        /// <summary>
-        /// Tests the reindex function from the index manager.
-        /// </summary>
-        [Fact]
-        public async Task ReIndexAsync_En()
-        {
-            // preconditions
-            Preconditions();
-            var randomItem = Fixture.RandomItem;
-            IndexManager.Create<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo("en"), IndexType.Memory);
-
-            // test execution
-            await IndexManager.ReIndexAsync(Fixture.TestData);
-
-            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text}'");
-            Assert.NotNull(wql);
-
-            var item = wql.Apply();
-            Assert.NotEmpty(item);
-
-            // postconditions
-            Postconditions();
-        }
-
-        /// <summary>
-        /// Tests the reindex function from the index manager.
-        /// </summary>
-        [Fact]
-        public void ReIndex_De()
-        {
-            // preconditions
-            Preconditions();
-            var randomItem = Fixture.RandomItem;
-            IndexManager.Create<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo("de"), IndexType.Memory);
-
-            // test execution
-            IndexManager.ReIndex(Fixture.TestData);
-
-            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text}'");
-            Assert.NotNull(wql);
-
-            var item = wql.Apply();
-            Assert.NotEmpty(item);
-
-            // postconditions
-            Postconditions();
-        }
-
-        /// <summary>
-        /// Tests the reindex function from the index manager.
-        /// </summary>
-        [Fact]
-        public void ReIndex_DeDE()
-        {
-            // preconditions
-            Preconditions();
-            var randomItem = Fixture.RandomItem;
-            IndexManager.Create<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo("de-DE"), IndexType.Memory);
-
-            // test execution
-            IndexManager.ReIndex(Fixture.TestData);
-
-            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text}'");
-            Assert.NotNull(wql);
-
-            var item = wql.Apply();
-            Assert.NotEmpty(item);
-
-            // postconditions
-            Postconditions();
-        }
-
-        /// <summary>
-        /// Tests the reindex function from the index manager.
-        /// </summary>
-        [Fact]
-        public void ReIndex_Fr()
-        {
-            // preconditions
-            Preconditions();
-            var randomItem = Fixture.RandomItem;
-            IndexManager.Create<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo("fr"), IndexType.Memory);
+            IndexManager.Create<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo(culture), IndexType.Memory);
 
             // test execution
             IndexManager.ReIndex(Fixture.TestData);
@@ -162,86 +70,35 @@ namespace WebExpress.WebIndex.Test.IndexManager
         /// <summary>
         /// Tests the reindex function in a series of tests from the index manager.
         /// </summary>
-        [Fact]
-        public async Task ReIndexAsync_Series()
+        [Theory]
+        [InlineData(100, 100, 100, 15, "en")]
+        [InlineData(1000, 100, 2000, 15, "en")]
+        public async Task ReIndexAsync(int itemCount, int wordCount, int vocabulary, int wordLength, string culture)
         {
-            var stopWatch = new Stopwatch();
+            var w = wordCount;
+            var i = itemCount;
+            var v = vocabulary;
+            var l = wordLength;
 
-            var itemCount = Enumerable.Range(1, 10).Select(x => x * 10000);
-            var wordCount = Enumerable.Range(1, 1).Select(x => x * 100);
-            var vocabulary = Enumerable.Range(1, 1).Select(x => x * 20000);
-            var wordLength = Enumerable.Range(1, 1).Select(x => x * 15);
-            var file = await Task.Run(() => File.CreateText(Path.Combine(Environment.CurrentDirectory, "memory-reindexasync_series.csv")));
+            // preconditions
+            Preconditions();
 
-            Output.WriteLine("item count;wordCount;vocabulary;wordLength;elapsed reindex [hh:mm:ss];elapsed retrieval [ms];size of process mem [MB]");
-            file.WriteLine("item count;wordCount;vocabulary;wordLength;elapsed reindex [hh:mm:ss];elapsed retrieval [ms];size of process mem [MB]");
+            var data = UnitTestIndexTestDocumentFactoryC.GenerateTestData(i, w, v, l);
 
-            foreach (var w in wordCount)
-            {
-                foreach (var i in itemCount)
-                {
-                    foreach (var v in vocabulary)
-                    {
-                        foreach (var l in wordLength)
-                        {
-                            // disabled due to long execution time. activate if necessary.
-                            /**
-                            // preconditions
-                            Preconditions();
-                            var output = "";
-                            var data = UnitTestIndexTestDocumentFactoryC.GenerateTestData(i, w, v, l);
-                            var mem = Fixture.GetUsedMemory();
+            IndexManager.Create<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo(culture), IndexType.Memory);
 
-                            IndexManager.Create<UnitTestIndexTestDocumentC>(CultureInfo.GetCultureInfo("en"), IndexType.Memory);
+            // test execution
+            await IndexManager.ReIndexAsync(data);
 
-                            try
-                            {
-                                // preparing for a measurement
-                                stopWatch.Start();
+            var randomItem = IndexManager.All<UnitTestIndexTestDocumentC>().Skip(new Random().Next() % data.Count()).FirstOrDefault();
+            var wql = IndexManager.Retrieve<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text.Split(' ').FirstOrDefault()}'");
+            Assert.NotNull(wql);
 
-                                // test execution
-                                await IndexManager.ReIndexAsync(data);
+            var item = wql.Apply();
+            Assert.NotEmpty(item);
 
-                                // stop measurement
-                                var elapsedReindex = stopWatch.Elapsed;
-                                stopWatch.Reset();
-
-                                var randomItem = IndexManager.All<UnitTestIndexTestDocumentC>().Skip(new Random().Next() % data.Count()).FirstOrDefault();
-                                var wql = IndexManager.Select<UnitTestIndexTestDocumentC>($"text = '{randomItem.Text.Split(' ').FirstOrDefault()}'");
-                                Assert.NotNull(wql);
-
-                                // preparing for a measurement
-                                stopWatch.Start();
-
-                                var item = wql.Apply();
-                                Assert.NotEmpty(item);
-
-                                // stop measurement
-                                var elapsedRetrieval = stopWatch.Elapsed;
-                                stopWatch.Reset();
-
-                                var documentStoreSize = new DirectoryInfo(IndexManager.Context.IndexDirectory).GetFiles("*.wds", SearchOption.AllDirectories).Sum(file => file.Length);
-                                var reverseIndexSize = new DirectoryInfo(IndexManager.Context.IndexDirectory).GetFiles("*.wri", SearchOption.AllDirectories).Sum(file => file.Length);
-
-                                output = $"{i};{w};{v};{l};{elapsedReindex:hh\\:mm\\:ss};{(int)Math.Ceiling(elapsedRetrieval.TotalMilliseconds)};{Fixture.GetUsedMemory() - mem}";
-                            }
-                            catch (Exception ex)
-                            {
-                                output += ex.Message + " " + ex.StackTrace;
-                            }
-                            finally
-                            {
-                                // postconditions
-                                Output.WriteLine(output);
-                                file.WriteLine(output);
-                                file.Flush();
-                                Postconditions();
-                            }
-                            /**/
-                        }
-                    }
-                }
-            }
+            // postconditions
+            Postconditions();
         }
 
         /// <summary>

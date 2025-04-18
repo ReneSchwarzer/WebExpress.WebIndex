@@ -1,5 +1,8 @@
 ﻿namespace WebExpress.WebIndex.Test.Document
 {
+    /// <summary>
+    /// Factory class for creating unit test documents of type UnitTestIndexTestDocumentC.
+    /// </summary>
     public class UnitTestIndexTestDocumentFactoryC : UnitTestIndexTestDocumentFactory
     {
         /// <summary>

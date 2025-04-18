@@ -6,77 +6,74 @@ using System.Text;
 namespace WebExpress.WebIndex.Term
 {
     /// <summary>
-    /// A whitespace tokinizer for breaking down a document into terms.
+    /// A whitespace tokenizer for breaking down a document into terms.
     /// </summary>
     public static class IndexTermTokenizer
     {
         /// <summary>
-        /// Enumeration of separators.
-        /// </summary>
-        private static char[] Delimiters { get; } = ['?', '!', ':', '<', '>', '=', '%', '(', ')', '"', '“', '”', '\''];
-
-        /// <summary>
         /// Enumeration of wildcards.
         /// </summary>
-        public static char[] Wildcards { get; } = ['?', '*'];
+        public static char[] Wildcards { get; } = { '?', '*' };
 
         /// <summary>
         /// Tokenize an input string into an enumeration of terms.
         /// </summary>
         /// <param name="input">The input string.</param>
         /// <param name="culture">The culture.</param>
-        /// <param name="wildcards">A enumeration of wildcards.</param>
+        /// <param name="wildcards">An enumeration of wildcards.</param>
         /// <returns>An enumeration of terms.</returns>
         public static IEnumerable<IndexTermToken> Tokenize(string input, CultureInfo culture, char[] wildcards = null)
         {
-            var currentToken = new StringBuilder();
-            var position = (uint)0;
-            var except = new HashSet<char>(Delimiters.Except(wildcards ?? []));
-            var isString = false;
-            var isNumber = false;
-            var hasDecimal = false;
-            var hasExponent = false;
-
-            if (input == null || input.Length == 0)
+            if (string.IsNullOrEmpty(input))
             {
                 yield break;
             }
 
+            var currentToken = new StringBuilder();
+            var position = 0u;
+            var isString = false;
+            var isNumber = false;
+            var hasDecimal = false;
+            var hasExponent = false;
+            var decimalSeparator = culture.NumberFormat.NumberDecimalSeparator[0];
+            var groupSeparator = culture.NumberFormat.NumberGroupSeparator[0];
+            var infinitySymbol = culture.NumberFormat.PositiveInfinitySymbol[0];
+            var positiveSign = culture.NumberFormat.PositiveSign[0];
+            var negativeSign = culture.NumberFormat.NegativeSign[0];
+
             for (int i = 0; i < input.Length; i++)
             {
                 var current = input[i];
+                var last = i > 0 ? input[i - 1] : (char)0;
+                var next = i + 1 < input.Length ? input[i + 1] : (char)0;
 
-                if
-                (
-                    !isString &&
-                    (
-                        char.IsDigit(current) ||
-                        (
-                            isNumber &&
-                            (
-                                current == '.' && !hasDecimal ||
-                                current == ',' ||
-                                current == 'e' ||
-                                current == 'E'
-                            )
-                        ) ||
-                        (
-                            current == '-' &&
-                            (
-                                currentToken.Length == 0 ||
-                                hasExponent
-                            ) &&
-                            char.IsDigit((i + 1 < input.Length) ? input[i + 1] : (char)0)
-                        )
-                    )
-                )
+                if (char.IsControl(current))
                 {
-                    // begin a new number token
+                    if (currentToken.Length > 0)
+                    {
+                        yield return new IndexTermToken
+                        {
+                            Position = position,
+                            Value = Convert(currentToken, false, culture)
+                        };
+                        currentToken.Clear();
+                    }
+                }
+                else if (!isString && (char.IsDigit(current) ||
+                    (isNumber && (current == decimalSeparator && !hasDecimal ||
+                    current == groupSeparator || current == ',' ||
+                    current == 'e' || current == 'E')) ||
+                    (current == negativeSign && (currentToken.Length == 0 || hasExponent) &&
+                    (char.IsDigit(next) || next == infinitySymbol)) ||
+                    (current == positiveSign && (currentToken.Length == 0 || hasExponent) &&
+                    (char.IsDigit(next) || next == infinitySymbol)) ||
+                    current == infinitySymbol))
+                {
                     if (!isNumber)
                     {
                         if (currentToken.Length > 0)
                         {
-                            yield return new IndexTermToken()
+                            yield return new IndexTermToken
                             {
                                 Position = position,
                                 Value = Convert(currentToken, false, culture)
@@ -84,10 +81,10 @@ namespace WebExpress.WebIndex.Term
                             currentToken.Clear();
                         }
                         isNumber = true;
-                        hasDecimal = (current == '.');
-                        hasExponent = (current == 'e' || current == 'E');
+                        hasDecimal = current == decimalSeparator;
+                        hasExponent = current == 'e' || current == 'E';
                     }
-                    else if (current == '.')
+                    else if (current == decimalSeparator)
                     {
                         if (!hasDecimal)
                         {
@@ -95,8 +92,35 @@ namespace WebExpress.WebIndex.Term
                         }
                         else
                         {
-                            // handle error for multiple decimals
+                            yield return new IndexTermToken
+                            {
+                                Position = position,
+                                Value = Convert(currentToken, true, culture)
+                            };
+                            currentToken.Clear();
+                            isNumber = false;
+                            hasDecimal = false;
+                            hasExponent = false;
+                            position++;
+                            continue;
                         }
+                    }
+                    else if (current == groupSeparator)
+                    {
+                        if (!char.IsDigit(last) || !char.IsDigit(next) || hasDecimal)
+                        {
+                            yield return new IndexTermToken
+                            {
+                                Position = position,
+                                Value = Convert(currentToken, true, culture)
+                            };
+                            currentToken.Clear();
+                            isNumber = false;
+                            hasDecimal = false;
+                            hasExponent = false;
+                            position++;
+                        }
+                        continue;
                     }
                     else if (current == 'e' || current == 'E')
                     {
@@ -106,17 +130,26 @@ namespace WebExpress.WebIndex.Term
                         }
                         else
                         {
-                            // Handle error for multiple exponents
+                            yield return new IndexTermToken
+                            {
+                                Position = position,
+                                Value = Convert(currentToken, true, culture)
+                            };
+                            currentToken.Clear();
+                            isNumber = false;
+                            hasDecimal = false;
+                            hasExponent = false;
+                            position++;
+                            continue;
                         }
                     }
                     currentToken.Append(current);
                 }
                 else
                 {
-                    // End the current number token
                     if (isNumber)
                     {
-                        yield return new IndexTermToken()
+                        yield return new IndexTermToken
                         {
                             Position = position,
                             Value = Convert(currentToken, true, culture)
@@ -128,11 +161,16 @@ namespace WebExpress.WebIndex.Term
                         position++;
                     }
 
-                    if (char.IsWhiteSpace(current) || except.Contains(current))
+                    if (char.IsWhiteSpace(current) ||
+                        char.IsSymbol(current) ||
+                        (
+                            char.IsPunctuation(current) &&
+                            (wildcards == null || !wildcards.Contains(current))
+                        ))
                     {
                         if (currentToken.Length > 0)
                         {
-                            yield return new IndexTermToken()
+                            yield return new IndexTermToken
                             {
                                 Position = position,
                                 Value = Convert(currentToken, false, culture)
@@ -152,7 +190,7 @@ namespace WebExpress.WebIndex.Term
 
             if (currentToken.Length > 0)
             {
-                yield return new IndexTermToken()
+                yield return new IndexTermToken
                 {
                     Position = position,
                     Value = Convert(currentToken, isNumber, culture)

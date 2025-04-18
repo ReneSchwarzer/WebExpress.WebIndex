@@ -4,10 +4,15 @@ using System.Linq;
 
 namespace WebExpress.WebIndex.Wql.Condition
 {
-    public class WqlExpressionNodeFilterConditionBinaryLessThanOrEqual<T> : WqlExpressionNodeFilterConditionBinary<T> where T : IIndexItem
+    /// <summary>
+    /// Represents a binary filter condition that checks if a property value is less than or equal to a specified value.
+    /// </summary>
+    /// <typeparam name="TIndexItem">The type of the index item.</typeparam>
+    public class WqlExpressionNodeFilterConditionBinaryLessThanOrEqual<TIndexItem> : WqlExpressionNodeFilterConditionBinary<TIndexItem>
+        where TIndexItem : IIndexItem
     {
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="op">The operator.</param>
         public WqlExpressionNodeFilterConditionBinaryLessThanOrEqual()
@@ -38,7 +43,7 @@ namespace WebExpress.WebIndex.Wql.Condition
         /// </summary>
         /// <param name="unfiltered">The unfiltered data.</param>
         /// <returns>The filtered data.</returns>
-        public override IQueryable<T> Apply(IQueryable<T> unfiltered)
+        public override IQueryable<TIndexItem> Apply(IQueryable<TIndexItem> unfiltered)
         {
             var comparer = new Comparer(Culture);
             var property = Attribute.Property;

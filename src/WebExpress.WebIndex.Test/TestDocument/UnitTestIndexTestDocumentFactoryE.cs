@@ -1,7 +1,7 @@
 ﻿namespace WebExpress.WebIndex.Test.Document
 {
     /// <summary>
-    /// Represents a test document for a person.
+    /// Factory class for creating unit test documents of type UnitTestIndexTestDocumentE.
     /// </summary>
     public class UnitTestIndexTestDocumentFactoryE : UnitTestIndexTestDocumentFactory
     {
@@ -139,8 +139,12 @@
                 {
                     Id = Guid.Parse("160a6cba-5f74-4d0d-939a-5e0764276b04"),
                     Name = "Lars"
+                },
+                new ()
+                {
+                    Id = Guid.Parse("4fa7861e-54cd-408c-8651-0dd05cb94bd1"),
+                    Name = "René"
                 }
-
 
             };
 

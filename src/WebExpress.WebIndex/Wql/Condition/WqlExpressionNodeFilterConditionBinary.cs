@@ -4,17 +4,19 @@
     /// Describes the binary condition expression of a wql statement.
     /// </summary>
     /// <param name="token">One or more tokens that determine the operation. Multiple tokens are separated by spaces.</param>
-    public abstract class WqlExpressionNodeFilterConditionBinary<T>(string token) : WqlExpressionNodeFilterCondition<T>(token) where T : IIndexItem
+    /// <typeparam name="TIndexItem">The type of the index item.</typeparam>
+    public abstract class WqlExpressionNodeFilterConditionBinary<TIndexItem>(string token) : WqlExpressionNodeFilterCondition<TIndexItem>(token)
+        where TIndexItem : IIndexItem
     {
         /// <summary>
         /// Returns the parameter expression.
         /// </summary>
-        public WqlExpressionNodeParameter<T> Parameter { get; internal set; }
+        public WqlExpressionNodeParameter<TIndexItem> Parameter { get; internal set; }
 
         /// <summary>
         /// Returns the parameter options expression.
         /// </summary>
-        public WqlExpressionNodeParameterOption<T> Options { get; internal set; } = new WqlExpressionNodeParameterOption<T>();
+        public WqlExpressionNodeParameterOption<TIndexItem> Options { get; internal set; } = new WqlExpressionNodeParameterOption<TIndexItem>();
 
         /// <summary>
         /// Converts the condition expression to a string.

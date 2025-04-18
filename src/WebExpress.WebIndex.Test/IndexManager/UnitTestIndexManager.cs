@@ -1,4 +1,5 @@
-﻿using Xunit.Abstractions;
+﻿using System.Reflection;
+using Xunit.Abstractions;
 
 namespace WebExpress.WebIndex.Test.IndexManager
 {
@@ -37,7 +38,10 @@ namespace WebExpress.WebIndex.Test.IndexManager
             var context = new IndexContext();
             context.IndexDirectory = Path.Combine(context.IndexDirectory, Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
             IndexManager = new IndexManagerTest();
-            IndexManager.Initialization(context);
+
+            // use reflection to call the protected Initialization method
+            var method = typeof(IndexManagerTest).GetMethod("Initialization", BindingFlags.Instance | BindingFlags.NonPublic);
+            method.Invoke(IndexManager, [context]);
 
             Context = context;
         }

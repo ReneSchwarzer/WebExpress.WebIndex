@@ -23,10 +23,10 @@ namespace WebExpress.WebIndex.Term
         /// specific task, such as stemming, lemmatization, or stopword filtering. The data is sequentially passed through each 'PipeStage',
         /// with each stage applying its specific processing to the data.
         /// </summary>
-        private List<IIndexPipeStage> TextProcessingPipeline { get; } = new List<IIndexPipeStage>();
+        private List<IIndexPipeStage> TextProcessingPipeline { get; } = [];
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="context">The reference to the context.</param>
         public IndexTokenAnalyzer(IIndexContext context)
@@ -89,6 +89,7 @@ namespace WebExpress.WebIndex.Term
             Register(new IndexPipeStageConverterSingular(Context));
             Register(new IndexPipeStageConverterSynonym(Context));
             Register(new IndexPipeStageFilterEmpty(Context));
+            Register(new IndexPipeStageFilterSurrogateCharacter(Context));
             Register(new IndexPipeStageFilterStopWord(Context));
         }
 
@@ -99,6 +100,15 @@ namespace WebExpress.WebIndex.Term
         public void Register(IIndexPipeStage pipeStage)
         {
             TextProcessingPipeline.Add(pipeStage);
+        }
+
+        /// <summary>
+        /// Removes a pipe stage from the processing pipeline.
+        /// </summary>
+        /// <param name="pipeStage">The pipe stage to remove.</param>
+        public void Remove(IIndexPipeStage pipeStage)
+        {
+            TextProcessingPipeline.Remove(pipeStage);
         }
 
         /// <summary>
