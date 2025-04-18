@@ -85,12 +85,15 @@ namespace WebExpress.WebIndex.Memory
             {
                 string propertyName = string.IsNullOrEmpty(prefix) ? property.Name : $"{prefix}.{property.Name}";
 
-                yield return new IndexFieldData
+                if (!property.PropertyType.IsClass || property.PropertyType == typeof(string))
                 {
-                    Name = propertyName,
-                    Type = property.PropertyType,
-                    PropertyInfo = property
-                };
+                    yield return new IndexFieldData
+                    {
+                        Name = propertyName,
+                        Type = property.PropertyType,
+                        PropertyInfo = property
+                    };
+                }
 
                 if (property.PropertyType.IsClass && property.PropertyType != typeof(string))
                 {

@@ -47,14 +47,21 @@ namespace WebExpress.WebIndex.WiUI.Model
             {
                 _selectedProject = value; OnPropertyChanged();
 
+                if (_selectedProject?.IndexPath != null && !Directory.Exists(_selectedProject?.IndexPath))
+                {
+                    Indexes = new ObservableCollection<Index>();
+
+                    return;
+                }
+
                 Indexes = Directory
-               .GetFiles(SelectedProject?.IndexPath ?? Environment.CurrentDirectory)
-               .Where(x => x.EndsWith(".ws"))
-               .Select(x => new Index()
-               {
-                   Name = Path.GetFileNameWithoutExtension(x),
-                   FileNameWithPath = x
-               }).ToObservableCollection();
+                   .GetFiles(_selectedProject?.IndexPath ?? Environment.CurrentDirectory)
+                   .Where(x => x.EndsWith(".ws"))
+                   .Select(x => new Index()
+                   {
+                       Name = Path.GetFileNameWithoutExtension(x),
+                       FileNameWithPath = x
+                   }).ToObservableCollection();
             }
         }
 
