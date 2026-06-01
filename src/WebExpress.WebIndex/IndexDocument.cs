@@ -217,7 +217,7 @@ namespace WebExpress.WebIndex
         }
 
         /// <summary>
-        /// Adds a item to the index.
+        /// Adds an item to the index.
         /// </summary>
         /// <param name="item">The data to be added to the index.</param>
         public virtual void Add(TIndexItem item)
