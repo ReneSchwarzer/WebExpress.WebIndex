@@ -89,7 +89,9 @@ namespace WebExpress.WebIndex.Wql
         /// </summary>
         public WqlParser()
         {
-            Attributes = GetFieldData(typeof(TIndexItem));
+            // materialize once; the deferred enumeration would re-run the
+            // reflection walk on every use
+            Attributes = GetFieldData(typeof(TIndexItem)).ToList();
 
             RegisterCondition<WqlExpressionNodeFilterConditionBinaryEqual<TIndexItem>>();
             RegisterCondition<WqlExpressionNodeFilterConditionBinaryLike<TIndexItem>>();
@@ -1373,18 +1375,19 @@ namespace WebExpress.WebIndex.Wql
                 else if (c == '"' || c == '\'')
                 {
                     var startChar = c;
-                    i++;
 
                     if (!currentToken.IsEmpty)
                     {
                         tokens.Enqueue(currentToken);
-                        currentToken = new WqlToken() { Offset = i + 1 };
                     }
 
-                    // opening quote token
+                    // opening quote token, anchored at the quote character
+                    currentToken = new WqlToken() { Offset = i };
                     currentToken.Append(c);
                     tokens.Enqueue(currentToken);
-                    currentToken = new WqlToken() { Offset = i + 1 };
+
+                    i++;
+                    currentToken = new WqlToken() { Offset = i };
 
                     // read content until closing quote
                     while (i < input.Length && input[i] != startChar)
@@ -1396,9 +1399,9 @@ namespace WebExpress.WebIndex.Wql
                     if (i < input.Length)
                     {
                         tokens.Enqueue(currentToken);
-                        currentToken = new WqlToken() { Offset = i + 1 };
 
-                        // closing quote token
+                        // closing quote token, anchored at the closing quote character
+                        currentToken = new WqlToken() { Offset = i };
                         currentToken.Append(input[i]);
                         tokens.Enqueue(currentToken);
                         currentToken = new WqlToken() { Offset = i + 1 };
@@ -1489,7 +1492,7 @@ namespace WebExpress.WebIndex.Wql
         /// <returns>True if matched; otherwise false.</returns>
         private static bool PeekToken(Queue<WqlToken> tokenQueue, Regex regex)
         {
-            return tokenQueue.Count > 0 && regex.IsMatch(tokenQueue.Peek().Value?.ToLower());
+            return tokenQueue.Count > 0 && regex.IsMatch(tokenQueue.Peek().Value?.ToLower() ?? "");
         }
 
         /// <summary>
@@ -1668,6 +1671,10 @@ namespace WebExpress.WebIndex.Wql
                     }
                 }
             }
+
+            // path-based cycle detection: release the type so sibling properties
+            // of the same type still contribute their nested fields
+            processedTypes.Remove(type);
         }
     }
 }

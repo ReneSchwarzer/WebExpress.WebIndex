@@ -50,7 +50,8 @@ namespace WebExpress.WebIndex.Wql.Condition
             return reverseIndex?.Retrieve(value, new IndexRetrieveOptions
             {
                 Method = IndexRetrieveMethod.Default,
-                Distance = Options.Distance ?? 0
+                Distance = Options.Distance ?? 0,
+                Similarity = Options.Similarity ?? 0
             }) ?? [];
         }
 

@@ -108,9 +108,13 @@ namespace WebExpress.WebIndex.Storage
             {
                 foreach (var child in Children)
                 {
-                    if (child.PostingAddr != 0)
+                    // intermediate nodes that terminate a term (prefix of a longer
+                    // term); leaf children are yielded by their own bottom case, so
+                    // requiring children here avoids duplicates. The root contributes
+                    // no character to the term string.
+                    if (child.PostingAddr != 0 && child.ChildAddr != 0)
                     {
-                        yield return (Character + child.Character.ToString(), child);
+                        yield return ((IsRoot ? "" : Character.ToString()) + child.Character, child);
                     }
 
                     foreach (var term in child.Terms)
@@ -500,9 +504,10 @@ namespace WebExpress.WebIndex.Storage
                         }
                     case '*':
                         {
-                            // escape regex special chars before expanding wildcards
-                            var escaped = Regex.Escape(next ?? string.Empty);
-                            var pattern = escaped.Replace("\\*", ".*").Replace("\\?", ".");
+                            // the "*" itself stands for any run of characters at the
+                            // current node, so the pattern is anchored with a leading
+                            // ".*" and the escaped remainder must match the suffix end
+                            var pattern = "^.*" + Regex.Escape(next ?? "").Replace("\\*", ".*").Replace("\\?", ".") + "$";
                             foreach (var termTuple in Terms)
                             {
                                 if (Regex.IsMatch(termTuple.Item1, pattern, RegexOptions.CultureInvariant))

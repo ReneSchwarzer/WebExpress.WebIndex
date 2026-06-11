@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using WebExpress.WebIndex.Term;
+using WebExpress.WebIndex.Utility;
 
 namespace WebExpress.WebIndex.Memory
 {
@@ -133,7 +134,7 @@ namespace WebExpress.WebIndex.Memory
                         {
                             foreach (var position in posting.Positions)
                             {
-                                if (CheckForPhraseMatch(posting.DocumentId, position, firstTerm.Position, nextTerms))
+                                if (CheckForPhraseMatch(posting.DocumentId, position, firstTerm.Position, options.Distance, nextTerms))
                                 {
                                     distinct.Add(posting.DocumentId);
                                 }
@@ -144,26 +145,47 @@ namespace WebExpress.WebIndex.Memory
                     }
                 default:
                     {
-                        foreach (var document in tokens.Take(1).SelectMany(x => Root.Retrieve(x.Value.ToString(), options)))
+                        if (options.Distance == 0)
                         {
-                            if (distinct.Add(document) && count++ >= options.MaxResults)
+                            foreach (var document in tokens.Take(1).SelectMany(x => RetrieveTerm(x.Value.ToString(), options)))
                             {
-                                break;
-                            }
-                        }
-
-                        foreach (var normalized in tokens.Skip(1))
-                        {
-                            var temp = new HashSet<Guid>(distinct.Count);
-
-                            foreach (var document in Root.Retrieve(normalized.Value.ToString(), options))
-                            {
-                                if (distinct.Contains(document) && temp.Add(document))
+                                if (distinct.Add(document) && count++ >= options.MaxResults)
                                 {
+                                    break;
                                 }
                             }
 
-                            distinct = temp;
+                            foreach (var normalized in tokens.Skip(1))
+                            {
+                                var temp = new HashSet<Guid>(distinct.Count);
+
+                                foreach (var document in RetrieveTerm(normalized.Value.ToString(), options))
+                                {
+                                    if (distinct.Contains(document) && temp.Add(document))
+                                    {
+                                    }
+                                }
+
+                                distinct = temp;
+                            }
+                        }
+                        else
+                        {
+                            // proximity search: all terms must occur within the given
+                            // distance of each other (mirrors the storage variant)
+                            var firstTerm = tokens.Take(1).FirstOrDefault();
+                            var nextTerms = tokens.Skip(1);
+
+                            foreach (var posting in Root.GetPostings(firstTerm.Value.ToString()))
+                            {
+                                foreach (var position in posting.Positions)
+                                {
+                                    if (CheckForProximityMatch(posting.DocumentId, position, options.Distance, nextTerms))
+                                    {
+                                        distinct.Add(posting.DocumentId);
+                                    }
+                                }
+                            }
                         }
 
                         break;
@@ -174,14 +196,50 @@ namespace WebExpress.WebIndex.Memory
         }
 
         /// <summary>
-        /// Checks whether there is an exact match.
+        /// Returns the document ids for a single term. When a similarity threshold
+        /// is set, the term vocabulary is scanned and every term whose Levenshtein
+        /// similarity reaches the threshold contributes its documents (fuzzy search).
+        /// </summary>
+        /// <param name="term">The (normalized) search term.</param>
+        /// <param name="options">The retrieval options.</param>
+        /// <returns>An enumeration of matching document ids.</returns>
+        private IEnumerable<Guid> RetrieveTerm(string term, IndexRetrieveOptions options)
+        {
+            if (options.Similarity is > 0 and < 100)
+            {
+                var threshold = options.Similarity / 100.0;
+
+                foreach (var (candidate, node) in Root.Terms)
+                {
+                    if (IndexFuzzy.CalculateLevenshteinSimilarity(term, candidate) >= threshold)
+                    {
+                        foreach (var posting in node.Postings ?? [])
+                        {
+                            yield return posting.DocumentId;
+                        }
+                    }
+                }
+
+                yield break;
+            }
+
+            foreach (var id in Root.Retrieve(term, options))
+            {
+                yield return id;
+            }
+        }
+
+        /// <summary>
+        /// Checks whether the subsequent terms match in phrase order, allowing the
+        /// given distance tolerance between the expected and actual positions.
         /// </summary>
         /// <param name="document">The document id to check.</param>
         /// <param name="position">The position of the term within the document.</param>
         /// <param name="offset">The position within the search term.</param>
+        /// <param name="distance">The allowed distance tolerance.</param>
         /// <param name="terms">Further following search terms.</param>
-        /// <returns>True ff there is an exact match, otherwise false.</returns>
-        private bool CheckForPhraseMatch(Guid document, uint position, uint offset, IEnumerable<IndexTermToken> terms)
+        /// <returns>True if there is a match, otherwise false.</returns>
+        private bool CheckForPhraseMatch(Guid document, uint position, uint offset, uint distance, IEnumerable<IndexTermToken> terms)
         {
             if (!terms.Any())
             {
@@ -191,11 +249,52 @@ namespace WebExpress.WebIndex.Memory
             var firstTerm = terms.Take(1).FirstOrDefault();
             var nextTerms = terms.Skip(1);
 
+            // compute uint-safe bounds (mirrors the storage variant)
+            var baseOffset = firstTerm.Position >= offset ? firstTerm.Position - offset : 0u;
+            var minU = position + (ulong)baseOffset;
+            var maxU = minU + distance;
+            var min = minU > uint.MaxValue ? uint.MaxValue : (uint)minU;
+            var max = maxU > uint.MaxValue ? uint.MaxValue : (uint)maxU;
+
             foreach (var posting in Root.GetPostings(firstTerm.Value.ToString()).Where(x => x?.DocumentId == document))
             {
-                foreach (var pos in posting.Positions.Where(x => x == position + (firstTerm.Position - offset)))
+                foreach (var pos in posting.Positions.Where(x => x >= min && x <= max))
                 {
-                    return CheckForPhraseMatch(posting.DocumentId, pos, firstTerm.Position, nextTerms);
+                    return CheckForPhraseMatch(posting.DocumentId, pos, firstTerm.Position, distance, nextTerms);
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Checks whether there is a proximity match within a given distance window.
+        /// </summary>
+        /// <param name="document">The document id to check.</param>
+        /// <param name="position">The absolute position of the previously matched term.</param>
+        /// <param name="distance">The allowed distance tolerance.</param>
+        /// <param name="terms">The remaining terms to check.</param>
+        /// <returns>True if a proximity match is found, otherwise false.</returns>
+        private bool CheckForProximityMatch(Guid document, uint position, uint distance, IEnumerable<IndexTermToken> terms)
+        {
+            if (!terms.Any())
+            {
+                return true;
+            }
+
+            var firstTerm = terms.Take(1).FirstOrDefault();
+            var nextTerms = terms.Skip(1);
+
+            // compute uint-safe bounds around the current position
+            var lower = position >= distance ? position - distance : 0u;
+            var upperU = position + (ulong)distance;
+            var upper = upperU > uint.MaxValue ? uint.MaxValue : (uint)upperU;
+
+            foreach (var posting in Root.GetPostings(firstTerm.Value.ToString()).Where(x => x?.DocumentId == document))
+            {
+                foreach (var pos in posting.Positions.Where(x => x >= lower && x <= upper))
+                {
+                    return CheckForProximityMatch(posting.DocumentId, pos, distance, nextTerms);
                 }
             }
 

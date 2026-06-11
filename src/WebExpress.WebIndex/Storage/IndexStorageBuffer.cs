@@ -101,7 +101,7 @@ namespace WebExpress.WebIndex.Storage
                     }
                 }
 
-                var segment = (TIndexStorageSegment)Activator.CreateInstance(typeof(TIndexStorageSegment), context, addr);
+                var segment = IndexSegmentFactory<TIndexStorageSegment>.Create(context, addr);
 
                 Reader.BaseStream.Seek((long)segment.Addr, SeekOrigin.Begin);
                 segment.Read(Reader);

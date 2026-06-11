@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using WebExpress.WebIndex.Term;
+using WebExpress.WebIndex.Utility;
 
 namespace WebExpress.WebIndex.Storage
 {
@@ -204,7 +205,7 @@ namespace WebExpress.WebIndex.Storage
                         if (options.Distance == 0)
                         {
                             // accumulate results for the first token
-                            foreach (var document in tokens.Take(1).SelectMany(x => Term.Retrieve(x.Value.ToString(), options)))
+                            foreach (var document in tokens.Take(1).SelectMany(x => RetrieveTerm(x.Value.ToString(), options)))
                             {
                                 if (distinct.Add(document))
                                 {
@@ -222,7 +223,7 @@ namespace WebExpress.WebIndex.Storage
                             {
                                 var temp = new HashSet<Guid>(distinct.Count);
 
-                                foreach (var document in Term.Retrieve(normalized.Value.ToString(), options))
+                                foreach (var document in RetrieveTerm(normalized.Value.ToString(), options))
                                 {
                                     if (distinct.Contains(document))
                                     {
@@ -262,6 +263,40 @@ namespace WebExpress.WebIndex.Storage
             }
 
             return distinct;
+        }
+
+        /// <summary>
+        /// Returns the document ids for a single term. When a similarity threshold
+        /// is set, the term vocabulary is scanned and every term whose Levenshtein
+        /// similarity reaches the threshold contributes its documents (fuzzy search).
+        /// </summary>
+        /// <param name="term">The (normalized) search term.</param>
+        /// <param name="options">The retrieval options.</param>
+        /// <returns>An enumeration of matching document ids.</returns>
+        private IEnumerable<Guid> RetrieveTerm(string term, IndexRetrieveOptions options)
+        {
+            if (options.Similarity is > 0 and < 100)
+            {
+                var threshold = options.Similarity / 100.0;
+
+                foreach (var (candidate, node) in Term.Terms)
+                {
+                    if (IndexFuzzy.CalculateLevenshteinSimilarity(term, candidate) >= threshold)
+                    {
+                        foreach (var id in node.Posting?.All ?? [])
+                        {
+                            yield return id;
+                        }
+                    }
+                }
+
+                yield break;
+            }
+
+            foreach (var id in Term.Retrieve(term, options))
+            {
+                yield return id;
+            }
         }
 
         /// <summary>

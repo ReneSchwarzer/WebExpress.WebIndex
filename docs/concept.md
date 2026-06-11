@@ -1128,6 +1128,12 @@ targeted search results. Below are some common functions and their descriptions:
 |----------|--------|------------------------------------------------
 | day()    | n      | Returns n days before or after the current day.
 | now()    | -      | Returns the current date and time.
+| year()   | [n]    | Returns the current year, optionally shifted by n years.
+| month()  | [n]    | Returns the current month, optionally shifted by n months.
+| upper()  | s      | Converts a string to upper case.
+| lower()  | s      | Converts a string to lower case.
+| trim()   | s      | Removes leading and trailing whitespace from a string.
+| len()    | s      | Returns the length of a string.
 
 Functions are only allowed on the right-hand side of conditions. This means that functions always appear as 
 part of the parameters in conditions and not as standalone left-hand operands. Here are some examples to 
