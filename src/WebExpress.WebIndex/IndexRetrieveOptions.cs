@@ -1,7 +1,8 @@
 ﻿namespace WebExpress.WebIndex
 {
     /// <summary>
-    /// Represents the options for the search.
+    /// The settings that tune a search query: how many results to return at most, the retrieval
+    /// method, the word distance for proximity searches, and the minimum similarity for fuzzy searches.
     /// </summary>
     public struct IndexRetrieveOptions
     {

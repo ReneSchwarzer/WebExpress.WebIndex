@@ -5,7 +5,9 @@ using WebExpress.WebIndex.Term;
 namespace WebExpress.WebIndex
 {
     /// <summary>
-    /// Reverse index interface.
+    /// A reverse (inverted) index: it maps each indexed term back to the ids of the items that
+    /// contain it, which is what makes full-text search fast. This is the core lookup structure
+    /// behind the index.
     /// </summary>
     /// <typeparam name="TIndexItem">The data type. This must have the IIndexData interface.</typeparam>
     public interface IIndexReverse<TIndexItem> : IDisposable where TIndexItem : IIndexItem

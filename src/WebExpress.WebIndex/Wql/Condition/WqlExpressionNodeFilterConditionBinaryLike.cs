@@ -6,7 +6,8 @@ using System.Linq.Expressions;
 namespace WebExpress.WebIndex.Wql.Condition
 {
     /// <summary>
-    /// Represents a binary 'LIKE' condition in a WQL expression.
+    /// The WQL condition for a pattern match (<c>LIKE</c>): matches items whose attribute fits the
+    /// given text pattern (such as a wildcard search).
     /// </summary>
     /// <typeparam name="TIndexItem">The type of the index item.</typeparam>
     public class WqlExpressionNodeFilterConditionBinaryLike<TIndexItem> : WqlExpressionNodeFilterConditionBinary<TIndexItem>

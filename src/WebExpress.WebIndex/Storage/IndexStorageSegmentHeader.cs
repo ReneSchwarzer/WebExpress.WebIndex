@@ -5,7 +5,9 @@ using System.Text;
 namespace WebExpress.WebIndex.Storage
 {
     /// <summary>
-    /// Represents the header segment of the index storage.
+    /// The header at the very start of an on-disk index file. It stores the magic identifier
+    /// (three ASCII characters) and the file version, so the file can be recognized and its format
+    /// checked when the index is opened.
     /// </summary>
     public class IndexStorageSegmentHeader : IndexStorageSegment
     {
